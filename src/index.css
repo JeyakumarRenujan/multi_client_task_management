@@ -53,6 +53,42 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Screensaver & Ambient Animations */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -25px) scale(1.08);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+@keyframes breatheSlow {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 12s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatSlow 16s ease-in-out infinite reverse;
+}
+
+.animate-breathe-slow {
+  animation: breatheSlow 6s ease-in-out infinite;
+}
+
 /* Print styles for Invoices */
 @media print {
   body {

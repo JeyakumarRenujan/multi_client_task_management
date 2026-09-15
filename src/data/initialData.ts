@@ -18,6 +18,11 @@ export const initialUser: UserProfile = {
     deadlineReminderHours: 24,
   },
   theme: 'light',
+  idleSettings: {
+    enabled: true,
+    timeoutMinutes: 2,
+    style: 'zen',
+  },
 };
 
 export const initialClients: Client[] = [

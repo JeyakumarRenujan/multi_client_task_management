@@ -24,6 +24,7 @@ import { ProjectModal } from './components/projects/ProjectModal';
 import { ClientModal } from './components/clients/ClientModal';
 import { InvoiceModal } from './components/invoices/InvoiceModal';
 import { ManualLogModal } from './components/timer/ManualLogModal';
+import { IdleScreensaver } from './components/common/IdleScreensaver';
 
 const MainContent: React.FC = () => {
   const { activeTab, user, isAuthenticated } = useApp();
@@ -93,6 +94,7 @@ const MainContent: React.FC = () => {
       <ClientModal />
       <InvoiceModal />
       <ManualLogModal />
+      <IdleScreensaver />
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

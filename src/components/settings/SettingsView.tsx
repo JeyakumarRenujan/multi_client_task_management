@@ -11,6 +11,10 @@ import {
   Sun,
   Moon,
   Layout,
+  Sparkles,
+  Timer,
+  Eye,
+  Coffee,
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -33,6 +37,11 @@ export const SettingsView: React.FC = () => {
   const [browserAlerts, setBrowserAlerts] = useState(user?.notificationSettings?.browser ?? true);
   const [soundAlerts, setSoundAlerts] = useState(user?.notificationSettings?.sound ?? true);
 
+  // Inactivity / Idle Screensaver Settings
+  const [idleEnabled, setIdleEnabled] = useState(user?.idleSettings?.enabled ?? true);
+  const [idleTimeout, setIdleTimeout] = useState<number>(user?.idleSettings?.timeoutMinutes ?? 2);
+  const [idleStyle, setIdleStyle] = useState<'zen' | 'clock' | 'particles'>(user?.idleSettings?.style ?? 'zen');
+
   // Sync state when active user updates
   useEffect(() => {
     if (user) {
@@ -46,8 +55,35 @@ export const SettingsView: React.FC = () => {
         setBrowserAlerts(user.notificationSettings.browser ?? true);
         setSoundAlerts(user.notificationSettings.sound ?? true);
       }
+      if (user.idleSettings) {
+        setIdleEnabled(user.idleSettings.enabled ?? true);
+        setIdleTimeout(user.idleSettings.timeoutMinutes ?? 2);
+        setIdleStyle(user.idleSettings.style ?? 'zen');
+      }
     }
   }, [user]);
+
+  const updateIdlePreferences = (updates: Partial<{ enabled: boolean; timeoutMinutes: number; style: 'zen' | 'clock' | 'particles' }>) => {
+    const newEnabled = updates.enabled !== undefined ? updates.enabled : idleEnabled;
+    const newTimeout = updates.timeoutMinutes !== undefined ? updates.timeoutMinutes : idleTimeout;
+    const newStyle = updates.style !== undefined ? updates.style : idleStyle;
+
+    if (updates.enabled !== undefined) setIdleEnabled(newEnabled);
+    if (updates.timeoutMinutes !== undefined) setIdleTimeout(newTimeout);
+    if (updates.style !== undefined) setIdleStyle(newStyle);
+
+    updateUserProfile({
+      idleSettings: {
+        enabled: newEnabled,
+        timeoutMinutes: newTimeout,
+        style: newStyle,
+      },
+    });
+  };
+
+  const handlePreviewScreensaver = () => {
+    window.dispatchEvent(new CustomEvent('meplus:trigger-screensaver-preview'));
+  };
 
   const presetAvatars = [
     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
@@ -71,6 +107,11 @@ export const SettingsView: React.FC = () => {
         browser: browserAlerts,
         sound: soundAlerts,
         deadlineReminderHours: user?.notificationSettings?.deadlineReminderHours || 24,
+      },
+      idleSettings: {
+        enabled: idleEnabled,
+        timeoutMinutes: idleTimeout,
+        style: idleStyle,
       },
     });
   };
@@ -433,6 +474,165 @@ export const SettingsView: React.FC = () => {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Idle Animation & Inactivity Screensaver */}
+      <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-[#128C7E] text-white shadow-md shadow-emerald-700/20">
+              <Sparkles className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  Idle Animation &amp; Screensaver
+                </h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  2-Min Default
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Display an ambient screensaver when no mouse or keyboard activity is detected
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handlePreviewScreensaver}
+            className="self-start sm:self-auto flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+            title="Preview how the screensaver animation looks right now"
+          >
+            <Eye className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>Preview Screensaver Now</span>
+          </button>
+        </div>
+
+        {/* Master Toggle */}
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/70">
+          <div>
+            <span className="text-xs font-bold text-slate-900 dark:text-white block">
+              Enable Inactivity Screensaver
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              Turn off if you prefer the screen to remain static when away from your keyboard
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => updateIdlePreferences({ enabled: !idleEnabled })}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              idleEnabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                idleEnabled ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        {idleEnabled && (
+          <>
+            {/* Timeout Selection */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Inactivity Waiting Duration
+                </label>
+                <span className="text-[11px] text-slate-400">
+                  Triggers after no mouse or keyboard input
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { value: 1, label: '1 Minute', desc: 'Quick testing' },
+                  { value: 2, label: '2 Minutes', desc: 'Recommended default' },
+                  { value: 5, label: '5 Minutes', desc: 'Standard pause' },
+                  { value: 10, label: '10 Minutes', desc: 'Extended focus' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => updateIdlePreferences({ timeoutMinutes: opt.value })}
+                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      idleTimeout === opt.value
+                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 ring-2 ring-emerald-500/20 font-bold shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold">{opt.label}</span>
+                      {idleTimeout === opt.value && (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      )}
+                    </div>
+                    <span className="text-[10px] text-slate-400 block">{opt.desc}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Animation Style Selection */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+                Animation Theme &amp; Style
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  {
+                    id: 'zen' as const,
+                    title: 'Ambient Zen Ring',
+                    desc: 'Calming breathing rhythm circle, motivating quote, and live digital clock',
+                    icon: Coffee,
+                  },
+                  {
+                    id: 'clock' as const,
+                    title: 'Digital Clock & Focus',
+                    desc: 'Minimalist large typography clock and active workspace summary',
+                    icon: Timer,
+                  },
+                  {
+                    id: 'particles' as const,
+                    title: 'Floating Starfield',
+                    desc: 'Organic glowing teal particle flow and restful ambient backdrop',
+                    icon: Sparkles,
+                  },
+                ].map(st => {
+                  const Icon = st.icon;
+                  return (
+                    <button
+                      key={st.id}
+                      type="button"
+                      onClick={() => updateIdlePreferences({ style: st.id })}
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                        idleStyle === st.id
+                          ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 ring-2 ring-emerald-500/20 shadow-xs'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-xs font-bold text-slate-900 dark:text-white">
+                          {st.title}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                        {st.desc}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+              Tip: Moving the mouse, tapping any key, or clicking "Resume Workspace" instantly returns you to your work with zero lost data.
+            </p>
+          </>
+        )}
       </div>
 
       {/* Notifications & Sound Settings */}
