@@ -83,7 +83,6 @@ export const CommandPalette: React.FC = () => {
       >
         {/* Search Header */}
         <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-          <Search className="w-5 h-5 text-emerald-600 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -92,6 +91,7 @@ export const CommandPalette: React.FC = () => {
             placeholder="Search clients, projects, tasks, invoices, or type a command..."
             className="flex-1 bg-transparent border-none text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-sm md:text-base font-medium"
           />
+          <Search className="w-5 h-5 text-emerald-600 shrink-0" />
           <kbd className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 bg-slate-200/60 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700">
             ESC
           </kbd>

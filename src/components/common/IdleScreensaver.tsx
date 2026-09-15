@@ -270,3 +270,4 @@ export const IdleScreensaver: React.FC = () => {
     </div>
   );
 };
+

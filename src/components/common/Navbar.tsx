@@ -127,13 +127,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Global Search Omni Bar Trigger (Ctrl+K) */}
         <button
           onClick={() => setIsCommandPaletteOpen(true)}
-          className="hidden sm:flex items-center gap-2 px-3 py-1.5 ml-4 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-all group cursor-pointer"
+          className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 ml-4 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-all group cursor-pointer"
         >
-          <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
           <span>Search or jump to...</span>
-          <kbd className="text-[10px] font-mono bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-500 border border-slate-200 dark:border-slate-700 ml-2">
-            Ctrl K
-          </kbd>
+          <div className="flex items-center gap-1.5 ml-1">
+            <kbd className="text-[10px] font-mono bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-500 border border-slate-200 dark:border-slate-700">
+              Ctrl K
+            </kbd>
+            <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+          </div>
         </button>
       </div>
 
