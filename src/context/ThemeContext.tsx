@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
 export type SidebarTheme = 'slate' | 'sage' | 'dark' | 'white';
+export type AccentColor = 'emerald' | 'rose' | 'blue' | 'purple' | 'amber';
 
 interface ThemeContextType {
   theme: Theme;
@@ -10,6 +11,8 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
   sidebarTheme: SidebarTheme;
   setSidebarTheme: (theme: SidebarTheme) => void;
+  accentColor: AccentColor;
+  setAccentColor: (color: AccentColor) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -40,10 +43,30 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return 'slate'; // Default is modern distinguished slate!
   });
 
+  const [accentColor, setAccentColorState] = useState<AccentColor>(() => {
+    const saved = localStorage.getItem('meplus_accent_color') as AccentColor;
+    if (['emerald', 'rose', 'blue', 'purple', 'amber'].includes(saved)) return saved;
+    return 'emerald';
+  });
+
   const setSidebarTheme = (newTheme: SidebarTheme) => {
     setSidebarThemeState(newTheme);
     localStorage.setItem('meplus_sidebar_theme', newTheme);
   };
+
+  const setAccentColor = (newColor: AccentColor) => {
+    setAccentColorState(newColor);
+    localStorage.setItem('meplus_accent_color', newColor);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-accent-color', newColor);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-accent-color', accentColor);
+    }
+  }, [accentColor]);
 
   // Listen to OS/PC theme changes and apply to DOM
   useEffect(() => {
@@ -103,6 +126,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setTheme,
         sidebarTheme,
         setSidebarTheme,
+        accentColor,
+        setAccentColor,
       }}
     >
       {children}

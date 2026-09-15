@@ -8,46 +8,71 @@ export default {
   theme: {
     extend: {
       colors: {
-        // WhatsApp / Natural Green Theme Palette
+        // Dynamic Accent Color Theme Palette
         primary: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a', // emerald / natural green
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16',
+          50: 'rgb(var(--color-primary-50) / <alpha-value>)',
+          100: 'rgb(var(--color-primary-100) / <alpha-value>)',
+          200: 'rgb(var(--color-primary-200) / <alpha-value>)',
+          300: 'rgb(var(--color-primary-300) / <alpha-value>)',
+          400: 'rgb(var(--color-primary-400) / <alpha-value>)',
+          500: 'rgb(var(--color-primary-500) / <alpha-value>)',
+          600: 'rgb(var(--color-primary-600) / <alpha-value>)',
+          700: 'rgb(var(--color-primary-700) / <alpha-value>)',
+          800: 'rgb(var(--color-primary-800) / <alpha-value>)',
+          900: 'rgb(var(--color-primary-900) / <alpha-value>)',
+          950: 'rgb(var(--color-primary-950) / <alpha-value>)',
         },
-        // Complete override of indigo with natural green/teal so no old color can ever show
+        emerald: {
+          50: 'rgb(var(--color-primary-50) / <alpha-value>)',
+          100: 'rgb(var(--color-primary-100) / <alpha-value>)',
+          200: 'rgb(var(--color-primary-200) / <alpha-value>)',
+          300: 'rgb(var(--color-primary-300) / <alpha-value>)',
+          400: 'rgb(var(--color-primary-400) / <alpha-value>)',
+          500: 'rgb(var(--color-primary-500) / <alpha-value>)',
+          600: 'rgb(var(--color-primary-600) / <alpha-value>)',
+          700: 'rgb(var(--color-primary-700) / <alpha-value>)',
+          800: 'rgb(var(--color-primary-800) / <alpha-value>)',
+          900: 'rgb(var(--color-primary-900) / <alpha-value>)',
+          950: 'rgb(var(--color-primary-950) / <alpha-value>)',
+        },
+        teal: {
+          50: 'rgb(var(--color-secondary-50) / <alpha-value>)',
+          100: 'rgb(var(--color-secondary-100) / <alpha-value>)',
+          200: 'rgb(var(--color-secondary-200) / <alpha-value>)',
+          300: 'rgb(var(--color-secondary-300) / <alpha-value>)',
+          400: 'rgb(var(--color-secondary-400) / <alpha-value>)',
+          500: 'rgb(var(--color-secondary-500) / <alpha-value>)',
+          600: 'rgb(var(--color-secondary-600) / <alpha-value>)',
+          700: 'rgb(var(--color-secondary-700) / <alpha-value>)',
+          800: 'rgb(var(--color-secondary-800) / <alpha-value>)',
+          900: 'rgb(var(--color-secondary-900) / <alpha-value>)',
+          950: 'rgb(var(--color-secondary-950) / <alpha-value>)',
+        },
         indigo: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16',
+          50: 'rgb(var(--color-secondary-50) / <alpha-value>)',
+          100: 'rgb(var(--color-secondary-100) / <alpha-value>)',
+          200: 'rgb(var(--color-secondary-200) / <alpha-value>)',
+          300: 'rgb(var(--color-secondary-300) / <alpha-value>)',
+          400: 'rgb(var(--color-secondary-400) / <alpha-value>)',
+          500: 'rgb(var(--color-secondary-500) / <alpha-value>)',
+          600: 'rgb(var(--color-secondary-600) / <alpha-value>)',
+          700: 'rgb(var(--color-secondary-700) / <alpha-value>)',
+          800: 'rgb(var(--color-secondary-800) / <alpha-value>)',
+          900: 'rgb(var(--color-secondary-900) / <alpha-value>)',
+          950: 'rgb(var(--color-secondary-950) / <alpha-value>)',
         },
         whatsapp: {
-          light: '#25D366',   // WhatsApp Vibrant Green
-          teal: '#128C7E',    // WhatsApp Teal Green
-          dark: '#075E54',    // WhatsApp Deep Green
-          web: '#00a884',     // WhatsApp Web Header Green
-          bg: '#EFEAE2',      // WhatsApp Soft Chat Bg
-          chatBg: '#dcf8c6',  // WhatsApp Sent Message Tint
-          darkBg: '#111b21',  // WhatsApp Dark Mode Background
+          light: 'rgb(var(--color-brand-light) / <alpha-value>)',
+          teal: 'rgb(var(--color-brand-main) / <alpha-value>)',
+          dark: 'rgb(var(--color-brand-dark) / <alpha-value>)',
+          web: 'rgb(var(--color-brand-main) / <alpha-value>)',
+          bg: '#EFEAE2',
+          chatBg: 'rgb(var(--color-primary-100) / <alpha-value>)',
+          darkBg: '#111b21',
         },
         brand: {
-          green: '#128C7E',
-          accent: '#25D366',
+          green: 'rgb(var(--color-brand-main) / <alpha-value>)',
+          accent: 'rgb(var(--color-brand-light) / <alpha-value>)',
           blue: '#0284c7',
           amber: '#f59e0b',
           rose: '#e11d48',
@@ -55,9 +80,9 @@ export default {
         }
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(18, 140, 126, 0.08)',
+        'glass': '0 8px 32px 0 rgba(var(--color-brand-main), 0.08)',
         'glass-dark': '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
-        'whatsapp': '0 4px 20px -2px rgba(18, 140, 126, 0.25)',
+        'whatsapp': '0 4px 20px -2px rgba(var(--color-brand-main), 0.25)',
       },
       animation: {
         'fade-in': 'fadeIn 0.2s ease-out',

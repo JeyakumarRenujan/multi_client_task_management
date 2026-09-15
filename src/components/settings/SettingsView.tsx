@@ -23,7 +23,7 @@ export const SettingsView: React.FC = () => {
     updateUserProfile,
   } = useApp();
 
-  const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme } = useTheme();
+  const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme, accentColor, setAccentColor } = useTheme();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -113,6 +113,7 @@ export const SettingsView: React.FC = () => {
         timeoutMinutes: idleTimeout,
         style: idleStyle,
       },
+      accentColor,
     });
   };
 
@@ -365,6 +366,100 @@ export const SettingsView: React.FC = () => {
               <Layout className="w-4 h-4 text-slate-500" />
               <span className="text-xs font-semibold">System Auto</span>
             </button>
+          </div>
+        </div>
+
+        {/* Primary Accent Color Switcher (1-Click Color Themes) */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Primary Accent Color (1-Click Full UI Theme)
+              </label>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Instantly transforms buttons, navigation tabs, status badges, focus rings, and highlights across the entire platform
+              </p>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+              Live Switcher
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+            {[
+              {
+                id: 'emerald' as const,
+                name: 'Emerald Green',
+                desc: 'WhatsApp & Natural',
+                previewBg: 'bg-[#10b981]',
+              },
+              {
+                id: 'rose' as const,
+                name: 'Rose Pink',
+                desc: 'Vibrant & Creative',
+                previewBg: 'bg-[#f43f5e]',
+              },
+              {
+                id: 'blue' as const,
+                name: 'Ocean Blue',
+                desc: 'Clean & Trustworthy',
+                previewBg: 'bg-[#3b82f6]',
+              },
+              {
+                id: 'purple' as const,
+                name: 'Royal Purple',
+                desc: 'Deep & Elegant',
+                previewBg: 'bg-[#8b5cf6]',
+              },
+              {
+                id: 'amber' as const,
+                name: 'Sunset Amber',
+                desc: 'Warm & Energetic',
+                previewBg: 'bg-[#f59e0b]',
+              },
+            ].map(c => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setAccentColor(c.id)}
+                className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer group ${
+                  accentColor === c.id
+                    ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`w-4 h-4 rounded-full ${c.previewBg} shadow-sm group-hover:scale-110 transition-transform`} />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    {c.name}
+                  </span>
+                  {accentColor === c.id && (
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 ml-auto" />
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                  {c.desc}
+                </p>
+              </button>
+            ))}
+          </div>
+
+          {/* Live Preview Sample */}
+          <div className="mt-3.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-medium">
+              Live Preview with your chosen color:
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-bold shadow-xs">
+                Sample Button
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
+                Active Badge
+              </span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                Highlighted Text
+              </span>
+            </div>
           </div>
         </div>
 

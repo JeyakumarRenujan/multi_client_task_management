@@ -188,7 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                     onClick={() => handleSelectTab(item.id)}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
                       isActive
-                        ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] text-white shadow-md shadow-emerald-700/20'
+                        ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal text-white shadow-md shadow-emerald-700/20'
                         : getInactiveNavClass()
                     }`}
                   >

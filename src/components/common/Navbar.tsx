@@ -21,6 +21,8 @@ import {
   FileText,
   Clock,
   Menu,
+  Palette,
+  Check,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -55,15 +57,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     setSelectedInvoiceForEdit,
   } = useApp();
 
-  const { theme, actualTheme, toggleTheme } = useTheme();
+  const { theme, actualTheme, toggleTheme, accentColor, setAccentColor } = useTheme();
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isAccentMenuOpen, setIsAccentMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
   const quickAddRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const accentMenuRef = useRef<HTMLDivElement>(null);
 
   // Live real-time ticking clock
   useEffect(() => {
@@ -80,6 +84,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setIsUserMenuOpen(false);
+      }
+      if (accentMenuRef.current && !accentMenuRef.current.contains(event.target as Node)) {
+        setIsAccentMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -221,7 +228,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="relative" ref={quickAddRef}>
           <button
             onClick={() => setIsQuickAddOpen(!isQuickAddOpen)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden md:inline">Quick Add</span>
@@ -286,6 +293,56 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
           <span className="hidden sm:inline">AI Copilot</span>
         </button>
+
+        {/* Quick Accent Color Palette Switcher */}
+        <div className="relative" ref={accentMenuRef}>
+          <button
+            onClick={() => setIsAccentMenuOpen(!isAccentMenuOpen)}
+            title="Change Theme Accent Color"
+            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
+          >
+            <Palette className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white dark:ring-slate-900" />
+          </button>
+
+          {isAccentMenuOpen && (
+            <div className="absolute right-0 top-11 w-44 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-slide-up">
+              <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 py-1 mb-1">
+                Theme Color
+              </div>
+              <div className="space-y-1">
+                {[
+                  { id: 'emerald' as const, name: 'Emerald Green', bg: 'bg-[#10b981]' },
+                  { id: 'rose' as const, name: 'Rose Pink', bg: 'bg-[#f43f5e]' },
+                  { id: 'blue' as const, name: 'Ocean Blue', bg: 'bg-[#3b82f6]' },
+                  { id: 'purple' as const, name: 'Royal Purple', bg: 'bg-[#8b5cf6]' },
+                  { id: 'amber' as const, name: 'Sunset Amber', bg: 'bg-[#f59e0b]' },
+                ].map(c => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      setAccentColor(c.id);
+                      setIsAccentMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                      accentColor === c.id
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className={`w-3.5 h-3.5 rounded-full ${c.bg} shadow-2xs`} />
+                      <span>{c.name}</span>
+                    </div>
+                    {accentColor === c.id && (
+                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Theme Toggle Button */}
         <button

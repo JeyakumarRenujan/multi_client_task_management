@@ -9,6 +9,162 @@
   .dark * {
     border-color: theme('colors.slate.800');
   }
+
+  /* Default Emerald Green Accent */
+  :root,
+  :root[data-accent-color="emerald"] {
+    --color-primary-50: 236 253 245;
+    --color-primary-100: 209 250 229;
+    --color-primary-200: 167 243 208;
+    --color-primary-300: 110 231 183;
+    --color-primary-400: 52 211 153;
+    --color-primary-500: 16 185 129;
+    --color-primary-600: 5 150 105;
+    --color-primary-700: 4 120 87;
+    --color-primary-800: 6 95 70;
+    --color-primary-900: 6 78 59;
+    --color-primary-950: 2 44 34;
+
+    --color-secondary-50: 240 253 250;
+    --color-secondary-100: 204 251 241;
+    --color-secondary-200: 153 246 228;
+    --color-secondary-300: 94 234 212;
+    --color-secondary-400: 45 212 191;
+    --color-secondary-500: 20 184 166;
+    --color-secondary-600: 13 148 136;
+    --color-secondary-700: 15 118 110;
+    --color-secondary-800: 17 94 89;
+    --color-secondary-900: 19 78 74;
+    --color-secondary-950: 4 47 46;
+
+    --color-brand-light: 37 211 102;
+    --color-brand-main: 18 140 126;
+    --color-brand-dark: 7 94 84;
+  }
+
+  /* Vibrant Rose / Pink Accent */
+  :root[data-accent-color="rose"] {
+    --color-primary-50: 255 241 242;
+    --color-primary-100: 255 228 230;
+    --color-primary-200: 254 205 211;
+    --color-primary-300: 253 164 175;
+    --color-primary-400: 251 113 133;
+    --color-primary-500: 244 63 94;
+    --color-primary-600: 225 29 72;
+    --color-primary-700: 190 18 60;
+    --color-primary-800: 159 18 57;
+    --color-primary-900: 136 19 55;
+    --color-primary-950: 76 5 25;
+
+    --color-secondary-50: 253 244 255;
+    --color-secondary-100: 250 232 255;
+    --color-secondary-200: 245 208 254;
+    --color-secondary-300: 240 171 252;
+    --color-secondary-400: 232 121 249;
+    --color-secondary-500: 217 70 239;
+    --color-secondary-600: 192 38 211;
+    --color-secondary-700: 162 28 175;
+    --color-secondary-800: 134 25 143;
+    --color-secondary-900: 112 26 117;
+    --color-secondary-950: 74 4 78;
+
+    --color-brand-light: 251 113 133;
+    --color-brand-main: 225 29 72;
+    --color-brand-dark: 159 18 57;
+  }
+
+  /* Ocean Blue Accent */
+  :root[data-accent-color="blue"] {
+    --color-primary-50: 239 246 255;
+    --color-primary-100: 219 234 254;
+    --color-primary-200: 191 219 254;
+    --color-primary-300: 147 197 253;
+    --color-primary-400: 96 165 250;
+    --color-primary-500: 59 130 246;
+    --color-primary-600: 37 99 235;
+    --color-primary-700: 29 78 216;
+    --color-primary-800: 30 64 175;
+    --color-primary-900: 30 58 138;
+    --color-primary-950: 23 37 84;
+
+    --color-secondary-50: 240 249 255;
+    --color-secondary-100: 224 242 254;
+    --color-secondary-200: 186 230 253;
+    --color-secondary-300: 125 211 252;
+    --color-secondary-400: 56 189 248;
+    --color-secondary-500: 14 165 233;
+    --color-secondary-600: 2 132 199;
+    --color-secondary-700: 3 105 161;
+    --color-secondary-800: 7 89 133;
+    --color-secondary-900: 12 74 110;
+    --color-secondary-950: 8 47 73;
+
+    --color-brand-light: 96 165 250;
+    --color-brand-main: 37 99 235;
+    --color-brand-dark: 29 78 216;
+  }
+
+  /* Royal Purple Accent */
+  :root[data-accent-color="purple"] {
+    --color-primary-50: 250 245 255;
+    --color-primary-100: 243 232 255;
+    --color-primary-200: 233 213 255;
+    --color-primary-300: 216 180 254;
+    --color-primary-400: 192 132 252;
+    --color-primary-500: 168 85 247;
+    --color-primary-600: 147 51 234;
+    --color-primary-700: 126 34 206;
+    --color-primary-800: 107 33 168;
+    --color-primary-900: 88 28 135;
+    --color-primary-950: 59 7 100;
+
+    --color-secondary-50: 238 242 255;
+    --color-secondary-100: 224 231 255;
+    --color-secondary-200: 199 210 254;
+    --color-secondary-300: 165 180 252;
+    --color-secondary-400: 129 140 248;
+    --color-secondary-500: 99 102 241;
+    --color-secondary-600: 79 70 229;
+    --color-secondary-700: 67 56 202;
+    --color-secondary-800: 55 48 163;
+    --color-secondary-900: 49 46 129;
+    --color-secondary-950: 30 27 75;
+
+    --color-brand-light: 192 132 252;
+    --color-brand-main: 147 51 234;
+    --color-brand-dark: 107 33 168;
+  }
+
+  /* Sunset Amber Accent */
+  :root[data-accent-color="amber"] {
+    --color-primary-50: 255 251 235;
+    --color-primary-100: 254 243 199;
+    --color-primary-200: 253 230 138;
+    --color-primary-300: 252 211 77;
+    --color-primary-400: 251 191 36;
+    --color-primary-500: 245 158 11;
+    --color-primary-600: 217 119 6;
+    --color-primary-700: 180 83 9;
+    --color-primary-800: 146 64 14;
+    --color-primary-900: 120 53 15;
+    --color-primary-950: 69 26 3;
+
+    --color-secondary-50: 255 247 237;
+    --color-secondary-100: 255 237 213;
+    --color-secondary-200: 254 215 170;
+    --color-secondary-300: 253 186 116;
+    --color-secondary-400: 251 146 60;
+    --color-secondary-500: 249 115 22;
+    --color-secondary-600: 234 88 12;
+    --color-secondary-700: 194 65 12;
+    --color-secondary-800: 154 52 18;
+    --color-secondary-900: 124 45 18;
+    --color-secondary-950: 67 20 7;
+
+    --color-brand-light: 251 191 36;
+    --color-brand-main: 217 119 6;
+    --color-brand-dark: 146 64 14;
+  }
 }
 
 /* Custom modern scrollbars */

@@ -8,6 +8,8 @@ export type ClientStatus = 'active' | 'inactive' | 'lead';
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue';
 
+export type AccentColor = 'emerald' | 'rose' | 'blue' | 'purple' | 'amber';
+
 export interface IdleSettings {
   enabled: boolean;
   timeoutMinutes: number; // e.g. 1, 2, 5, 10 (default 2)
@@ -32,6 +34,7 @@ export interface UserProfile {
     deadlineReminderHours: number;
   };
   theme: 'light' | 'dark' | 'system';
+  accentColor?: AccentColor;
   idleSettings?: IdleSettings;
 }
 
