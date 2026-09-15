@@ -259,14 +259,9 @@ export const ClientModal: React.FC = () => {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                Phone Number (Optional)
-              </label>
-              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-                +94 (77) 123-4567
-              </span>
-            </div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Phone Number (Optional)
+            </label>
 
             <div className="flex rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden transition-all shadow-2xs">
               {/* Country Code Dropdown */}
@@ -302,22 +297,6 @@ export const ClientModal: React.FC = () => {
                   className="w-full pl-9 pr-3 py-2.5 bg-transparent text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
                 />
               </div>
-            </div>
-
-            {/* Helper text explaining international & local format */}
-            <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 px-0.5">
-              <span>
-                International: <strong className="font-mono text-slate-600 dark:text-slate-300 font-semibold">+947XXXXXXXX</strong> or local: <strong className="font-mono text-slate-600 dark:text-slate-300 font-semibold">077 130 5450</strong>
-              </span>
-              {phone && phone.trim().startsWith('07') && (
-                <button
-                  type="button"
-                  onClick={() => setPhone(formatSriLankanPhone(phone))}
-                  className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold text-[10px]"
-                >
-                  Convert to +94 (77) ...
-                </button>
-              )}
             </div>
           </div>
 

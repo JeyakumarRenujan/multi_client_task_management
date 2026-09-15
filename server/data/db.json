@@ -1482,6 +1482,21 @@
   },
   "clients": [
     {
+      "name": "client 1",
+      "company": "client 1",
+      "email": "client1@gmail.com",
+      "phone": "+94 (77) 130-5450",
+      "status": "active",
+      "hourlyRate": 65,
+      "currency": "$",
+      "notes": "",
+      "color": "#f59e0b",
+      "id": "cli-1789485196904",
+      "userId": "usr_renujanrenu5_gmail_com",
+      "createdAt": "2026-09-15",
+      "totalBilled": 0
+    },
+    {
       "userId": "usr_persistent_1789484788699_example_com",
       "name": "Acme Global Corp",
       "company": "Acme Global",
@@ -2297,6 +2312,24 @@
   ],
   "projects": [
     {
+      "title": "project1",
+      "clientId": "cli-1789485196904",
+      "description": "",
+      "status": "in-progress",
+      "priority": "medium",
+      "budget": 300,
+      "startDate": "2026-09-15",
+      "deadline": "2026-09-29",
+      "tags": [
+        "Client Work"
+      ],
+      "id": "prj-1789485232545",
+      "userId": "usr_renujanrenu5_gmail_com",
+      "spent": 0,
+      "progress": 0,
+      "createdAt": "2026-09-15"
+    },
+    {
       "id": "prj-1",
       "userId": "usr-1",
       "clientId": "cli-1",
@@ -2397,6 +2430,26 @@
     }
   ],
   "tasks": [
+    {
+      "title": "first task",
+      "projectId": "prj-1789485232545",
+      "clientId": "cli-1789485196904",
+      "description": "",
+      "status": "done",
+      "priority": "medium",
+      "dueDate": "2026-09-18",
+      "estimatedHours": 3,
+      "subtasks": [],
+      "tags": [
+        "Frontend",
+        "Milestone"
+      ],
+      "attachments": [],
+      "id": "tsk-1789485294735",
+      "userId": "usr_renujanrenu5_gmail_com",
+      "actualHours": 0,
+      "createdAt": "2026-09-15"
+    },
     {
       "id": "tsk-4",
       "projectId": "prj-2",
@@ -2676,6 +2729,20 @@
     }
   ],
   "timeEntries": [
+    {
+      "userId": "usr_renujanrenu5_gmail_com",
+      "projectId": "prj-1789485232545",
+      "clientId": "cli-1789485196904",
+      "description": "Working on project1",
+      "durationSeconds": 3,
+      "startTime": "2026-09-15T15:14:08.471Z",
+      "endTime": "2026-09-15T15:14:12.288Z",
+      "isBillable": true,
+      "hourlyRate": 65,
+      "isBilled": false,
+      "date": "2026-09-15",
+      "id": "time-1789485252288"
+    },
     {
       "userId": "usr-1",
       "projectId": "prj-1",
