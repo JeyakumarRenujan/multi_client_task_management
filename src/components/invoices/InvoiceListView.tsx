@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Invoice, InvoiceStatus } from '../../types';
-import { InvoiceModal } from './InvoiceModal';
 import {
   FileText,
   Plus,
@@ -293,9 +292,6 @@ export const InvoiceListView: React.FC = () => {
           </table>
         </div>
       )}
-
-      {/* Invoice Modal */}
-      <InvoiceModal />
     </div>
   );
 };

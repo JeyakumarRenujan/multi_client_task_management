@@ -4,7 +4,6 @@ import { Task, PriorityLevel } from '../../types';
 import { TaskKanban } from './TaskKanban';
 import { TaskCalendar } from './TaskCalendar';
 import { TaskListView } from './TaskListView';
-import { TaskModal } from './TaskModal';
 import {
   CheckSquare,
   Plus,
@@ -198,9 +197,6 @@ export const TasksView: React.FC = () => {
           <TaskListView filteredTasks={filteredTasks} onEditTask={handleEditTask} />
         )}
       </div>
-
-      {/* Task Modal */}
-      <TaskModal />
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { useApp } from '../../context/AppContext';
 import { Client, ClientStatus } from '../../types';
 import { ClientCard } from './ClientCard';
 import { ClientDetailModal } from './ClientDetailModal';
-import { ClientModal } from './ClientModal';
 import {
   Users,
   Plus,
@@ -288,7 +287,6 @@ export const ClientListView: React.FC = () => {
         onClose={() => setInspectedClient(null)}
         onEdit={handleEdit}
       />
-      <ClientModal />
     </div>
   );
 };

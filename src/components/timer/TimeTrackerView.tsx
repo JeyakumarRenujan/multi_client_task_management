@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { ManualLogModal } from './ManualLogModal';
 import {
   Clock,
   Play,
@@ -357,9 +356,6 @@ export const TimeTrackerView: React.FC = () => {
           </table>
         )}
       </div>
-
-      {/* Manual Entry Modal */}
-      <ManualLogModal />
     </div>
   );
 };

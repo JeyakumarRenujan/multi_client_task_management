@@ -3,7 +3,6 @@ import { useApp } from '../../context/AppContext';
 import { Project, ProjectStatus } from '../../types';
 import { ProjectCard } from './ProjectCard';
 import { ProjectDetailModal } from './ProjectDetailModal';
-import { ProjectModal } from './ProjectModal';
 import {
   FolderKanban,
   Plus,
@@ -322,7 +321,6 @@ export const ProjectListView: React.FC = () => {
         onClose={() => setInspectedProject(null)}
         onEdit={handleEdit}
       />
-      <ProjectModal />
     </div>
   );
 };

@@ -19,6 +19,12 @@ import { TimeTrackerView } from './components/timer/TimeTrackerView';
 import { InvoiceListView } from './components/invoices/InvoiceListView';
 import { SettingsView } from './components/settings/SettingsView';
 
+import { TaskModal } from './components/tasks/TaskModal';
+import { ProjectModal } from './components/projects/ProjectModal';
+import { ClientModal } from './components/clients/ClientModal';
+import { InvoiceModal } from './components/invoices/InvoiceModal';
+import { ManualLogModal } from './components/timer/ManualLogModal';
+
 const MainContent: React.FC = () => {
   const { activeTab, user, isAuthenticated } = useApp();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -82,6 +88,11 @@ const MainContent: React.FC = () => {
       <ConfirmModal />
       <CommandPalette />
       <AiAssistantModal />
+      <TaskModal />
+      <ProjectModal />
+      <ClientModal />
+      <InvoiceModal />
+      <ManualLogModal />
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
