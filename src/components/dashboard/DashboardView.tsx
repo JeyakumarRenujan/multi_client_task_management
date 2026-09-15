@@ -57,9 +57,9 @@ export const DashboardView: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Welcome Hero Banner with WhatsApp Deep Green / Teal Gradient */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#075E54] via-[#128C7E] to-slate-900 text-white p-6 md:p-8 shadow-xl border border-emerald-500/30">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-[#25D366]/20 rounded-full blur-3xl pointer-events-none" />
+      {/* Welcome Hero Banner with Dynamic Accent Theme Gradient */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-whatsapp-dark via-whatsapp-teal to-slate-900 text-white p-6 md:p-8 shadow-xl border border-emerald-500/30">
+        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-whatsapp-light/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 -mb-8 w-48 h-48 bg-teal-300/15 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -71,7 +71,7 @@ export const DashboardView: React.FC = () => {
                 <span>{todayFormatted}</span>
               </div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900/40 border border-emerald-400/30 backdrop-blur-xs">
-                <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-pulse" />
                 <Clock className="w-3.5 h-3.5 text-emerald-300" />
                 <span className="font-mono">{timeFormatted}</span>
               </div>
@@ -96,7 +96,7 @@ export const DashboardView: React.FC = () => {
 
             <button
               onClick={() => setIsTaskModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-emerald-400 text-slate-950 text-xs font-extrabold shadow-lg shadow-emerald-900/40 active:scale-95 transition-all cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-whatsapp-light hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-lg shadow-black/20 active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 text-slate-950 font-black" />
               <span>New Task</span>

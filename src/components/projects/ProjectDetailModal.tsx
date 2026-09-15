@@ -88,7 +88,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
         {/* Header */}
         <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-start justify-between">
           <div className="flex items-start gap-4">
-            <div className="p-3 rounded-2xl bg-[#128C7E] text-white shadow-md shadow-emerald-700/20 mt-1">
+            <div className="p-3 rounded-2xl bg-emerald-600 text-white shadow-md shadow-emerald-700/20 mt-1">
               <FolderKanban className="w-6 h-6" />
             </div>
 
@@ -134,7 +134,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={handleStartTimerForProject}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#128C7E] hover:bg-[#075E54] text-white rounded-xl text-xs font-bold shadow-sm"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white rounded-xl text-xs font-bold shadow-sm"
               title="Track Time"
             >
               <Play className="w-3.5 h-3.5" />
@@ -198,7 +198,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
 
             <div className="w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-[#25D366] rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-whatsapp-light rounded-full transition-all duration-500"
                 style={{ width: `${project.progress}%` }}
               />
             </div>

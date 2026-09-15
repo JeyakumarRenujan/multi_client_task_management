@@ -64,7 +64,7 @@ export const WorkloadDistribution: React.FC = () => {
                 {/* Progress bar in natural green gradient */}
                 <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-[#25D366] rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-emerald-500 via-teal-500 to-whatsapp-light rounded-full transition-all duration-500"
                     style={{ width: `${project.progress}%` }}
                   />
                 </div>

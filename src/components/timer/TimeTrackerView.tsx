@@ -111,7 +111,7 @@ export const TimeTrackerView: React.FC = () => {
           </button>
           <button
             onClick={() => setIsTimeLogModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white text-xs font-bold shadow-md shadow-emerald-700/25 active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white text-xs font-bold shadow-md shadow-emerald-700/25 active:scale-95 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Manual Entry</span>
@@ -120,7 +120,7 @@ export const TimeTrackerView: React.FC = () => {
       </div>
 
       {/* Hero Stopwatch Tracker Card */}
-      <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-[#075E54] via-[#128C7E] to-slate-900 text-white shadow-xl border border-emerald-500/30">
+      <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-whatsapp-dark via-whatsapp-teal to-slate-900 text-white shadow-xl border border-emerald-500/30">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           {/* Controls */}
           <div className="space-y-4 flex-1">
@@ -187,7 +187,7 @@ export const TimeTrackerView: React.FC = () => {
               {!activeTimer.isRunning && activeTimer.elapsedSeconds === 0 && (
                 <button
                   onClick={handleStartTimer}
-                  className="px-6 py-4 rounded-2xl bg-[#25D366] hover:bg-emerald-400 text-slate-950 font-black text-sm shadow-xl shadow-emerald-950/40 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-6 py-4 rounded-2xl bg-whatsapp-light hover:brightness-110 text-slate-950 font-black text-sm shadow-xl shadow-black/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Play className="w-5 h-5 fill-slate-950" />
                   <span>Start Tracking</span>
@@ -207,7 +207,7 @@ export const TimeTrackerView: React.FC = () => {
               {!activeTimer.isRunning && activeTimer.elapsedSeconds > 0 && (
                 <button
                   onClick={resumeTimer}
-                  className="px-5 py-4 rounded-2xl bg-[#25D366] hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-4 rounded-2xl bg-whatsapp-light hover:brightness-110 text-slate-950 font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Play className="w-5 h-5 fill-slate-950" />
                   <span>Resume</span>

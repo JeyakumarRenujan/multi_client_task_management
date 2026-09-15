@@ -162,12 +162,12 @@ export const IdleScreensaver: React.FC = () => {
       {/* Floating Organic Glow Orbs */}
       <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-emerald-500/20 blur-3xl animate-float-slow pointer-events-none" />
       <div className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-teal-500/20 blur-3xl animate-float-reverse pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full bg-[#128C7E]/15 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full bg-whatsapp-teal/15 blur-3xl pointer-events-none" />
 
       {/* Top Header Bar */}
       <header className="relative z-10 w-full max-w-5xl flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-[#128C7E] flex items-center justify-center text-white shadow-lg shadow-emerald-500/25">
+          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-whatsapp-teal flex items-center justify-center text-white shadow-lg shadow-emerald-500/25">
             <Sparkles className="w-5 h-5 animate-pulse" />
           </div>
           <div>
@@ -261,7 +261,7 @@ export const IdleScreensaver: React.FC = () => {
             e.stopPropagation();
             handleDismiss();
           }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-500 hover:to-[#075E54] text-white text-xs font-bold shadow-lg shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-500 hover:to-whatsapp-dark text-white text-xs font-bold shadow-lg shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
           <span>Resume Workspace</span>

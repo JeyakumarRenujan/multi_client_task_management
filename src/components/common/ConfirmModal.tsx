@@ -54,7 +54,7 @@ export const ConfirmModal: React.FC = () => {
           className={`h-1.5 w-full ${
             isDanger
               ? 'bg-gradient-to-r from-rose-500 via-rose-600 to-red-600'
-              : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-[#128C7E]'
+              : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-whatsapp-teal'
           }`}
         />
 
@@ -134,7 +134,7 @@ export const ConfirmModal: React.FC = () => {
               className={`px-5 py-2 sm:py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold shadow-md active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 ${
                 isDanger
                   ? 'bg-gradient-to-r from-rose-600 via-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-rose-600/25'
-                  : 'bg-gradient-to-r from-emerald-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] shadow-emerald-600/25'
+                  : 'bg-gradient-to-r from-emerald-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-emerald-600/25'
               }`}
             >
               <Trash2 className="w-3.5 h-3.5" />

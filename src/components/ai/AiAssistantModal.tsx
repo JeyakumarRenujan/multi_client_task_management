@@ -250,10 +250,10 @@ export const AiAssistantModal: React.FC = () => {
         <div className="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/70 dark:bg-slate-900/90 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-[#075E54] via-[#128C7E] to-[#25D366] text-white shadow-md shadow-emerald-700/20">
+              <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-whatsapp-dark via-whatsapp-teal to-whatsapp-light text-white shadow-md shadow-emerald-700/20">
                 <Bot className="w-5 h-5" />
               </div>
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-[#25D366] rounded-full border-2 border-white dark:border-slate-900 ring-1 ring-emerald-600 animate-pulse" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-whatsapp-light rounded-full border-2 border-white dark:border-slate-900 ring-1 ring-emerald-600 animate-pulse" />
             </div>
 
             <div>
@@ -303,7 +303,7 @@ export const AiAssistantModal: React.FC = () => {
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               ) : (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#128C7E] text-white flex items-center justify-center shrink-0 shadow-sm">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                   <Bot className="w-4 h-4" />
                 </div>
               )}
@@ -312,7 +312,7 @@ export const AiAssistantModal: React.FC = () => {
               <div
                 className={`max-w-[85%] sm:max-w-[78%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm shadow-sm relative group ${
                   msg.sender === 'user'
-                    ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] text-white rounded-tr-sm'
+                    ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal text-white rounded-tr-sm'
                     : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/60 rounded-tl-sm'
                 }`}
               >
@@ -350,13 +350,13 @@ export const AiAssistantModal: React.FC = () => {
           {/* Typing Indicator */}
           {isTyping && (
             <div className="flex items-start gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#128C7E] text-white flex items-center justify-center shrink-0 shadow-sm">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                 <Bot className="w-4 h-4" />
               </div>
               <div className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl rounded-tl-sm p-3.5 shadow-sm flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-600 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 rounded-full bg-[#128C7E] animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 rounded-full bg-[#25D366] animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-2 h-2 rounded-full bg-whatsapp-teal animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             </div>
           )}
@@ -398,7 +398,7 @@ export const AiAssistantModal: React.FC = () => {
             disabled={!inputMessage.trim() || isTyping}
             className={`p-3 rounded-2xl transition-all shadow-md flex items-center justify-center shrink-0 ${
               inputMessage.trim() && !isTyping
-                ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white active:scale-95 shadow-emerald-700/25'
+                ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white active:scale-95 shadow-emerald-700/25'
                 : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
             }`}
           >

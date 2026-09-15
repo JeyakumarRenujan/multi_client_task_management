@@ -52,7 +52,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
     {
       id: 'done',
       label: 'Completed',
-      color: 'border-[#25D366] dark:border-emerald-600',
+      color: 'border-whatsapp-light dark:border-emerald-600',
       badgeBg: 'bg-emerald-500 text-white',
     },
   ];

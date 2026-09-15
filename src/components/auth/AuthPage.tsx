@@ -29,11 +29,13 @@ import {
   RefreshCw,
   Inbox,
   Copy,
+  Palette,
 } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
   const { login, register, forgotPassword, verifyOtp, resendOtp, resetPassword, loginDemoUser } = useApp();
-  const { actualTheme, toggleTheme } = useTheme();
+  const { actualTheme, toggleTheme, accentColor, setAccentColor } = useTheme();
+  const [isAccentMenuOpen, setIsAccentMenuOpen] = useState(false);
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
 
   // Form fields
@@ -270,25 +272,78 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-[#eef3f1] dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200 relative">
+    <div className="h-screen max-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200 relative">
       {/* Decorative Ambient Background Gradients & Grid Pattern */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Top-left ambient emerald glow */}
+        {/* Top-left ambient primary glow */}
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-400/15 dark:bg-emerald-600/10 rounded-full blur-3xl" />
-        {/* Center-right ambient teal glow */}
-        <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] bg-teal-400/15 dark:bg-[#128C7E]/10 rounded-full blur-3xl" />
-        {/* Bottom-left ambient green glow */}
-        <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-[#25D366]/10 dark:bg-emerald-500/10 rounded-full blur-3xl" />
+        {/* Center-right ambient brand glow */}
+        <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] bg-teal-400/15 dark:bg-whatsapp-teal/10 rounded-full blur-3xl" />
+        {/* Bottom-left ambient light glow */}
+        <div className="absolute -bottom-40 left-1/4 w-96 h-96 bg-whatsapp-light/10 dark:bg-emerald-500/10 rounded-full blur-3xl" />
 
         {/* Subtle geometric dot grid pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#128C7E_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.04] dark:opacity-[0.07]" />
+        <div className="absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.03] dark:opacity-[0.05] text-emerald-600" />
       </div>
 
       {/* Top Simple Navigation Header */}
       <header className="w-full h-13 sm:h-14 border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 lg:px-10 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shrink-0 z-30 shadow-xs">
         <Logo size="md" />
 
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-4">
+          {/* Quick Accent Color Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsAccentMenuOpen(!isAccentMenuOpen)}
+              title="Theme Color"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-800 shadow-2xs cursor-pointer"
+            >
+              <Palette className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-semibold capitalize hidden sm:inline">{accentColor}</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white dark:ring-slate-900" />
+            </button>
+
+            {isAccentMenuOpen && (
+              <div className="absolute right-0 top-9 w-44 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-slide-up">
+                <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 py-1 mb-1">
+                  Accent Color
+                </div>
+                <div className="space-y-1">
+                  {[
+                    { id: 'emerald' as const, name: 'Emerald Green', bg: 'bg-[#10b981]' },
+                    { id: 'rose' as const, name: 'Rose Pink', bg: 'bg-[#f43f5e]' },
+                    { id: 'blue' as const, name: 'Ocean Blue', bg: 'bg-[#3b82f6]' },
+                    { id: 'purple' as const, name: 'Royal Purple', bg: 'bg-[#8b5cf6]' },
+                    { id: 'amber' as const, name: 'Sunset Amber', bg: 'bg-[#f59e0b]' },
+                  ].map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => {
+                        setAccentColor(c.id);
+                        setIsAccentMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                        accentColor === c.id
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`w-3.5 h-3.5 rounded-full ${c.bg} shadow-2xs`} />
+                        <span>{c.name}</span>
+                      </div>
+                      {accentColor === c.id && (
+                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Light / Dark Mode Toggle Pill */}
           <button
             type="button"
@@ -329,7 +384,7 @@ export const AuthPage: React.FC = () => {
             {/* Top Workspace Status Tag */}
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/90 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 text-xs font-semibold shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-[#059669] animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                 <span>All-in-One Freelancer Workspace</span>
               </div>
             </div>
@@ -338,7 +393,7 @@ export const AuthPage: React.FC = () => {
             <div className="space-y-2 sm:space-y-2.5">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] xl:text-[56px] font-black text-slate-900 dark:text-white tracking-tight leading-[1.08]">
                 Work Smarter,<br />
-                <span className="text-[#059669] dark:text-emerald-400">Freelance Happier</span>
+                <span className="text-emerald-600 dark:text-emerald-400">Freelance Happier</span>
               </h1>
               <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
                 Manage clients, track deadlines, and stay organized — all in one place.
@@ -349,7 +404,7 @@ export const AuthPage: React.FC = () => {
             <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-md pt-0.5">
               {/* 1. Multiple Clients */}
               <div className="flex flex-col items-center text-center gap-1.5 group cursor-pointer">
-                <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-[#e8f5e9] dark:bg-emerald-950/70 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-[#059669] dark:text-emerald-400 shadow-2xs group-hover:scale-105 group-hover:shadow-xs transition-all">
+                <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-2xs group-hover:scale-105 group-hover:shadow-xs transition-all">
                   <Users className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-slate-300 leading-tight">
@@ -402,19 +457,19 @@ export const AuthPage: React.FC = () => {
           {/* Right Column: Authentication Form Card (5 Cols) */}
           <div className="lg:col-span-5 relative">
             {/* Ambient backlight glow */}
-            <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-[#25D366]/25 rounded-[34px] blur-xl opacity-80 pointer-events-none" />
+            <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-whatsapp-light/25 rounded-[34px] blur-xl opacity-80 pointer-events-none" />
 
             {/* High-Contrast Card Outer Border & Elevation Frame */}
             <div className="p-[2.5px] rounded-[26px] sm:rounded-[30px] bg-gradient-to-b from-emerald-500/70 via-emerald-400/40 to-teal-600/70 dark:from-emerald-500/80 dark:via-slate-700 dark:to-teal-500/80 shadow-[0_20px_50px_-10px_rgba(5,150,105,0.25),0_12px_28px_-6px_rgba(0,0,0,0.14)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] transition-all">
               <div className="bg-white dark:bg-slate-900 rounded-[23.5px] sm:rounded-[27.5px] border border-emerald-100/90 dark:border-slate-800 p-4 sm:p-5 lg:p-6 flex flex-col relative max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar">
                 {/* Solid Green Top Accent Bar with gradient glow */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-teal-500 to-[#128C7E] rounded-t-[23.5px] sm:rounded-t-[27.5px]" />
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-teal-500 to-whatsapp-teal rounded-t-[23.5px] sm:rounded-t-[27.5px]" />
 
                 {/* 1-Click Demo Banner (only in login/register mode) */}
                 {mode !== 'forgot' && (
                   <div className="mb-3 p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-between shadow-2xs">
                     <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[#059669] text-white flex items-center justify-center shrink-0 shadow-2xs">
+                      <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
                         <Zap className="w-3.5 h-3.5 fill-white" />
                       </div>
                       <div>
@@ -430,7 +485,7 @@ export const AuthPage: React.FC = () => {
                     <button
                       onClick={loginDemoUser}
                       type="button"
-                      className="px-2.5 py-1.5 text-xs font-bold text-white bg-[#059669] hover:bg-[#047857] rounded-lg shadow-xs shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                      className="px-2.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shrink-0"
                     >
                       <span>1-Click Login</span>
                       <ArrowRight className="w-3 h-3" />
@@ -480,7 +535,7 @@ export const AuthPage: React.FC = () => {
                 {/* Form Title & Subtitle */}
                 <div className="mb-3">
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/90 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold mb-1.5">
-                    <ShieldCheck className="w-3 h-3 text-[#059669]" />
+                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
                     <span>Freelancer Portal</span>
                   </div>
                   <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -530,7 +585,7 @@ export const AuthPage: React.FC = () => {
               {successMessage && (
                 <div className="mb-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs space-y-0.5">
                   <div className="font-bold flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-[#25D366]" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     <span>Success</span>
                   </div>
                   <p className="text-[11px] text-emerald-700 dark:text-emerald-400 leading-normal">
@@ -598,7 +653,7 @@ export const AuthPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-3 py-2.5 sm:py-3 rounded-xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full mt-3 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     <span>{isLoading ? 'Signing In...' : 'Sign In to Workspace'}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -765,7 +820,7 @@ export const AuthPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     <span>{isLoading ? 'Creating Account...' : 'Create Free Account'}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -804,7 +859,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full mt-2.5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full mt-2.5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                       >
                         <span>{isLoading ? 'Sending Code...' : 'Send Verification Code'}</span>
                         <ArrowRight className="w-4 h-4" />
@@ -909,7 +964,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading || otp.length !== 6}
-                        className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <span>{isLoading ? 'Verifying Code...' : 'Verify Code & Proceed'}</span>
                         <ArrowRight className="w-4 h-4" />
@@ -922,7 +977,7 @@ export const AuthPage: React.FC = () => {
                     <form onSubmit={handleForgotStep3Submit} className="space-y-2.5">
                       <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>OTP Verified for <strong>{email}</strong></span>
                         </div>
                       </div>
@@ -1000,7 +1055,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                       >
                         <span>{isLoading ? 'Updating Password...' : 'Save New Password & Continue'}</span>
                         <ArrowRight className="w-4 h-4" />
@@ -1011,7 +1066,7 @@ export const AuthPage: React.FC = () => {
                   {/* Step 4: Success View */}
                   {forgotStep === 'success' && (
                     <div className="space-y-3 text-center py-2">
-                      <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-[#25D366] flex items-center justify-center mx-auto shadow-inner">
+                      <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
                         <CheckCircle2 className="w-6 h-6" />
                       </div>
                       <div>
@@ -1028,7 +1083,7 @@ export const AuthPage: React.FC = () => {
                         onClick={() => {
                           resetAllFormStates('login');
                         }}
-                        className="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
                       >
                         <span>Sign In with New Password</span>
                         <ArrowRight className="w-4 h-4" />
@@ -1057,7 +1112,7 @@ export const AuthPage: React.FC = () => {
 
             {/* Artistic Handwritten Accents (Matching Mockup) */}
             <div className="hidden xl:flex flex-col items-center absolute -right-20 top-4 select-none pointer-events-none rotate-2">
-              <div className="font-['Caveat',cursive] text-base sm:text-lg text-[#075E54]/75 dark:text-emerald-400/80 leading-tight text-center">
+              <div className="font-['Caveat',cursive] text-base sm:text-lg text-emerald-800/75 dark:text-emerald-400/80 leading-tight text-center">
                 Organize<br />
                 today<br />
                 Create a<br />
@@ -1071,7 +1126,7 @@ export const AuthPage: React.FC = () => {
             </div>
 
             <div className="hidden xl:block absolute -right-16 -bottom-2 select-none pointer-events-none">
-              <span className="font-['Caveat',cursive] text-[11px] tracking-widest text-[#075E54]/60 dark:text-emerald-400/60 uppercase">
+              <span className="font-['Caveat',cursive] text-[11px] tracking-widest text-emerald-800/60 dark:text-emerald-400/60 uppercase">
                 FREELANCE<br />WITHOUT<br />LIMITS
               </span>
             </div>

@@ -76,7 +76,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
       {/* Calendar Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-[#128C7E] text-white shadow-md shadow-emerald-700/20">
+          <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-700/20">
             <CalendarIcon className="w-5 h-5" />
           </div>
           <div>
@@ -141,7 +141,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                 <span
                   className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${
                     isToday
-                      ? 'bg-[#128C7E] text-white shadow-sm'
+                      ? 'bg-emerald-600 text-white shadow-sm'
                       : cell.isCurrentMonth
                       ? 'text-slate-800 dark:text-slate-200'
                       : 'text-slate-400'

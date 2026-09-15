@@ -150,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-3">
         {/* Live Real-Time Clock Display */}
         <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 text-slate-700 dark:text-slate-300">
-          <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-pulse" />
           <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
             {formattedLiveDate}
           </span>
@@ -164,11 +164,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 shadow-sm animate-pulse-subtle">
             <span className="relative flex h-2.5 w-2.5">
               {activeTimer.isRunning && (
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#25D366] opacity-75" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-whatsapp-light opacity-75" />
               )}
               <span
                 className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                  activeTimer.isRunning ? 'bg-[#25D366]' : 'bg-amber-500'
+                  activeTimer.isRunning ? 'bg-whatsapp-light' : 'bg-amber-500'
                 }`}
               />
             </span>

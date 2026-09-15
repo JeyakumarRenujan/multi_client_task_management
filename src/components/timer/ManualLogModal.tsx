@@ -86,7 +86,7 @@ export const ManualLogModal: React.FC = () => {
         {/* Header */}
         <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#128C7E] text-white shadow-md shadow-emerald-700/20">
+            <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-700/20">
               <Clock className="w-5 h-5" />
             </div>
             <div>
@@ -232,7 +232,7 @@ export const ManualLogModal: React.FC = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white text-xs font-bold shadow-md shadow-emerald-700/25 active:scale-95 transition-all"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white text-xs font-bold shadow-md shadow-emerald-700/25 active:scale-95 transition-all"
           >
             Save Time Entry
           </button>
