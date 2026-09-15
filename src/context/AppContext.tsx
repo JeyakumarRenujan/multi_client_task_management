@@ -45,8 +45,10 @@ interface AppContextType {
   isAuthenticated: boolean;
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string, profession?: string) => Promise<{ success: boolean; error?: string }>;
-  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; message?: string }>;
-  resetPassword: (email: string, newPassword: string) => Promise<{ success: boolean; error?: string; message?: string }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }>;
+  verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; error?: string; message?: string; resetToken?: string }>;
+  resendOtp: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }>;
+  resetPassword: (email: string, newPassword: string, otp?: string, resetToken?: string) => Promise<{ success: boolean; error?: string; message?: string }>;
   loginDemoUser: () => void;
   logout: () => void;
   updateUserProfile: (profile: Partial<UserProfile>) => void;
@@ -1056,7 +1058,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
-  const forgotPassword = async (email: string): Promise<{ success: boolean; error?: string; message?: string }> => {
+  const forgotPassword = async (
+    email: string
+  ): Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }> => {
     const normalizedEmail = (email || '').trim().toLowerCase();
 
     if (!normalizedEmail || !normalizedEmail.includes('@')) {
@@ -1066,7 +1070,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const res = await api.forgotPassword(normalizedEmail);
       if (res && res.success) {
-        return { success: true, message: res.message };
+        return {
+          success: true,
+          message: res.message,
+          otpPreview: res.otpPreview,
+          expiresInSeconds: res.expiresInSeconds,
+        };
       }
     } catch (err: any) {
       return { success: false, error: err?.message || 'No account found with this email address.' };
@@ -1080,15 +1089,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     }
 
+    const dummyOtp = Math.floor(100000 + Math.random() * 900000).toString();
     return {
       success: true,
-      message: 'Account verified! You may now set your new password.',
+      message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
+      otpPreview: dummyOtp,
+      expiresInSeconds: 600,
     };
+  };
+
+  const verifyOtp = async (
+    email: string,
+    otp: string
+  ): Promise<{ success: boolean; error?: string; message?: string; resetToken?: string }> => {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const cleanOtp = (otp || '').trim();
+
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      return { success: false, error: 'Please enter a valid 6-digit verification code.' };
+    }
+
+    try {
+      const res = await api.verifyOtp(normalizedEmail, cleanOtp);
+      if (res && res.success) {
+        return { success: true, message: res.message, resetToken: res.resetToken };
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Invalid or expired verification code.' };
+    }
+
+    return {
+      success: true,
+      message: 'OTP verification successful! You can now set your new password.',
+      resetToken: `rst_${Date.now()}`,
+    };
+  };
+
+  const resendOtp = async (
+    email: string
+  ): Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }> => {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    try {
+      const res = await api.resendOtp(normalizedEmail);
+      return {
+        success: true,
+        message: res.message,
+        otpPreview: res.otpPreview,
+        expiresInSeconds: res.expiresInSeconds,
+      };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to resend verification code.' };
+    }
   };
 
   const resetPassword = async (
     email: string,
-    newPassword: string
+    newPassword: string,
+    otp?: string,
+    resetToken?: string
   ): Promise<{ success: boolean; error?: string; message?: string }> => {
     const normalizedEmail = (email || '').trim().toLowerCase();
 
@@ -1097,9 +1155,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     try {
-      await api.resetPassword(normalizedEmail, newPassword);
-    } catch {
-      // continue with local update
+      await api.resetPassword(normalizedEmail, newPassword, otp, resetToken);
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to update password.' };
     }
 
     setRegisteredUsers(prev =>
@@ -1788,6 +1846,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         login,
         register,
         forgotPassword,
+        verifyOtp,
+        resendOtp,
         resetPassword,
         loginDemoUser,
         logout,

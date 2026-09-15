@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Logo } from '../common/Logo';
@@ -26,10 +26,13 @@ import {
   Check,
   AlertCircle,
   PenTool,
+  RefreshCw,
+  Inbox,
+  Copy,
 } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
-  const { login, register, forgotPassword, resetPassword, loginDemoUser } = useApp();
+  const { login, register, forgotPassword, verifyOtp, resendOtp, resetPassword, loginDemoUser } = useApp();
   const { actualTheme, toggleTheme } = useTheme();
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
 
@@ -45,8 +48,13 @@ export const AuthPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Forgot password 2-step flow state
-  const [forgotStep, setForgotStep] = useState<'email' | 'reset' | 'success'>('email');
+  // Forgot password OTP flow state: 'email' -> 'otp' -> 'reset' -> 'success'
+  const [forgotStep, setForgotStep] = useState<'email' | 'otp' | 'reset' | 'success'>('email');
+  const [otp, setOtp] = useState('');
+  const [otpPreview, setOtpPreview] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -72,6 +80,16 @@ export const AuthPage: React.FC = () => {
     'Other (Specify your own)',
   ];
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown(prev => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
   const resetAllFormStates = (newMode: 'login' | 'register' | 'forgot') => {
     setMode(newMode);
     setError('');
@@ -80,6 +98,10 @@ export const AuthPage: React.FC = () => {
     setConfirmPassword('');
     setNewPassword('');
     setConfirmNewPassword('');
+    setOtp('');
+    setOtpPreview('');
+    setResetToken('');
+    setResendCooldown(0);
     setForgotStep('email');
     setIsLoading(false);
   };
@@ -169,10 +191,57 @@ export const AuthPage: React.FC = () => {
       return;
     }
 
-    setForgotStep('reset');
+    setOtpPreview(res.otpPreview || '');
+    setResendCooldown(60);
+    setForgotStep('otp');
+    setSuccessMessage(`A 6-digit verification code has been sent to ${email}.`);
   };
 
-  const handleForgotStep2Submit = async (e: React.FormEvent) => {
+  const handleForgotStep2OtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    const cleanOtp = otp.trim();
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      setError('Please enter the complete 6-digit verification code.');
+      return;
+    }
+
+    setIsLoading(true);
+    const res = await verifyOtp(email, cleanOtp);
+    setIsLoading(false);
+
+    if (!res.success) {
+      setError(res.error || 'Invalid or expired verification code.');
+      return;
+    }
+
+    setResetToken(res.resetToken || '');
+    setForgotStep('reset');
+    setSuccessMessage('Email verified successfully! You may now set your new password.');
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || isResending) return;
+    setError('');
+    setIsResending(true);
+    const res = await resendOtp(email);
+    setIsResending(false);
+
+    if (!res.success) {
+      setError(res.error || 'Failed to resend code.');
+      return;
+    }
+
+    if (res.otpPreview) {
+      setOtpPreview(res.otpPreview);
+    }
+    setResendCooldown(60);
+    setSuccessMessage('A new 6-digit verification code has been sent to your email.');
+  };
+
+  const handleForgotStep3Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
@@ -188,7 +257,7 @@ export const AuthPage: React.FC = () => {
     }
 
     setIsLoading(true);
-    const res = await resetPassword(email, newPassword);
+    const res = await resetPassword(email, newPassword, otp, resetToken);
     setIsLoading(false);
 
     if (!res.success) {
@@ -421,6 +490,8 @@ export const AuthPage: React.FC = () => {
                       <span>
                         {forgotStep === 'email'
                           ? 'Reset Password'
+                          : forgotStep === 'otp'
+                          ? 'Verify Email OTP'
                           : forgotStep === 'reset'
                           ? 'Set New Password'
                           : 'Password Reset Successful'}
@@ -435,9 +506,11 @@ export const AuthPage: React.FC = () => {
                 <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   {mode === 'forgot'
                     ? forgotStep === 'email'
-                      ? 'Enter your registered email address to verify your account'
+                      ? 'Enter your registered email address to receive a verification code'
+                      : forgotStep === 'otp'
+                      ? `Enter the 6-digit verification code sent to ${email}`
                       : forgotStep === 'reset'
-                      ? 'Enter your new secure password and confirm it below'
+                      ? 'Create and confirm your new secure password below'
                       : 'Your password has been changed. You can now log in.'
                     : mode === 'login'
                     ? 'Enter your email and password to continue'
@@ -723,6 +796,9 @@ export const AuthPage: React.FC = () => {
                             autoFocus
                           />
                         </div>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                          We will send a 6-digit one-time password (OTP) to this email address.
+                        </p>
                       </div>
 
                       <button
@@ -730,26 +806,125 @@ export const AuthPage: React.FC = () => {
                         disabled={isLoading}
                         className="w-full mt-2.5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                       >
-                        <span>{isLoading ? 'Verifying Account...' : 'Verify Email & Proceed'}</span>
+                        <span>{isLoading ? 'Sending Code...' : 'Send Verification Code'}</span>
                         <ArrowRight className="w-4 h-4" />
                       </button>
                     </form>
                   )}
 
-                  {/* Step 2: Set New Password & Confirm */}
-                  {forgotStep === 'reset' && (
-                    <form onSubmit={handleForgotStep2Submit} className="space-y-2.5">
+                  {/* Step 2: Verify 6-Digit OTP */}
+                  {forgotStep === 'otp' && (
+                    <form onSubmit={handleForgotStep2OtpSubmit} className="space-y-3">
+                      {/* Sent-to banner with Change option */}
                       <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                        <div>
-                          Verified Account: <strong>{email}</strong>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span className="truncate">Sent to: <strong>{email}</strong></span>
                         </div>
                         <button
                           type="button"
-                          onClick={() => setForgotStep('email')}
-                          className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 underline cursor-pointer"
+                          onClick={() => {
+                            setForgotStep('email');
+                            setOtp('');
+                            setError('');
+                          }}
+                          className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
                         >
                           Change
                         </button>
+                      </div>
+
+                      {/* Simulated Inbox / Dev Notification Banner */}
+                      {otpPreview && (
+                        <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-emerald-500/10 border border-amber-500/30 dark:border-amber-500/20 text-slate-800 dark:text-slate-200">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                              <Inbox className="w-3.5 h-3.5" />
+                              <span>Simulated Email Notification</span>
+                            </div>
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
+                              Demo Mode
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between pt-1">
+                            <div className="text-[11px] text-slate-600 dark:text-slate-300">
+                              OTP Code: <strong className="font-mono text-emerald-700 dark:text-emerald-400 text-sm tracking-wider">{otpPreview}</strong>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setOtp(otpPreview)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+                            >
+                              <Copy className="w-3 h-3" />
+                              <span>Auto-fill</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* OTP Input Field */}
+                      <div>
+                        <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          6-Digit Verification Code *
+                        </label>
+                        <div className="relative">
+                          <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={6}
+                            value={otp}
+                            onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            placeholder="000000"
+                            className="w-full pl-9 pr-3 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-center text-base sm:text-lg font-mono font-black tracking-[0.35em] text-slate-900 dark:text-slate-100 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                            required
+                            disabled={isLoading}
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+
+                      {/* Resend OTP Bar */}
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>
+                        {resendCooldown > 0 ? (
+                          <span className="text-slate-400 font-medium">
+                            Resend in <strong className="font-mono text-emerald-600 dark:text-emerald-400">{resendCooldown}s</strong>
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleResendOtp}
+                            disabled={isResending}
+                            className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer inline-flex items-center gap-1 disabled:opacity-50"
+                          >
+                            <RefreshCw className={`w-3 h-3 ${isResending ? 'animate-spin' : ''}`} />
+                            <span>Resend Code</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Submit OTP */}
+                      <button
+                        type="submit"
+                        disabled={isLoading || otp.length !== 6}
+                        className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <span>{isLoading ? 'Verifying Code...' : 'Verify Code & Proceed'}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Step 3: Set New Password & Confirm */}
+                  {forgotStep === 'reset' && (
+                    <form onSubmit={handleForgotStep3Submit} className="space-y-2.5">
+                      <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
+                          <span>OTP Verified for <strong>{email}</strong></span>
+                        </div>
                       </div>
 
                       {/* Password & Confirm in 2 columns */}
@@ -833,7 +1008,7 @@ export const AuthPage: React.FC = () => {
                     </form>
                   )}
 
-                  {/* Step 3: Success View */}
+                  {/* Step 4: Success View */}
                   {forgotStep === 'success' && (
                     <div className="space-y-3 text-center py-2">
                       <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-[#25D366] flex items-center justify-center mx-auto shadow-inner">
@@ -851,9 +1026,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          setMode('login');
-                          setPassword('');
-                          setError('');
+                          resetAllFormStates('login');
                         }}
                         className="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] hover:from-emerald-700 hover:to-[#075E54] text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2"
                       >

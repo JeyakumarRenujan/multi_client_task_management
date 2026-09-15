@@ -45,15 +45,39 @@ export const api = {
     }),
 
   forgotPassword: (email: string) =>
-    fetchJson<{ success: boolean; message: string; email: string }>('/auth/forgot-password', {
+    fetchJson<{
+      success: boolean;
+      message: string;
+      email: string;
+      otpPreview?: string;
+      expiresInSeconds?: number;
+    }>('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     }),
 
-  resetPassword: (email: string, newPassword: string) =>
+  verifyOtp: (email: string, otp: string) =>
+    fetchJson<{ success: boolean; message: string; email: string; resetToken?: string }>('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    }),
+
+  resendOtp: (email: string) =>
+    fetchJson<{
+      success: boolean;
+      message: string;
+      email: string;
+      otpPreview?: string;
+      expiresInSeconds?: number;
+    }>('/auth/resend-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (email: string, newPassword: string, otp?: string, resetToken?: string) =>
     fetchJson<{ success: boolean; message: string }>('/auth/reset-password', {
       method: 'POST',
-      body: JSON.stringify({ email, newPassword }),
+      body: JSON.stringify({ email, newPassword, otp, resetToken }),
     }),
 
   getCurrentUser: () => fetchJson<{ user: UserProfile | null }>('/auth/me'),
