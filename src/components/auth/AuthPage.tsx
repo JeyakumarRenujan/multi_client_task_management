@@ -81,7 +81,7 @@ export const AuthPage: React.FC = () => {
   ];
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setInterval>;
     if (resendCooldown > 0) {
       timer = setInterval(() => {
         setResendCooldown(prev => (prev > 0 ? prev - 1 : 0));

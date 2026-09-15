@@ -128,8 +128,9 @@ async function runAuthTestSuite() {
     }
   });
 
-  // --- Test 7: Forgot Password Verification for Registered Account ---
-  await test('Verify registered email in Step 1 of Forgot Password (Expects 200)', async () => {
+  // --- Test 7: Forgot Password OTP Generation for Registered Account ---
+  let generatedOtp = '';
+  await test('Generate 6-digit OTP in Step 1 of Forgot Password (Expects 200 & OTP code)', async () => {
     const res = await fetch(`${BASE}/auth/forgot-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -137,11 +138,28 @@ async function runAuthTestSuite() {
     });
     if (res.status !== 200) throw new Error(`Expected HTTP 200, got ${res.status}`);
     const data = await res.json();
-    if (!data.success) throw new Error('Failed to verify registered email');
+    if (!data.success || !data.otpPreview || data.otpPreview.length !== 6) {
+      throw new Error(`Invalid OTP generation response: ${JSON.stringify(data)}`);
+    }
+    generatedOtp = data.otpPreview;
   });
 
-  // --- Test 8: Reset Password with New Password ---
-  await test('Reset password to new value in Step 2 of Forgot Password (Expects 200)', async () => {
+  // --- Test 8: Rate-limit immediate OTP resend request within cooldown window (Expects 429) ---
+  await test('Rate-limit immediate OTP resend request within cooldown window (Expects 429)', async () => {
+    const res = await fetch(`${BASE}/auth/resend-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: dynamicTestEmail }),
+    });
+    if (res.status !== 429) throw new Error(`Expected HTTP 429, got ${res.status}`);
+    const data = await res.json();
+    if (!data.error || !data.error.includes('Please wait')) {
+      throw new Error(`Unexpected error message: ${data.error}`);
+    }
+  });
+
+  // --- Test 9: Block Password Reset without OTP Verification ---
+  await test('Reject password reset without verified OTP (Expects 403 Forbidden)', async () => {
     const res = await fetch(`${BASE}/auth/reset-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -150,12 +168,62 @@ async function runAuthTestSuite() {
         newPassword: 'BrandNewUpdatedPassword2026!',
       }),
     });
+    if (res.status !== 403) throw new Error(`Expected HTTP 403, got ${res.status}`);
+    const data = await res.json();
+    if (!data.error || !data.error.includes('OTP verification required')) {
+      throw new Error(`Unexpected error message: ${data.error}`);
+    }
+  });
+
+  // --- Test 9: Reject Invalid OTP Code ---
+  await test('Reject invalid OTP verification code (Expects 400 Bad Request)', async () => {
+    const wrongOtp = generatedOtp === '111111' ? '222222' : '111111';
+    const res = await fetch(`${BASE}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: dynamicTestEmail, otp: wrongOtp }),
+    });
+    if (res.status !== 400) throw new Error(`Expected HTTP 400, got ${res.status}`);
+    const data = await res.json();
+    if (!data.error || !data.error.includes('Invalid verification code')) {
+      throw new Error(`Unexpected error message: ${data.error}`);
+    }
+  });
+
+  // --- Test 10: Verify Valid OTP Code ---
+  let receivedResetToken = '';
+  await test('Successfully verify valid 6-digit OTP code (Expects 200 & resetToken)', async () => {
+    const res = await fetch(`${BASE}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: dynamicTestEmail, otp: generatedOtp }),
+    });
+    if (res.status !== 200) throw new Error(`Expected HTTP 200, got ${res.status}`);
+    const data = await res.json();
+    if (!data.success || !data.resetToken) {
+      throw new Error(`Expected resetToken in response, got: ${JSON.stringify(data)}`);
+    }
+    receivedResetToken = data.resetToken;
+  });
+
+  // --- Test 11: Reset Password with Verified OTP & Token ---
+  await test('Reset password to new value after OTP verification (Expects 200)', async () => {
+    const res = await fetch(`${BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: dynamicTestEmail,
+        newPassword: 'BrandNewUpdatedPassword2026!',
+        otp: generatedOtp,
+        resetToken: receivedResetToken,
+      }),
+    });
     if (res.status !== 200) throw new Error(`Expected HTTP 200, got ${res.status}`);
     const data = await res.json();
     if (!data.success) throw new Error('Password reset failed');
   });
 
-  // --- Test 9: Login with Newly Reset Password ---
+  // --- Test 12: Login with Newly Reset Password ---
   await test('Immediate login with newly reset password (Expects 200)', async () => {
     const res = await fetch(`${BASE}/auth/login`, {
       method: 'POST',
@@ -172,7 +240,7 @@ async function runAuthTestSuite() {
     }
   });
 
-  // --- Test 10: Old Password No Longer Works ---
+  // --- Test 13: Old Password No Longer Works ---
   await test('Verify old password is invalidated after reset (Expects 401)', async () => {
     const res = await fetch(`${BASE}/auth/login`, {
       method: 'POST',
