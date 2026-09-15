@@ -7,6 +7,10 @@ import {
   Camera,
   Upload,
   Check,
+  Palette,
+  Sun,
+  Moon,
+  Layout,
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -14,6 +18,8 @@ export const SettingsView: React.FC = () => {
     user,
     updateUserProfile,
   } = useApp();
+
+  const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme } = useTheme();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -257,6 +263,177 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* Appearance & Navigation Customization */}
+      <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-6">
+        <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-700/20">
+            <Palette className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+              Appearance &amp; Navigation Styling
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Personalize colors, contrast, and left sidebar appearance to reduce glare and differentiate workspaces
+            </p>
+          </div>
+        </div>
+
+        {/* Global Color Theme Toggle */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
+            Color Scheme
+          </label>
+          <div className="grid grid-cols-3 gap-3 max-w-md">
+            <button
+              type="button"
+              onClick={() => setTheme('light')}
+              className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-2 cursor-pointer ${
+                theme === 'light'
+                  ? 'border-emerald-500 bg-emerald-50/50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold ring-2 ring-emerald-500/20 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <Sun className="w-4 h-4 text-amber-500" />
+              <span className="text-xs font-semibold">Light Mode</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme('dark')}
+              className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-2 cursor-pointer ${
+                theme === 'dark'
+                  ? 'border-emerald-500 bg-emerald-50/50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold ring-2 ring-emerald-500/20 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <Moon className="w-4 h-4 text-indigo-400" />
+              <span className="text-xs font-semibold">Dark Mode</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme('system')}
+              className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-2 cursor-pointer ${
+                theme === 'system'
+                  ? 'border-emerald-500 bg-emerald-50/50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold ring-2 ring-emerald-500/20 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-slate-300'
+              }`}
+            >
+              <Layout className="w-4 h-4 text-slate-500" />
+              <span className="text-xs font-semibold">System Auto</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Left Sidebar Contrast & Color Mode */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Left Navigation Bar Style (Light Theme)
+              </label>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Choose a distinct tone for the left sidebar so it doesn't blend into the white content area
+              </p>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+              HCI Heuristic #7
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+            {/* Slate (Default) */}
+            <button
+              type="button"
+              onClick={() => setSidebarTheme('slate')}
+              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                sidebarTheme === 'slate'
+                  ? 'border-emerald-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-4 h-4 rounded-full bg-[#eef2f6] border border-slate-300 shadow-2xs" />
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Cool Slate</span>
+                {sidebarTheme === 'slate' && (
+                  <span className="ml-auto text-[10px] font-bold text-emerald-600">Active</span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                Modern soft blue-gray tone. Differentiates sidebar without strong contrast.
+              </p>
+            </button>
+
+            {/* Soft Sage */}
+            <button
+              type="button"
+              onClick={() => setSidebarTheme('sage')}
+              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                sidebarTheme === 'sage'
+                  ? 'border-emerald-500 bg-emerald-50/40 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-4 h-4 rounded-full bg-[#edf6f2] border border-emerald-300 shadow-2xs" />
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Soft Sage</span>
+                {sidebarTheme === 'sage' && (
+                  <span className="ml-auto text-[10px] font-bold text-emerald-600">Active</span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                Branded subtle teal/mint tint. Pairs harmoniously with emerald accents.
+              </p>
+            </button>
+
+            {/* Deep Slate (High Contrast) */}
+            <button
+              type="button"
+              onClick={() => setSidebarTheme('dark')}
+              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                sidebarTheme === 'dark'
+                  ? 'border-emerald-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-4 h-4 rounded-full bg-slate-900 border border-slate-700 shadow-2xs" />
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Deep Slate</span>
+                {sidebarTheme === 'dark' && (
+                  <span className="ml-auto text-[10px] font-bold text-emerald-600">Active</span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                High contrast dark sidebar in light mode (Slack &amp; Stripe style).
+              </p>
+            </button>
+
+            {/* Classic White */}
+            <button
+              type="button"
+              onClick={() => setSidebarTheme('white')}
+              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                sidebarTheme === 'white'
+                  ? 'border-emerald-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-4 h-4 rounded-full bg-white border border-slate-200 shadow-2xs" />
+                <span className="text-xs font-bold text-slate-900 dark:text-white">Classic White</span>
+                {sidebarTheme === 'white' && (
+                  <span className="ml-auto text-[10px] font-bold text-emerald-600">Active</span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                Monochrome minimal all-white clean aesthetic.
+              </p>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Notifications & Sound Settings */}
       <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">

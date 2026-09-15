@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { useTheme, SidebarTheme } from '../../context/ThemeContext';
 import {
   LayoutDashboard,
   Users,
@@ -28,6 +29,86 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     invoices,
     setIsAiModalOpen,
   } = useApp();
+
+  const { actualTheme, sidebarTheme, setSidebarTheme } = useTheme();
+  const isDark = actualTheme === 'dark';
+
+  // Dynamic classes based on theme & sidebar style
+  const getSidebarContainerClass = () => {
+    if (isDark) {
+      return 'bg-slate-900/95 border-r border-slate-800/80 text-slate-100 shadow-sm';
+    }
+
+    switch (sidebarTheme) {
+      case 'sage':
+        return 'bg-[#edf6f2] border-r border-emerald-200/90 text-slate-900 shadow-[2px_0_10px_-2px_rgba(18,140,126,0.08)]';
+      case 'dark':
+        return 'bg-slate-900 border-r border-slate-800 text-slate-100 shadow-xl';
+      case 'white':
+        return 'bg-white/95 border-r border-slate-200/80 text-slate-900 shadow-sm';
+      case 'slate':
+      default:
+        return 'bg-[#eef2f6] border-r border-slate-200 text-slate-900 shadow-[2px_0_10px_-2px_rgba(0,0,0,0.05)]';
+    }
+  };
+
+  const getInactiveNavClass = () => {
+    if (isDark) {
+      return 'text-slate-300 hover:bg-slate-800/70 hover:text-white border border-transparent';
+    }
+
+    switch (sidebarTheme) {
+      case 'sage':
+        return 'text-slate-700 hover:bg-white hover:text-emerald-800 hover:shadow-2xs border border-transparent hover:border-emerald-200/70';
+      case 'dark':
+        return 'text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent';
+      case 'white':
+        return 'text-slate-600 hover:bg-emerald-50/70 hover:text-emerald-800 border border-transparent';
+      case 'slate':
+      default:
+        return 'text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-2xs border border-transparent hover:border-slate-200/80';
+    }
+  };
+
+  const getSectionHeaderClass = () => {
+    if (isDark || sidebarTheme === 'dark') return 'text-slate-400';
+    if (sidebarTheme === 'sage') return 'text-emerald-800/70';
+    return 'text-slate-500';
+  };
+
+  const getAiCardClass = () => {
+    if (isDark) {
+      return 'bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border-emerald-800/40 text-slate-200 hover:border-emerald-600';
+    }
+    switch (sidebarTheme) {
+      case 'sage':
+        return 'bg-white border-emerald-300/80 text-slate-800 shadow-2xs hover:border-emerald-500 hover:shadow-xs';
+      case 'dark':
+        return 'bg-slate-800/80 border-slate-700 text-slate-200 hover:border-emerald-500';
+      case 'white':
+        return 'bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border-emerald-200/50 text-slate-800 hover:border-emerald-400';
+      case 'slate':
+      default:
+        return 'bg-white border-emerald-200/90 text-slate-800 shadow-2xs hover:border-emerald-400 hover:shadow-xs';
+    }
+  };
+
+  const getBottomCardClass = () => {
+    if (isDark) {
+      return 'bg-slate-800/50 border-slate-700/60 text-slate-100';
+    }
+    switch (sidebarTheme) {
+      case 'sage':
+        return 'bg-white border-emerald-200 text-slate-900 shadow-2xs';
+      case 'dark':
+        return 'bg-slate-800/70 border-slate-700 text-slate-100';
+      case 'white':
+        return 'bg-emerald-50/60 border-emerald-100 text-slate-900';
+      case 'slate':
+      default:
+        return 'bg-white border-slate-200 text-slate-900 shadow-2xs';
+    }
+  };
 
   const activeProjectsCount = projects.filter(p => p.status === 'in-progress').length;
   const pendingTasksCount = tasks.filter(t => t.status !== 'done').length;
@@ -104,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
       {/* Fixed Left Sidebar Container */}
       <aside
-        className={`fixed lg:sticky top-0 lg:top-0 bottom-0 left-0 z-40 w-64 h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-r border-slate-200/80 dark:border-slate-800/80 flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-sm shrink-0 select-none ${
+        className={`fixed lg:sticky top-0 lg:top-0 bottom-0 left-0 z-40 w-64 h-full backdrop-blur-lg flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 select-none ${getSidebarContainerClass()} ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -112,7 +193,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
         <div className="p-4 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           {/* Main Navigation */}
           <div>
-            <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-3 mb-2">
+            <div className={`text-[10px] font-extrabold uppercase tracking-wider px-3 mb-2 transition-colors ${getSectionHeaderClass()}`}>
               Workspace
             </div>
             <nav className="space-y-1">
@@ -126,13 +207,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
                       isActive
                         ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-[#128C7E] text-white shadow-md shadow-emerald-700/20'
-                        : 'text-slate-600 dark:text-slate-300 hover:bg-emerald-50/70 dark:hover:bg-slate-800/60 hover:text-emerald-800 dark:hover:text-white'
+                        : getInactiveNavClass()
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon
                         className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                          isActive ? 'text-white' : 'text-slate-400 group-hover:text-emerald-600'
+                          isActive
+                            ? 'text-white'
+                            : isDark || sidebarTheme === 'dark'
+                            ? 'text-slate-400 group-hover:text-emerald-400'
+                            : 'text-slate-500 group-hover:text-emerald-600'
                         }`}
                       />
                       <span>{item.label}</span>
@@ -155,7 +240,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
           {/* Quick AI Section */}
           <div>
-            <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 px-3 mb-2">
+            <div className={`text-[10px] font-extrabold uppercase tracking-wider px-3 mb-2 transition-colors ${getSectionHeaderClass()}`}>
               Smart Assistant
             </div>
             <div className="space-y-1.5">
@@ -164,20 +249,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                   setIsAiModalOpen(true);
                   onCloseMobile();
                 }}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border border-emerald-200/50 dark:border-emerald-800/40 text-slate-800 dark:text-slate-200 hover:border-emerald-400 dark:hover:border-emerald-600 transition-all text-left group cursor-pointer"
+                className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all text-left group cursor-pointer ${getAiCardClass()}`}
               >
                 <div className="flex items-center gap-2.5">
                   <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                    <div className={`text-xs font-bold flex items-center gap-1 ${
+                      isDark || sidebarTheme === 'dark' ? 'text-white' : 'text-slate-900'
+                    }`}>
                       AI Copilot
                       <span className="text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded-full font-bold">
                         Smart
                       </span>
                     </div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                    <div className={`text-[10px] ${
+                      isDark || sidebarTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                    }`}>
                       Chat with AI Advisor
                     </div>
                   </div>
@@ -188,19 +277,74 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
           </div>
         </div>
 
-        {/* Bottom Status Card */}
-        <div className="p-4 border-t border-slate-200/80 dark:border-slate-800/80 shrink-0">
-          <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-slate-800/50 border border-emerald-100 dark:border-slate-700/60 flex items-center gap-3">
+        {/* Bottom Status Card & Sidebar Color Switcher */}
+        <div className={`p-4 border-t shrink-0 ${
+          isDark || sidebarTheme === 'dark' ? 'border-slate-800' : 'border-slate-200/80'
+        }`}>
+          <div className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${getBottomCardClass()}`}>
             <div className="p-2 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <div className="text-[11px] font-bold text-slate-900 dark:text-slate-100">
+              <div className={`text-[11px] font-bold ${
+                isDark || sidebarTheme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+              }`}>
                 Weekly Efficiency
               </div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400">
+              <div className={`text-[10px] ${
+                isDark || sidebarTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+              }`}>
                 85% tasks on track
               </div>
+            </div>
+          </div>
+
+          {/* Real-Time Sidebar Color Customizer */}
+          <div className="mt-3 pt-2.5 flex items-center justify-between px-1">
+            <span className={`text-[10px] font-bold uppercase tracking-wider ${getSectionHeaderClass()}`}>
+              Sidebar Style
+            </span>
+            <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Sidebar style">
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('slate')}
+                title="Cool Slate (Default - Modern gray)"
+                className={`w-4 h-4 rounded-full bg-[#eef2f6] border ${
+                  sidebarTheme === 'slate'
+                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-slate-400 scale-110'
+                    : 'border-slate-300'
+                } cursor-pointer transition-all hover:scale-125`}
+              />
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('sage')}
+                title="Soft Sage (Teal/Mint tint)"
+                className={`w-4 h-4 rounded-full bg-[#edf6f2] border ${
+                  sidebarTheme === 'sage'
+                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-emerald-500 scale-110'
+                    : 'border-emerald-300'
+                } cursor-pointer transition-all hover:scale-125`}
+              />
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('dark')}
+                title="Deep Slate (High contrast dark sidebar)"
+                className={`w-4 h-4 rounded-full bg-slate-900 border ${
+                  sidebarTheme === 'dark'
+                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-slate-600 scale-110'
+                    : 'border-slate-700'
+                } cursor-pointer transition-all hover:scale-125`}
+              />
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('white')}
+                title="Classic White"
+                className={`w-4 h-4 rounded-full bg-white border ${
+                  sidebarTheme === 'white'
+                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-slate-400 scale-110'
+                    : 'border-slate-200'
+                } cursor-pointer transition-all hover:scale-125`}
+              />
             </div>
           </div>
         </div>

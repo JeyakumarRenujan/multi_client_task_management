@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type Theme = 'light' | 'dark' | 'system';
+export type SidebarTheme = 'slate' | 'sage' | 'dark' | 'white';
 
 interface ThemeContextType {
   theme: Theme;
   actualTheme: 'light' | 'dark';
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
+  sidebarTheme: SidebarTheme;
+  setSidebarTheme: (theme: SidebarTheme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -30,6 +33,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
     return theme;
   });
+
+  const [sidebarTheme, setSidebarThemeState] = useState<SidebarTheme>(() => {
+    const saved = localStorage.getItem('meplus_sidebar_theme') as SidebarTheme;
+    if (saved === 'slate' || saved === 'sage' || saved === 'dark' || saved === 'white') return saved;
+    return 'slate'; // Default is modern distinguished slate!
+  });
+
+  const setSidebarTheme = (newTheme: SidebarTheme) => {
+    setSidebarThemeState(newTheme);
+    localStorage.setItem('meplus_sidebar_theme', newTheme);
+  };
 
   // Listen to OS/PC theme changes and apply to DOM
   useEffect(() => {
@@ -81,7 +95,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, actualTheme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        actualTheme,
+        toggleTheme,
+        setTheme,
+        sidebarTheme,
+        setSidebarTheme,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
