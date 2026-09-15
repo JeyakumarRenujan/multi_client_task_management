@@ -657,30 +657,252 @@ app.delete('/api/notifications', (req, res) => {
   res.json({ success: true });
 });
 
-// --- AI Chat Endpoint ---
-app.post('/api/ai/chat', (req, res) => {
-  const { message } = req.body;
-  const query = (message || '').toLowerCase();
+// --- AI Helpers ---
+function generateSmartFallback(message, req) {
+  const q = (message || '').toLowerCase();
+  const userId = getReqUserId(req);
+  const projects = getCollection('projects', userId);
+  const clients = getCollection('clients', userId);
+  const tasks = getCollection('tasks', userId);
+  const pending = tasks.filter(t => t.status !== 'done').length;
+  const clientNames = clients.map(c => c.company || c.name).slice(0, 5).join(', ');
 
-  let reply = "Here is my advice based on your current active workspace:";
-
-  if (query.includes('price') || query.includes('rate') || query.includes('how much') || query.includes('quote')) {
-    reply = "💡 **Pricing & Rate Strategy**:\n• Consider value-based pricing rather than strict hourly billing for milestones with high client impact.\n• For new projects, provide 3 tiered packages (Basic, Recommended, Premium) to anchor client expectations and maximize budget.";
-  } else if (query.includes('email') || query.includes('follow up') || query.includes('invoice') || query.includes('overdue')) {
-    reply = "📧 **Polite Payment Follow-up Draft**:\n\n*Hi [Client Name],*\n*Hope you're having a productive week! Just following up on invoice #[Number] sent on [Date]. Please let me know if you need any additional invoice copies or wire details.*";
-  } else if (query.includes('scope') || query.includes('extra') || query.includes('change')) {
-    reply = "🛡️ **Handling Scope Creep**:\n• Acknowledge the request positively: *'I love this idea and it will definitely improve the project!'*\n• Present clear timeline & budget addendum: *'Since this is beyond our initial milestone scope, this addition will require approx 5 hours ($350) and 2 days extension.'*";
-  } else if (query.includes('summary') || query.includes('status') || query.includes('overview') || query.includes('work')) {
-    const userId = getReqUserId(req);
-    const projects = getCollection('projects', userId);
-    const tasks = getCollection('tasks', userId);
-    const pending = tasks.filter(t => t.status !== 'done').length;
-    reply = `📊 **Workspace Status Summary**:\n• You currently have **${projects.length} active projects**.\n• **${pending} tasks** are in your pipeline.\n• Keep up the momentum! Organize your client milestones and prioritize urgent tasks.`;
-  } else {
-    reply = `🤖 **Me Plus AI Advisor**:\nI am here to help you manage clients, draft professional communications, negotiate milestone changes, and organize tasks. How can I assist you with your project today?`;
+  if (q.includes('price') || q.includes('rate') || q.includes('how much') || q.includes('quote') || q.includes('increase')) {
+    return `### 💡 Strategy for Hourly Rate & Pricing:\n\n1. **Give Advance Notice**: Provide 30 to 45 days notice before applying new rates.\n2. **Emphasize Value & Growth**: Highlight your increased speed, reliability, and expanded capabilities.\n3. **Grandfathering Options**: Offer existing clients a transitional period or retainer discount.\n\n**Sample Template to Client:**\n> *"Hi [Client Name], as I continue to expand my tools and capabilities, my standard rate will update starting next month. Because I deeply appreciate our collaboration, all ongoing projects and pre-booked hours will be honored at our current rate through next month. Looking forward to our continued success!"*`;
+  }
+  if (q.includes('email') || q.includes('follow up') || q.includes('invoice') || q.includes('overdue') || q.includes('unpaid')) {
+    return `### 📧 Overdue Invoice Follow-Up Draft:\n\n**Subject:** *Follow-up: Invoice status for [Project Name]*\n\n> *"Hi [Client Name],\n>\n> I hope you are having a productive week!\n>\n> I am reaching out to check on the status of invoice **#INV-2026-X**, which was due recently. Please let me know if your accounts team requires any additional documentation or updated bank details to process this.\n>\n> Thank you for your prompt attention!\n>\n> Best regards,\n> Freelancer*"*`;
+  }
+  if (q.includes('scope') || q.includes('extra') || q.includes('creep') || q.includes('change')) {
+    return `### 🛡️ Managing Scope Creep with Grace:\n\nWhen a client asks for tasks outside the agreed milestone, **never say a flat 'No'**—say **'Yes, and here is how we can budget it'**:\n\n**Recommended Response Template:**\n> *"Hi [Client Name],\n>\n> That is a fantastic feature idea and would certainly elevate the project!\n>\n> Since this falls outside our original milestone deliverables, I can create a quick add-on scope estimate for you (approx. 5–8 hours). We can either:\n> 1. Add it to our current sprint as Phase 2, or\n> 2. Swap out an existing lower-priority task from this sprint to keep the launch date on track.\n>\n> Let me know which approach you prefer!"*`;
+  }
+  if (q.includes('pitch') || q.includes('proposal') || q.includes('new client') || q.includes('win client')) {
+    return `### 🎯 High-Converting Client Pitch Template:\n\n**Subject:** *Partnering on [Client Company]'s UI & Web Product Growth*\n\n> *"Hi [Client Name],\n>\n> I’ve been following [Client Company]'s recent developments and was very impressed with your latest release.\n>\n> As an independent specialist, I help teams build fast, clean, and high-converting digital products.\n>\n> I’d love to share 2 quick ideas on how we can optimize your upcoming roadmap. Do you have 15 minutes for a quick introductory chat next Tuesday?\n>\n> Best regards*"*`;
+  }
+  if (q.includes('summary') || q.includes('status') || q.includes('overview') || q.includes('work') || q.includes('dashboard') || q.includes('client') || q.includes('project')) {
+    return `### 📊 Workspace Overview:\n\n• **Active Clients (${clients.length})**: ${clientNames || 'None yet'}\n• **Projects (${projects.length})**: ${projects.map(p => p.title).slice(0, 5).join(', ') || 'None yet'}\n• **Pending Tasks**: **${pending} tasks** remaining across all boards.\n\n**Freelancer Productivity Recommendation:** Focus on high-priority deadlines first, track every hour with the live stopwatch, and keep client communication transparent with weekly digest emails.`;
   }
 
-  res.json({ reply });
+  return `### 🤖 Me Plus AI Freelancer Advisor:\n\nRegarding **"${message}"**:\n\nHere are the top best practices to apply:\n\n1. **Clear Expectations & Deliverables**: Set defined milestones and delivery criteria so both you and the client are aligned.\n2. **Time-Boxing & Focus**: Track your focused sprint sessions using the built-in live stopwatch to accurately capture billable hours.\n3. **Proactive Updates**: Share quick progress notes every 48–72 hours to build client trust and eliminate anxiety.\n\n*Tip: Connect your Google Gemini (Free) or OpenAI ChatGPT account in AI Settings to chat with full live generative intelligence!*`;
+}
+
+// --- AI Test Connection Endpoint ---
+app.post('/api/ai/test-connection', async (req, res) => {
+  const { provider, apiKey, model } = req.body || {};
+
+  if (!apiKey || !apiKey.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: `Please provide a valid ${provider === 'gemini' ? 'Google Gemini' : 'OpenAI'} API key.`,
+    });
+  }
+
+  const cleanKey = apiKey.trim();
+  const startTime = Date.now();
+
+  try {
+    if (provider === 'gemini') {
+      const targetModel = model || 'gemini-1.5-flash';
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${cleanKey}`;
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: 'Respond with OK' }] }],
+          generationConfig: { maxOutputTokens: 5 },
+        }),
+      });
+
+      const latencyMs = Date.now() - startTime;
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const msg = errData.error?.message || `Gemini API returned status ${response.status}`;
+        return res.status(400).json({ success: false, message: msg });
+      }
+
+      return res.json({
+        success: true,
+        message: `Connected to Google Gemini (${targetModel}) successfully!`,
+        latencyMs,
+      });
+    } else if (provider === 'openai') {
+      const targetModel = model || 'gpt-4o-mini';
+      const endpoint = 'https://api.openai.com/v1/chat/completions';
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${cleanKey}`,
+        },
+        body: JSON.stringify({
+          model: targetModel,
+          messages: [{ role: 'user', content: 'Say OK' }],
+          max_tokens: 5,
+        }),
+      });
+
+      const latencyMs = Date.now() - startTime;
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        const msg = errData.error?.message || `OpenAI API returned status ${response.status}`;
+        return res.status(400).json({ success: false, message: msg });
+      }
+
+      return res.json({
+        success: true,
+        message: `Connected to OpenAI (${targetModel}) successfully!`,
+        latencyMs,
+      });
+    } else {
+      return res.json({
+        success: true,
+        message: 'Built-in Freelance Copilot is active and ready (no key required).',
+        latencyMs: 12,
+      });
+    }
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Unable to connect to AI provider.',
+    });
+  }
+});
+
+// --- AI Chat Endpoint ---
+app.post('/api/ai/chat', async (req, res) => {
+  const {
+    message,
+    history = [],
+    provider = 'builtin',
+    apiKey,
+    model,
+    workspaceContext = '',
+    customInstructions = '',
+  } = req.body || {};
+
+  const query = (message || '').trim();
+  if (!query) {
+    return res.status(400).json({ error: 'Message cannot be empty.' });
+  }
+
+  // 1. Google Gemini
+  if (provider === 'gemini' && apiKey && apiKey.trim()) {
+    try {
+      const targetModel = model || 'gemini-1.5-flash';
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey.trim()}`;
+
+      const systemPrompt = `You are the Me Plus AI Copilot, a top-tier business, client communication, and freelance strategist.
+LIVE WORKSPACE CONTEXT:
+${workspaceContext || 'Freelancer task & client management platform.'}
+
+GUIDELINES:
+- Be concise, practical, empowering, and polite.
+- Help draft emails, invoices, rate increases, manage scope creep, and organize milestones.
+- Format responses cleanly with markdown bolding, bullet points, and quotes.
+${customInstructions ? `\nCUSTOM INSTRUCTIONS:\n${customInstructions}` : ''}`;
+
+      const contents = [
+        ...history.slice(-8).map(h => ({
+          role: h.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: h.content || h.text || '' }],
+        })),
+        { role: 'user', parts: [{ text: query }] },
+      ];
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `Gemini API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        return res.json({ reply: text, provider: 'gemini', model: targetModel });
+      }
+    } catch (err) {
+      console.warn('Gemini API call failed, falling back to smart reply:', err.message);
+      return res.json({
+        reply: `⚠️ **Google Gemini Notice**: ${err.message}\n\n*Falling back to built-in advisor:*\n\n${generateSmartFallback(query, req)}`,
+        provider: 'builtin',
+        model: 'builtin',
+      });
+    }
+  }
+
+  // 2. OpenAI ChatGPT
+  if (provider === 'openai' && apiKey && apiKey.trim()) {
+    try {
+      const targetModel = model || 'gpt-4o-mini';
+      const endpoint = 'https://api.openai.com/v1/chat/completions';
+
+      const systemPrompt = `You are the Me Plus AI Copilot, a top-tier business, client communication, and freelance strategist.
+LIVE WORKSPACE CONTEXT:
+${workspaceContext || 'Freelancer task & client management platform.'}
+
+GUIDELINES:
+- Be concise, practical, empowering, and polite.
+- Help draft emails, invoices, rate increases, manage scope creep, and organize milestones.
+- Format responses cleanly with markdown bolding, bullet points, and quotes.
+${customInstructions ? `\nCUSTOM INSTRUCTIONS:\n${customInstructions}` : ''}`;
+
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        ...history.slice(-8).map(h => ({
+          role: h.role === 'model' ? 'assistant' : (h.role || 'user'),
+          content: h.content || h.text || '',
+        })),
+        { role: 'user', content: query },
+      ];
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey.trim()}`,
+        },
+        body: JSON.stringify({
+          model: targetModel,
+          messages,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `OpenAI API returned ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (text) {
+        return res.json({ reply: text, provider: 'openai', model: targetModel });
+      }
+    } catch (err) {
+      console.warn('OpenAI API call failed, falling back to smart reply:', err.message);
+      return res.json({
+        reply: `⚠️ **OpenAI Notice**: ${err.message}\n\n*Falling back to built-in advisor:*\n\n${generateSmartFallback(query, req)}`,
+        provider: 'builtin',
+        model: 'builtin',
+      });
+    }
+  }
+
+  // 3. Built-in Smart Advisor
+  return res.json({
+    reply: generateSmartFallback(query, req),
+    provider: 'builtin',
+    model: 'builtin',
+  });
 });
 
 // --- Reset Data Endpoint ---

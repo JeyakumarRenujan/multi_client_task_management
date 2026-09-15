@@ -456,7 +456,20 @@
         "sound": true,
         "deadlineReminderHours": 24
       },
-      "userId": "usr_renujanrenu5_gmail_com"
+      "userId": "usr_renujanrenu5_gmail_com",
+      "idleSettings": {
+        "enabled": true,
+        "timeoutMinutes": 2,
+        "style": "zen"
+      },
+      "aiSettings": {
+        "provider": "builtin",
+        "geminiApiKey": "",
+        "geminiModel": "gemini-1.5-flash",
+        "openaiApiKey": "",
+        "openaiModel": "gpt-4o-mini",
+        "customInstructions": "renujan"
+      }
     },
     {
       "id": "usr_freelancer_1789393598156_example_com",
@@ -1339,26 +1352,120 @@
         "sound": true,
         "deadlineReminderHours": 24
       }
+    },
+    {
+      "id": "usr_freelancer_1789473438909_example_com",
+      "name": "Jordan Lee",
+      "email": "freelancer_1789473438909@example.com",
+      "password": "BrandNewUpdatedPassword2026!",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256",
+      "title": "3D Motion & VFX Designer",
+      "hourlyRate": 65,
+      "currency": "$",
+      "bio": "Freelancer specializing in 3D Motion & VFX Designer.",
+      "notificationSettings": {
+        "email": true,
+        "sms": true,
+        "browser": true,
+        "sound": true,
+        "deadlineReminderHours": 24
+      }
+    },
+    {
+      "id": "usr_persistent_1789473439125_example_com",
+      "name": "Persistent User",
+      "email": "persistent_1789473439125@example.com",
+      "password": "PersistPassword2026!",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256",
+      "title": "UI/UX Freelancer",
+      "hourlyRate": 65,
+      "currency": "$",
+      "bio": "Freelancer specializing in UI/UX Freelancer.",
+      "notificationSettings": {
+        "email": true,
+        "sms": true,
+        "browser": true,
+        "sound": true,
+        "deadlineReminderHours": 24
+      }
+    },
+    {
+      "id": "usr_avatar_1789473439229_example_com",
+      "name": "Avatar Test User",
+      "email": "avatar_1789473439229@example.com",
+      "password": "AvatarPassword2026!",
+      "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkWP+/HgAEtAH5s+OuvwAAAABJRU5ErkJggg==",
+      "title": "Motion Designer",
+      "hourlyRate": 65,
+      "currency": "$",
+      "bio": "Updated custom bio for freelancer.",
+      "notificationSettings": {
+        "email": true,
+        "sms": true,
+        "browser": true,
+        "sound": true,
+        "deadlineReminderHours": 24
+      }
     }
   ],
   "user": {
-    "id": "usr_avatar_1789454560515_example_com",
-    "name": "Avatar Test User",
-    "email": "avatar_1789454560515@example.com",
-    "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkWP+/HgAEtAH5s+OuvwAAAABJRU5ErkJggg==",
-    "title": "Motion Designer",
+    "id": "usr_renujanrenu5_gmail_com",
+    "name": "max",
+    "email": "renujanrenu5@gmail.com",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256",
+    "title": "Photographer & Videographer",
     "hourlyRate": 65,
     "currency": "$",
-    "bio": "Updated custom bio for freelancer.",
+    "bio": "Freelancer specializing in Photographer & Videographer.",
     "notificationSettings": {
       "email": true,
       "sms": true,
       "browser": true,
       "sound": true,
       "deadlineReminderHours": 24
+    },
+    "userId": "usr_renujanrenu5_gmail_com",
+    "idleSettings": {
+      "enabled": true,
+      "timeoutMinutes": 2,
+      "style": "zen"
+    },
+    "aiSettings": {
+      "provider": "builtin",
+      "geminiApiKey": "",
+      "geminiModel": "gemini-1.5-flash",
+      "openaiApiKey": "",
+      "openaiModel": "gpt-4o-mini",
+      "customInstructions": "renujan"
     }
   },
   "clients": [
+    {
+      "userId": "usr_persistent_1789473439125_example_com",
+      "name": "Acme Global Corp",
+      "company": "Acme Global",
+      "email": "billing@acmeglobal.com",
+      "color": "#128C7E",
+      "status": "active",
+      "hourlyRate": 95,
+      "currency": "$",
+      "id": "cli-1789473439143",
+      "totalBilled": 0,
+      "createdAt": "2026-09-15"
+    },
+    {
+      "userId": "usr-isolated-1789473439096",
+      "name": "Private Client Inc",
+      "company": "Private Client Inc",
+      "email": "private@client.com",
+      "color": "#128C7E",
+      "status": "active",
+      "hourlyRate": 85,
+      "currency": "$",
+      "id": "cli-1789473439101",
+      "totalBilled": 0,
+      "createdAt": "2026-09-15"
+    },
     {
       "userId": "usr_persistent_1789454560407_example_com",
       "name": "Acme Global Corp",
@@ -2699,6 +2806,36 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif-1789473439236",
+      "userId": "usr_avatar_1789473439229_example_com",
+      "title": "Welcome to Me Plus!",
+      "message": "Hello Avatar Test User, your workspace is ready. Click \"+ New Client\" to start managing projects.",
+      "type": "system",
+      "priority": "medium",
+      "timestamp": "Just now",
+      "read": false
+    },
+    {
+      "id": "notif-1789473439130",
+      "userId": "usr_persistent_1789473439125_example_com",
+      "title": "Welcome to Me Plus!",
+      "message": "Hello Persistent User, your workspace is ready. Click \"+ New Client\" to start managing projects.",
+      "type": "system",
+      "priority": "medium",
+      "timestamp": "Just now",
+      "read": false
+    },
+    {
+      "id": "notif-1789473438935",
+      "userId": "usr_freelancer_1789473438909_example_com",
+      "title": "Welcome to Me Plus!",
+      "message": "Hello Jordan Lee, your workspace is ready. Click \"+ New Client\" to start managing projects.",
+      "type": "system",
+      "priority": "medium",
+      "timestamp": "Just now",
+      "read": false
+    },
     {
       "id": "notif-1789454560522",
       "userId": "usr_avatar_1789454560515_example_com",

@@ -16,6 +16,17 @@ export interface IdleSettings {
   style: 'zen' | 'clock' | 'particles';
 }
 
+export type AiProvider = 'builtin' | 'gemini' | 'openai';
+
+export interface AiSettings {
+  provider: AiProvider;
+  geminiApiKey?: string;
+  geminiModel?: string; // e.g. 'gemini-1.5-flash' | 'gemini-2.0-flash' | 'gemini-1.5-pro'
+  openaiApiKey?: string;
+  openaiModel?: string; // e.g. 'gpt-4o-mini' | 'gpt-4o' | 'gpt-3.5-turbo'
+  customInstructions?: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -36,6 +47,7 @@ export interface UserProfile {
   theme: 'light' | 'dark' | 'system';
   accentColor?: AccentColor;
   idleSettings?: IdleSettings;
+  aiSettings?: AiSettings;
 }
 
 export interface Client {
@@ -189,4 +201,23 @@ export interface ConfirmationModalState {
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
 }
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: string;
+  provider?: AiProvider;
+  model?: string;
+}
+
+export interface AiModelInfo {
+  id: string;
+  name: string;
+  provider: AiProvider;
+  description: string;
+  tag?: string;
+  badgeColor?: string;
+}
+
 

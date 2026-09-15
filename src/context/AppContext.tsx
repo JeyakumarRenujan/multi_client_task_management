@@ -1268,6 +1268,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         ) {
           return {
             ...u,
+            ...profile,
             name: profile.name !== undefined ? profile.name : u.name,
             title: profile.title !== undefined ? profile.title : u.title,
             avatar: profile.avatar !== undefined ? profile.avatar : u.avatar,

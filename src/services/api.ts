@@ -188,11 +188,32 @@ export const api = {
       method: 'DELETE',
     }),
 
-  // AI Chat
-  sendAiMessage: (message: string) =>
-    fetchJson<{ reply: string }>('/ai/chat', {
+  // AI Chat & Multi-Provider Connection
+  sendAiMessage: (
+    message: string,
+    options?: {
+      history?: { role: 'user' | 'model' | 'assistant'; content: string }[];
+      provider?: 'builtin' | 'gemini' | 'openai';
+      apiKey?: string;
+      model?: string;
+      workspaceContext?: string;
+      customInstructions?: string;
+      userId?: string;
+    }
+  ) =>
+    fetchJson<{ reply: string; provider?: string; model?: string }>('/ai/chat', {
       method: 'POST',
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, ...options }),
+    }),
+
+  testAiConnection: (options: {
+    provider: 'gemini' | 'openai';
+    apiKey: string;
+    model?: string;
+  }) =>
+    fetchJson<{ success: boolean; message: string; latencyMs?: number }>('/ai/test-connection', {
+      method: 'POST',
+      body: JSON.stringify(options),
     }),
 
   // Reset Data
