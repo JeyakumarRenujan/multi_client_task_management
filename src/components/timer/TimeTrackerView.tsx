@@ -25,6 +25,7 @@ export const TimeTrackerView: React.FC = () => {
     updateTimerDescription,
     timeEntries,
     deleteTimeEntry,
+    confirmAction,
     projects,
     clients,
     user,
@@ -332,7 +333,17 @@ export const TimeTrackerView: React.FC = () => {
 
                     <td className="py-3 px-4 text-right">
                       <button
-                        onClick={() => deleteTimeEntry(entry.id)}
+                        type="button"
+                        onClick={() =>
+                          confirmAction({
+                            title: 'Delete Time Entry?',
+                            message: `Are you sure you want to delete this ${hoursNum} hr logged entry for "${project?.title || 'Unknown Project'}"? This action cannot be undone.`,
+                            confirmText: 'Delete Entry',
+                            danger: true,
+                            itemType: 'time',
+                            onConfirm: () => deleteTimeEntry(entry.id),
+                          })
+                        }
                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                         title="Delete log"
                       >

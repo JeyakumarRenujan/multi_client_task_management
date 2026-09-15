@@ -25,6 +25,7 @@ export const InvoiceListView: React.FC = () => {
     setSelectedInvoiceForEdit,
     updateInvoiceStatus,
     deleteInvoice,
+    confirmAction,
     user,
   } = useApp();
 
@@ -268,10 +269,19 @@ export const InvoiceListView: React.FC = () => {
                         <Printer className="w-4 h-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => {
-                          if (window.confirm(`Delete ${inv.invoiceNumber}?`)) deleteInvoice(inv.id);
+                          confirmAction({
+                            title: 'Delete Invoice?',
+                            message: `Are you sure you want to delete invoice "${inv.invoiceNumber}" for ${inv.clientName || 'Client'} (${user?.currency || '$'}${inv.total.toLocaleString()})? This action cannot be undone.`,
+                            confirmText: 'Delete Invoice',
+                            danger: true,
+                            itemType: 'invoice',
+                            onConfirm: () => deleteInvoice(inv.id),
+                          });
                         }}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Delete invoice"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

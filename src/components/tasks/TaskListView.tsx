@@ -25,6 +25,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
     clients,
     moveTaskStatus,
     deleteTask,
+    confirmAction,
     startTimer,
   } = useApp();
 
@@ -175,8 +176,20 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => deleteTask(task.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                        type="button"
+                        onClick={e => {
+                          e.stopPropagation();
+                          confirmAction({
+                            title: 'Delete Task?',
+                            message: `Are you sure you want to delete "${task.title}"? This action cannot be undone.`,
+                            confirmText: 'Delete Task',
+                            danger: true,
+                            itemType: 'task',
+                            onConfirm: () => deleteTask(task.id),
+                          });
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Delete task"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

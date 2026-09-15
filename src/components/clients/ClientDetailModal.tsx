@@ -31,6 +31,7 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
     tasks,
     timeEntries,
     deleteClient,
+    confirmAction,
     setIsProjectModalOpen,
     setSelectedProjectForEdit,
   } = useApp();
@@ -45,10 +46,17 @@ export const ClientDetailModal: React.FC<ClientDetailModalProps> = ({
   const totalHours = (totalSeconds / 3600).toFixed(1);
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete ${client.name}?`)) {
-      deleteClient(client.id);
-      onClose();
-    }
+    confirmAction({
+      title: 'Delete Client?',
+      message: `Are you sure you want to delete "${client.name}" (${client.company})? This will permanently remove all associated projects, tasks, and time entries.`,
+      confirmText: 'Delete Client',
+      danger: true,
+      itemType: 'client',
+      onConfirm: () => {
+        deleteClient(client.id);
+        onClose();
+      },
+    });
   };
 
   const handleCreateProjectForClient = () => {

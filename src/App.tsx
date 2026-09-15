@@ -4,6 +4,7 @@ import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/common/Navbar';
 import { Sidebar } from './components/common/Sidebar';
 import { ToastContainer } from './components/common/ToastContainer';
+import { ConfirmModal } from './components/common/ConfirmModal';
 import { CommandPalette } from './components/common/CommandPalette';
 import { AiAssistantModal } from './components/ai/AiAssistantModal';
 import { AuthModal } from './components/auth/AuthModal';
@@ -78,6 +79,7 @@ const MainContent: React.FC = () => {
 
       {/* Global Interactive Overlays & Modals */}
       <ToastContainer />
+      <ConfirmModal />
       <CommandPalette />
       <AiAssistantModal />
       <AuthModal

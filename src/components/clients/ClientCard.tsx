@@ -16,7 +16,7 @@ interface ClientCardProps {
 }
 
 export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit }) => {
-  const { projects, tasks, deleteClient } = useApp();
+  const { projects, tasks, deleteClient, confirmAction } = useApp();
 
   const clientProjects = projects.filter(p => p.clientId === client.id && p.status !== 'archived');
   const clientTasks = tasks.filter(t => t.clientId === client.id);
@@ -24,9 +24,14 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit }
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm(`Delete client "${client.name}"?`)) {
-      deleteClient(client.id);
-    }
+    confirmAction({
+      title: 'Delete Client?',
+      message: `Are you sure you want to delete "${client.name}" (${client.company})? This action cannot be undone and will remove all associated projects and tasks.`,
+      confirmText: 'Delete Client',
+      danger: true,
+      itemType: 'client',
+      onConfirm: () => deleteClient(client.id),
+    });
   };
 
   return (

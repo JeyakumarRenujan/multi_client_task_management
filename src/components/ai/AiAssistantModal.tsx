@@ -34,6 +34,7 @@ export const AiAssistantModal: React.FC = () => {
     tasks,
     user,
     showToast,
+    confirmAction,
   } = useApp();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -221,15 +222,22 @@ export const AiAssistantModal: React.FC = () => {
   };
 
   const handleClearChat = () => {
-    if (window.confirm('Clear all conversation messages?')) {
-      const initialGreeting: ChatMessage = {
-        id: 'msg-init-reset',
-        sender: 'ai',
-        text: `Conversation cleared! 👋 How can I help you right now with your clients, projects, or freelance business?`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages([initialGreeting]);
-    }
+    confirmAction({
+      title: 'Clear Conversation?',
+      message: 'Are you sure you want to clear all chat messages in this AI copilot session? Your current conversation history will be wiped.',
+      confirmText: 'Clear Chat',
+      danger: true,
+      itemType: 'chat',
+      onConfirm: () => {
+        const initialGreeting: ChatMessage = {
+          id: 'msg-init-reset',
+          sender: 'ai',
+          text: `Conversation cleared! 👋 How can I help you right now with your clients, projects, or freelance business?`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages([initialGreeting]);
+      },
+    });
   };
 
   return (

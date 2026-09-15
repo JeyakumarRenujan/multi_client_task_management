@@ -22,7 +22,7 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onView, onEdit }) => {
-  const { clients, tasks, deleteProject, archiveProject, restoreProject, startTimer } = useApp();
+  const { clients, tasks, deleteProject, archiveProject, restoreProject, startTimer, confirmAction } = useApp();
 
   const client = clients.find(c => c.id === project.clientId);
   const projectTasks = tasks.filter(t => t.projectId === project.id);
@@ -30,9 +30,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onView, onEdi
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm(`Delete project "${project.title}"?`)) {
-      deleteProject(project.id);
-    }
+    confirmAction({
+      title: 'Delete Project?',
+      message: `Are you sure you want to delete "${project.title}"? This action cannot be undone and will remove all associated tasks and time logs.`,
+      confirmText: 'Delete Project',
+      danger: true,
+      itemType: 'project',
+      onConfirm: () => deleteProject(project.id),
+    });
   };
 
   const handleStartTimer = (e: React.MouseEvent) => {

@@ -11,6 +11,7 @@ import {
   InvoiceStatus,
   AppNotification,
   ActiveTimer,
+  ConfirmationModalState,
 } from '../types';
 import {
   initialUser,
@@ -133,6 +134,11 @@ interface AppContextType {
   setSelectedInvoiceForEdit: (invoice: Invoice | null) => void;
   isTimeLogModalOpen: boolean;
   setIsTimeLogModalOpen: (open: boolean) => void;
+
+  // Confirmation Dialog
+  confirmModal: ConfirmationModalState;
+  confirmAction: (options: Omit<ConfirmationModalState, 'isOpen'>) => void;
+  closeConfirmModal: () => void;
 
   // Data Reset / Export / Import
   resetAllDataToDemo: () => void;
@@ -515,6 +521,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [selectedInvoiceForEdit, setSelectedInvoiceForEdit] = useState<Invoice | null>(null);
   const [isTimeLogModalOpen, setIsTimeLogModalOpen] = useState(false);
+
+  // Global Confirmation Dialog State
+  const [confirmModal, setConfirmModal] = useState<ConfirmationModalState>({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+    danger: true,
+    itemType: 'general',
+    onConfirm: () => {},
+  });
+
+  const confirmAction = useCallback((options: Omit<ConfirmationModalState, 'isOpen'>) => {
+    setConfirmModal({
+      isOpen: true,
+      title: options.title,
+      message: options.message,
+      confirmText: options.confirmText || 'Delete',
+      cancelText: options.cancelText || 'Cancel',
+      danger: options.danger !== false,
+      itemType: options.itemType || 'general',
+      onConfirm: options.onConfirm,
+      onCancel: options.onCancel,
+    });
+  }, []);
+
+  const closeConfirmModal = useCallback(() => {
+    setConfirmModal(prev => {
+      if (prev.onCancel) {
+        try {
+          prev.onCancel();
+        } catch (err) {
+          console.error('Error in onCancel callback:', err);
+        }
+      }
+      return { ...prev, isOpen: false };
+    });
+  }, []);
 
   // Load and sync isolated data when active user changes
   const loadUserData = useCallback((currentUser: UserProfile | null) => {
@@ -1917,6 +1962,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSelectedInvoiceForEdit,
         isTimeLogModalOpen,
         setIsTimeLogModalOpen,
+        confirmModal,
+        confirmAction,
+        closeConfirmModal,
         resetAllDataToDemo,
         exportDataAsJson,
         importDataFromJson,

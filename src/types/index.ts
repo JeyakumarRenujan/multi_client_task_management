@@ -167,3 +167,16 @@ export interface ActiveTimer {
   startTime: number;
   elapsedSeconds: number;
 }
+
+export interface ConfirmationModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  danger?: boolean;
+  itemType?: 'client' | 'project' | 'task' | 'invoice' | 'time' | 'chat' | 'general';
+  onConfirm: () => void | Promise<void>;
+  onCancel?: () => void;
+}
+

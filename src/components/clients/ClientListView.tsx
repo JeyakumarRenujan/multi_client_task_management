@@ -20,6 +20,7 @@ export const ClientListView: React.FC = () => {
     setIsClientModalOpen,
     setSelectedClientForEdit,
     deleteClient,
+    confirmAction,
     projects,
   } = useApp();
 
@@ -253,10 +254,20 @@ export const ClientListView: React.FC = () => {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => {
-                            if (window.confirm(`Delete ${client.name}?`)) deleteClient(client.id);
+                          type="button"
+                          onClick={e => {
+                            e.stopPropagation();
+                            confirmAction({
+                              title: 'Delete Client?',
+                              message: `Are you sure you want to delete "${client.name}" (${client.company})? This action cannot be undone and will remove all associated projects and tasks.`,
+                              confirmText: 'Delete Client',
+                              danger: true,
+                              itemType: 'client',
+                              onConfirm: () => deleteClient(client.id),
+                            });
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          title="Delete client"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

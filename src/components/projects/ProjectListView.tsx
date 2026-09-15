@@ -27,6 +27,7 @@ export const ProjectListView: React.FC = () => {
     setIsProjectModalOpen,
     setSelectedProjectForEdit,
     deleteProject,
+    confirmAction,
     startTimer,
   } = useApp();
 
@@ -287,10 +288,20 @@ export const ProjectListView: React.FC = () => {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => {
-                            if (window.confirm(`Delete ${project.title}?`)) deleteProject(project.id);
+                          type="button"
+                          onClick={e => {
+                            e.stopPropagation();
+                            confirmAction({
+                              title: 'Delete Project?',
+                              message: `Are you sure you want to delete "${project.title}"? This action cannot be undone and will remove all associated tasks and time logs.`,
+                              confirmText: 'Delete Project',
+                              danger: true,
+                              itemType: 'project',
+                              onConfirm: () => deleteProject(project.id),
+                            });
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          title="Delete project"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

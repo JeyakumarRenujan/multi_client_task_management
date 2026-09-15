@@ -34,6 +34,7 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
     tasks,
     timeEntries,
     deleteProject,
+    confirmAction,
     archiveProject,
     restoreProject,
     moveTaskStatus,
@@ -54,10 +55,17 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
   const totalHours = (totalTimeSeconds / 3600).toFixed(1);
 
   const handleDelete = () => {
-    if (window.confirm(`Are you sure you want to delete project "${project.title}"?`)) {
-      deleteProject(project.id);
-      onClose();
-    }
+    confirmAction({
+      title: 'Delete Project?',
+      message: `Are you sure you want to delete "${project.title}"? This action cannot be undone and will remove all associated tasks and time logs.`,
+      confirmText: 'Delete Project',
+      danger: true,
+      itemType: 'project',
+      onConfirm: () => {
+        deleteProject(project.id);
+        onClose();
+      },
+    });
   };
 
   const handleStartTimerForProject = () => {

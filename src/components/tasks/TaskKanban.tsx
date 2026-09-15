@@ -22,6 +22,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
     clients,
     moveTaskStatus,
     deleteTask,
+    confirmAction,
     startTimer,
     setIsTaskModalOpen,
     setSelectedTaskForEdit,
@@ -236,8 +237,19 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                             <Play className="w-3 h-3" />
                           </button>
                           <button
-                            onClick={() => deleteTask(task.id)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60"
+                            type="button"
+                            onClick={e => {
+                              e.stopPropagation();
+                              confirmAction({
+                                title: 'Delete Task?',
+                                message: `Are you sure you want to delete "${task.title}"? This action cannot be undone.`,
+                                confirmText: 'Delete Task',
+                                danger: true,
+                                itemType: 'task',
+                                onConfirm: () => deleteTask(task.id),
+                              });
+                            }}
+                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/60 transition-colors"
                             title="Delete task"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
