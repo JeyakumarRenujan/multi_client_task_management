@@ -11,7 +11,6 @@ import {
   Settings,
   Sparkles,
   ChevronRight,
-  TrendingUp,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -90,23 +89,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
       case 'slate':
       default:
         return 'bg-white border-emerald-200/90 text-slate-800 shadow-2xs hover:border-emerald-400 hover:shadow-xs';
-    }
-  };
-
-  const getBottomCardClass = () => {
-    if (isDark) {
-      return 'bg-slate-800/50 border-slate-700/60 text-slate-100';
-    }
-    switch (sidebarTheme) {
-      case 'sage':
-        return 'bg-white border-emerald-200 text-slate-900 shadow-2xs';
-      case 'dark':
-        return 'bg-slate-800/70 border-slate-700 text-slate-100';
-      case 'white':
-        return 'bg-emerald-50/60 border-emerald-100 text-slate-900';
-      case 'slate':
-      default:
-        return 'bg-white border-slate-200 text-slate-900 shadow-2xs';
     }
   };
 
@@ -277,30 +259,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
           </div>
         </div>
 
-        {/* Bottom Status Card & Sidebar Color Switcher */}
-        <div className={`p-4 border-t shrink-0 ${
+        {/* Sidebar Color Switcher */}
+        <div className={`p-3.5 border-t shrink-0 ${
           isDark || sidebarTheme === 'dark' ? 'border-slate-800' : 'border-slate-200/80'
         }`}>
-          <div className={`p-3 rounded-xl border flex items-center gap-3 transition-all ${getBottomCardClass()}`}>
-            <div className="p-2 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 shrink-0">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-            <div className="min-w-0">
-              <div className={`text-[11px] font-bold ${
-                isDark || sidebarTheme === 'dark' ? 'text-slate-100' : 'text-slate-900'
-              }`}>
-                Weekly Efficiency
-              </div>
-              <div className={`text-[10px] ${
-                isDark || sidebarTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'
-              }`}>
-                85% tasks on track
-              </div>
-            </div>
-          </div>
-
           {/* Real-Time Sidebar Color Customizer */}
-          <div className="mt-3 pt-2.5 flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-1">
             <span className={`text-[10px] font-bold uppercase tracking-wider ${getSectionHeaderClass()}`}>
               Sidebar Style
             </span>
