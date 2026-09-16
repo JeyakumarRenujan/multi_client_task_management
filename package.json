@@ -9,6 +9,7 @@
     "server": "node --watch server/src/server.js",
     "build": "tsc -b && vite build",
     "test": "node server/test-auth.js",
+    "seed:mongo": "node server/scripts/seed-mongo.js",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -20,6 +21,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "lucide-react": "^1.39.0",
+    "mongoose": "^9.10.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tailwind-merge": "^3.6.0"

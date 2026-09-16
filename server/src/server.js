@@ -1,13 +1,43 @@
 import express from 'express';
 import cors from 'cors';
 import {
-  readDb,
-  writeDb,
-  getCollection,
-  saveCollection,
-  resetDbToSeed,
+  initDatabase,
+  isMongoActive,
+  findUserByEmail,
+  findUserById,
+  createUser,
+  updateUser,
+  getClients,
+  createClient,
+  updateClient,
+  deleteClient,
+  getProjects,
+  createProject,
+  updateProject,
+  deleteProject,
+  getTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+  getTimeEntries,
+  createTimeEntry,
+  deleteTimeEntry,
+  getInvoices,
+  createInvoice,
+  updateInvoice,
+  deleteInvoice,
+  getNotifications,
+  createNotification,
+  markNotificationRead,
+  deleteNotifications,
+  resetDatabase,
+} from './database.js';
+
+import {
   getDeterministicUserId,
   isDemoSeedEntity,
+  readDb,
+  writeDb,
 } from './db.js';
 
 const app = express();
@@ -34,24 +64,26 @@ function getReqUserId(req) {
   return raw;
 }
 
+let activeSessionUser = null;
+
 // --- Health Check ---
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    database: isMongoActive() ? 'mongodb' : 'json_store',
+  });
 });
 
 // --- Auth Endpoints ---
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email address is required' });
   }
 
-  const db = readDb();
-  const users = db.users || [];
   const normalizedEmail = email.trim().toLowerCase();
-
-  // Find user by email
-  const existingUser = users.find(u => u.email.toLowerCase() === normalizedEmail);
+  const existingUser = await findUserByEmail(normalizedEmail);
 
   if (!existingUser) {
     return res.status(401).json({
@@ -72,13 +104,18 @@ app.post('/api/auth/login', (req, res) => {
 
   // Remove password before sending to client
   const { password: _, ...safeUser } = existingUser;
+  activeSessionUser = safeUser;
+  await updateUser(deterministicId, safeUser);
+
+  // Sync to db.json for backwards compatibility
+  const db = readDb();
   db.user = safeUser;
   writeDb(db);
 
   res.json({ success: true, user: safeUser });
 });
 
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   const { name, email, password, profession } = req.body;
 
   if (!name || !name.trim()) {
@@ -91,12 +128,9 @@ app.post('/api/auth/register', (req, res) => {
     return res.status(400).json({ error: 'Password must be at least 6 characters long' });
   }
 
-  const db = readDb();
-  const users = db.users || [];
   const normalizedEmail = email.trim().toLowerCase();
+  const alreadyExists = await findUserByEmail(normalizedEmail);
 
-  // Check duplicate email
-  const alreadyExists = users.some(u => u.email.toLowerCase() === normalizedEmail);
   if (alreadyExists) {
     return res.status(409).json({
       error: 'An account with this email address already exists. Please sign in instead.',
@@ -123,12 +157,10 @@ app.post('/api/auth/register', (req, res) => {
     },
   };
 
-  users.push(newUser);
-  db.users = users;
+  await createUser(newUser);
 
-  // Add a welcoming notification for this new user in their fresh workspace
-  const notifications = db.notifications || [];
-  notifications.unshift({
+  // Add welcoming notification in the fresh workspace
+  await createNotification({
     id: `notif-${Date.now()}`,
     userId: newUserId,
     title: 'Welcome to Me Plus!',
@@ -138,9 +170,12 @@ app.post('/api/auth/register', (req, res) => {
     timestamp: 'Just now',
     read: false,
   });
-  db.notifications = notifications;
 
   const { password: _, ...safeUser } = newUser;
+  activeSessionUser = safeUser;
+
+  // Sync to db.json for backwards compatibility
+  const db = readDb();
   db.user = safeUser;
   writeDb(db);
 
@@ -150,16 +185,14 @@ app.post('/api/auth/register', (req, res) => {
 // OTP Store for email verification: email -> { otp: string, expiresAt: number, verified: boolean, attempts: number, createdAt: number, resetToken?: string }
 const otpStore = new Map();
 
-app.post('/api/auth/forgot-password', (req, res) => {
+app.post('/api/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email address is required' });
   }
 
-  const db = readDb();
-  const users = db.users || [];
   const normalizedEmail = email.trim().toLowerCase();
-  const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
+  const user = await findUserByEmail(normalizedEmail);
 
   if (!user) {
     return res.status(404).json({
@@ -190,7 +223,7 @@ app.post('/api/auth/forgot-password', (req, res) => {
     success: true,
     message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
     email: normalizedEmail,
-    otpPreview: otp, // Enables visual test preview in local dev
+    otpPreview: otp,
     expiresInSeconds: 600,
   });
 });
@@ -248,16 +281,14 @@ app.post('/api/auth/verify-otp', (req, res) => {
   });
 });
 
-app.post('/api/auth/resend-otp', (req, res) => {
+app.post('/api/auth/resend-otp', async (req, res) => {
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email address is required' });
   }
 
-  const db = readDb();
-  const users = db.users || [];
   const normalizedEmail = email.trim().toLowerCase();
-  const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
+  const user = await findUserByEmail(normalizedEmail);
 
   if (!user) {
     return res.status(404).json({ error: 'No registered account found with this email address.' });
@@ -297,7 +328,7 @@ app.post('/api/auth/resend-otp', (req, res) => {
   });
 });
 
-app.post('/api/auth/reset-password', (req, res) => {
+app.post('/api/auth/reset-password', async (req, res) => {
   const { email, newPassword, otp, resetToken } = req.body;
   if (!email || !newPassword) {
     return res.status(400).json({ error: 'Email and new password are required' });
@@ -309,33 +340,26 @@ app.post('/api/auth/reset-password', (req, res) => {
   const normalizedEmail = email.trim().toLowerCase();
   const record = otpStore.get(normalizedEmail);
 
-  // Strict verification check:
-  // Must have a record that was marked verified OR provided matching valid resetToken/OTP
-  const isVerified = record && (
-    record.verified === true ||
-    (resetToken && record.resetToken === resetToken) ||
-    (otp && record.otp === otp.toString().trim() && Date.now() <= record.expiresAt)
-  );
+  // Strict verification check
+  const isVerified =
+    record &&
+    (record.verified === true ||
+      (resetToken && record.resetToken === resetToken) ||
+      (otp && record.otp === otp.toString().trim() && Date.now() <= record.expiresAt));
 
   if (!isVerified) {
     return res.status(403).json({
-      error: 'OTP verification required. Please verify the 6-digit code sent to your email before resetting your password.',
+      error:
+        'OTP verification required. Please verify the 6-digit code sent to your email before resetting your password.',
     });
   }
 
-  const db = readDb();
-  const users = db.users || [];
-  const index = users.findIndex(u => u.email.toLowerCase() === normalizedEmail);
-
-  if (index === -1) {
+  const user = await findUserByEmail(normalizedEmail);
+  if (!user) {
     return res.status(404).json({ error: 'User account not found.' });
   }
 
-  users[index].password = newPassword;
-  db.users = users;
-  writeDb(db);
-
-  // Clear OTP record after successful reset
+  await updateUser(normalizedEmail, { password: newPassword });
   otpStore.delete(normalizedEmail);
 
   res.json({
@@ -344,57 +368,52 @@ app.post('/api/auth/reset-password', (req, res) => {
   });
 });
 
-app.get('/api/auth/me', (req, res) => {
+app.get('/api/auth/me', async (req, res) => {
+  if (activeSessionUser) {
+    return res.json({ user: activeSessionUser });
+  }
+  const userId = getReqUserId(req);
+  const user = await findUserById(userId);
+  if (user) {
+    const { password: _, ...safeUser } = user;
+    return res.json({ user: safeUser });
+  }
   const db = readDb();
   res.json({ user: db.user || null });
 });
 
-app.put('/api/auth/profile', (req, res) => {
+app.put('/api/auth/profile', async (req, res) => {
   const updates = req.body || {};
-  const db = readDb();
-  const users = db.users || [];
+  const targetId =
+    updates.id || updates.userId || req.query.userId || req.headers['x-user-id'] || activeSessionUser?.id || 'usr-1';
+  const targetEmail = (updates.email || req.query.email || activeSessionUser?.email || '').trim().toLowerCase();
 
-  const targetId = updates.id || updates.userId || req.query.userId || req.headers['x-user-id'] || db.user?.id;
-  const targetEmail = (updates.email || req.query.email || db.user?.email || '').trim().toLowerCase();
-
-  let targetIdx = -1;
-  if (targetId) {
-    targetIdx = users.findIndex(u => u.id === targetId);
-  }
-  if (targetIdx === -1 && targetEmail) {
-    targetIdx = users.findIndex(u => u.email.toLowerCase() === targetEmail);
-  }
-
-  if (targetIdx !== -1) {
-    users[targetIdx] = { ...users[targetIdx], ...updates };
-    const { password: _, ...safeUser } = users[targetIdx];
-    db.users = users;
-    db.user = safeUser;
-    writeDb(db);
+  const updated = await updateUser(targetId || targetEmail, updates);
+  if (updated) {
+    const { password: _, ...safeUser } = updated;
+    activeSessionUser = safeUser;
     return res.json({ success: true, user: safeUser });
   }
 
   // Fallback
-  db.user = { ...(db.user || {}), ...updates };
-  writeDb(db);
-  res.json({ success: true, user: db.user });
+  activeSessionUser = { ...(activeSessionUser || {}), ...updates };
+  res.json({ success: true, user: activeSessionUser });
 });
 
 // --- Clients Endpoints ---
-app.get('/api/clients', (req, res) => {
+app.get('/api/clients', async (req, res) => {
   const userId = getReqUserId(req);
-  const clients = getCollection('clients', userId);
+  const clients = await getClients(userId);
   res.json(clients);
 });
 
-app.post('/api/clients', (req, res) => {
+app.post('/api/clients', async (req, res) => {
   const newClientData = req.body;
   const userId = newClientData.userId || getReqUserId(req) || 'usr-1';
   const isDemo = userId === 'usr-1' || userId === 'usr-demo';
   if (!isDemo && isDemoSeedEntity(newClientData)) {
     return res.status(200).json({ ...newClientData, ignored: true });
   }
-  const clients = getCollection('clients');
   const newClient = {
     ...newClientData,
     id: newClientData.id || `cli-${Date.now()}`,
@@ -402,51 +421,38 @@ app.post('/api/clients', (req, res) => {
     totalBilled: newClientData.totalBilled || 0,
     createdAt: newClientData.createdAt || new Date().toISOString().split('T')[0],
   };
-  const existingIdx = clients.findIndex(c => c.id === newClient.id);
-  if (existingIdx >= 0) {
-    clients[existingIdx] = newClient;
-  } else {
-    clients.unshift(newClient);
-  }
-  saveCollection('clients', clients);
+  await createClient(newClient);
   res.status(201).json(newClient);
 });
 
-app.put('/api/clients/:id', (req, res) => {
+app.put('/api/clients/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const clients = getCollection('clients');
-  const index = clients.findIndex(c => c.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Client not found' });
-
-  clients[index] = { ...clients[index], ...updates };
-  saveCollection('clients', clients);
-  res.json(clients[index]);
+  const updated = await updateClient(id, updates);
+  if (!updated) return res.status(404).json({ error: 'Client not found' });
+  res.json(updated);
 });
 
-app.delete('/api/clients/:id', (req, res) => {
+app.delete('/api/clients/:id', async (req, res) => {
   const { id } = req.params;
-  let clients = getCollection('clients');
-  clients = clients.filter(c => c.id !== id);
-  saveCollection('clients', clients);
+  await deleteClient(id);
   res.json({ success: true, id });
 });
 
 // --- Projects Endpoints ---
-app.get('/api/projects', (req, res) => {
+app.get('/api/projects', async (req, res) => {
   const userId = getReqUserId(req);
-  const projects = getCollection('projects', userId);
+  const projects = await getProjects(userId);
   res.json(projects);
 });
 
-app.post('/api/projects', (req, res) => {
+app.post('/api/projects', async (req, res) => {
   const newProjectData = req.body;
   const userId = newProjectData.userId || getReqUserId(req) || 'usr-1';
   const isDemo = userId === 'usr-1' || userId === 'usr-demo';
   if (!isDemo && isDemoSeedEntity(newProjectData)) {
     return res.status(200).json({ ...newProjectData, ignored: true });
   }
-  const projects = getCollection('projects');
   const newProject = {
     ...newProjectData,
     id: newProjectData.id || `prj-${Date.now()}`,
@@ -455,51 +461,38 @@ app.post('/api/projects', (req, res) => {
     progress: newProjectData.progress || 0,
     createdAt: newProjectData.createdAt || new Date().toISOString().split('T')[0],
   };
-  const existingIdx = projects.findIndex(p => p.id === newProject.id);
-  if (existingIdx >= 0) {
-    projects[existingIdx] = newProject;
-  } else {
-    projects.unshift(newProject);
-  }
-  saveCollection('projects', projects);
+  await createProject(newProject);
   res.status(201).json(newProject);
 });
 
-app.put('/api/projects/:id', (req, res) => {
+app.put('/api/projects/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const projects = getCollection('projects');
-  const index = projects.findIndex(p => p.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Project not found' });
-
-  projects[index] = { ...projects[index], ...updates };
-  saveCollection('projects', projects);
-  res.json(projects[index]);
+  const updated = await updateProject(id, updates);
+  if (!updated) return res.status(404).json({ error: 'Project not found' });
+  res.json(updated);
 });
 
-app.delete('/api/projects/:id', (req, res) => {
+app.delete('/api/projects/:id', async (req, res) => {
   const { id } = req.params;
-  let projects = getCollection('projects');
-  projects = projects.filter(p => p.id !== id);
-  saveCollection('projects', projects);
+  await deleteProject(id);
   res.json({ success: true, id });
 });
 
 // --- Tasks Endpoints ---
-app.get('/api/tasks', (req, res) => {
+app.get('/api/tasks', async (req, res) => {
   const userId = getReqUserId(req);
-  const tasks = getCollection('tasks', userId);
+  const tasks = await getTasks(userId);
   res.json(tasks);
 });
 
-app.post('/api/tasks', (req, res) => {
+app.post('/api/tasks', async (req, res) => {
   const newTaskData = req.body;
   const userId = newTaskData.userId || getReqUserId(req) || 'usr-1';
   const isDemo = userId === 'usr-1' || userId === 'usr-demo';
   if (!isDemo && isDemoSeedEntity(newTaskData)) {
     return res.status(200).json({ ...newTaskData, ignored: true });
   }
-  const tasks = getCollection('tasks');
   const newTask = {
     ...newTaskData,
     id: newTaskData.id || `tsk-${Date.now()}`,
@@ -509,168 +502,137 @@ app.post('/api/tasks', (req, res) => {
     attachments: newTaskData.attachments || [],
     createdAt: newTaskData.createdAt || new Date().toISOString().split('T')[0],
   };
-  const existingIdx = tasks.findIndex(t => t.id === newTask.id);
-  if (existingIdx >= 0) {
-    tasks[existingIdx] = newTask;
-  } else {
-    tasks.unshift(newTask);
-  }
-  saveCollection('tasks', tasks);
+  await createTask(newTask);
   res.status(201).json(newTask);
 });
 
-app.put('/api/tasks/:id', (req, res) => {
+app.put('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const tasks = getCollection('tasks');
-  const index = tasks.findIndex(t => t.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Task not found' });
-
-  tasks[index] = { ...tasks[index], ...updates };
-  saveCollection('tasks', tasks);
-  res.json(tasks[index]);
+  const updated = await updateTask(id, updates);
+  if (!updated) return res.status(404).json({ error: 'Task not found' });
+  res.json(updated);
 });
 
-app.delete('/api/tasks/:id', (req, res) => {
+app.delete('/api/tasks/:id', async (req, res) => {
   const { id } = req.params;
-  let tasks = getCollection('tasks');
-  tasks = tasks.filter(t => t.id !== id);
-  saveCollection('tasks', tasks);
+  await deleteTask(id);
   res.json({ success: true, id });
 });
 
 // --- Time Entries Endpoints ---
-app.get('/api/time-entries', (req, res) => {
+app.get('/api/time-entries', async (req, res) => {
   const userId = getReqUserId(req);
-  const timeEntries = getCollection('timeEntries', userId);
+  const timeEntries = await getTimeEntries(userId);
   res.json(timeEntries);
 });
 
-app.post('/api/time-entries', (req, res) => {
+app.post('/api/time-entries', async (req, res) => {
   const newEntryData = req.body;
   const userId = newEntryData.userId || getReqUserId(req) || 'usr-1';
   const isDemo = userId === 'usr-1' || userId === 'usr-demo';
   if (!isDemo && isDemoSeedEntity(newEntryData)) {
     return res.status(200).json({ ...newEntryData, ignored: true });
   }
-  const timeEntries = getCollection('timeEntries');
   const newEntry = {
     ...newEntryData,
     id: newEntryData.id || `time-${Date.now()}`,
     userId: userId,
     date: newEntryData.date || new Date().toISOString().split('T')[0],
   };
-  const existingIdx = timeEntries.findIndex(t => t.id === newEntry.id);
-  if (existingIdx >= 0) {
-    timeEntries[existingIdx] = newEntry;
-  } else {
-    timeEntries.unshift(newEntry);
-  }
-  saveCollection('timeEntries', timeEntries);
+  await createTimeEntry(newEntry);
   res.status(201).json(newEntry);
 });
 
-app.delete('/api/time-entries/:id', (req, res) => {
+app.delete('/api/time-entries/:id', async (req, res) => {
   const { id } = req.params;
-  let timeEntries = getCollection('timeEntries');
-  timeEntries = timeEntries.filter(t => t.id !== id);
-  saveCollection('timeEntries', timeEntries);
+  await deleteTimeEntry(id);
   res.json({ success: true, id });
 });
 
 // --- Invoices Endpoints ---
-app.get('/api/invoices', (req, res) => {
+app.get('/api/invoices', async (req, res) => {
   const userId = getReqUserId(req);
-  const invoices = getCollection('invoices', userId);
+  const invoices = await getInvoices(userId);
   res.json(invoices);
 });
 
-app.post('/api/invoices', (req, res) => {
+app.post('/api/invoices', async (req, res) => {
   const newInvoiceData = req.body;
   const userId = newInvoiceData.userId || getReqUserId(req) || 'usr-1';
   const isDemo = userId === 'usr-1' || userId === 'usr-demo';
   if (!isDemo && isDemoSeedEntity(newInvoiceData)) {
     return res.status(200).json({ ...newInvoiceData, ignored: true });
   }
-  const invoices = getCollection('invoices');
   const newInvoice = {
     ...newInvoiceData,
     id: newInvoiceData.id || `inv-${Date.now()}`,
     userId: userId,
     createdAt: newInvoiceData.createdAt || new Date().toISOString().split('T')[0],
   };
-  const existingIdx = invoices.findIndex(i => i.id === newInvoice.id);
-  if (existingIdx >= 0) {
-    invoices[existingIdx] = newInvoice;
-  } else {
-    invoices.unshift(newInvoice);
-  }
-  saveCollection('invoices', invoices);
+  await createInvoice(newInvoice);
   res.status(201).json(newInvoice);
 });
 
-app.put('/api/invoices/:id', (req, res) => {
+app.put('/api/invoices/:id', async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
-  const invoices = getCollection('invoices');
-  const index = invoices.findIndex(i => i.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Invoice not found' });
-
-  invoices[index] = { ...invoices[index], ...updates };
-  saveCollection('invoices', invoices);
-  res.json(invoices[index]);
+  const updated = await updateInvoice(id, updates);
+  if (!updated) return res.status(404).json({ error: 'Invoice not found' });
+  res.json(updated);
 });
 
-app.delete('/api/invoices/:id', (req, res) => {
+app.delete('/api/invoices/:id', async (req, res) => {
   const { id } = req.params;
-  let invoices = getCollection('invoices');
-  invoices = invoices.filter(i => i.id !== id);
-  saveCollection('invoices', invoices);
+  await deleteInvoice(id);
   res.json({ success: true, id });
 });
 
 // --- Notifications Endpoints ---
-app.get('/api/notifications', (req, res) => {
+app.get('/api/notifications', async (req, res) => {
   const userId = getReqUserId(req);
-  const notifs = getCollection('notifications', userId);
+  const notifs = await getNotifications(userId);
   res.json(notifs);
 });
 
-app.put('/api/notifications/:id/read', (req, res) => {
+app.put('/api/notifications/:id/read', async (req, res) => {
   const { id } = req.params;
-  const notifs = getCollection('notifications');
-  const item = notifs.find(n => n.id === id);
-  if (item) item.read = true;
-  saveCollection('notifications', notifs);
+  await markNotificationRead(id);
   res.json({ success: true });
 });
 
-app.delete('/api/notifications', (req, res) => {
+app.delete('/api/notifications', async (req, res) => {
   const userId = getReqUserId(req);
-  let notifs = getCollection('notifications');
-  if (userId) {
-    notifs = notifs.filter(n => n.userId !== userId);
-  } else {
-    notifs = [];
-  }
-  saveCollection('notifications', notifs);
+  await deleteNotifications(userId);
   res.json({ success: true });
 });
 
 // --- AI Helpers ---
-function generateSmartFallback(message, req) {
+async function generateSmartFallback(message, req) {
   const q = (message || '').toLowerCase();
   const userId = getReqUserId(req);
-  const projects = getCollection('projects', userId);
-  const clients = getCollection('clients', userId);
-  const tasks = getCollection('tasks', userId);
+  const projects = await getProjects(userId);
+  const clients = await getClients(userId);
+  const tasks = await getTasks(userId);
   const pending = tasks.filter(t => t.status !== 'done').length;
   const clientNames = clients.map(c => c.company || c.name).slice(0, 5).join(', ');
 
-  if (q.includes('price') || q.includes('rate') || q.includes('how much') || q.includes('quote') || q.includes('increase')) {
+  if (
+    q.includes('price') ||
+    q.includes('rate') ||
+    q.includes('how much') ||
+    q.includes('quote') ||
+    q.includes('increase')
+  ) {
     return `### 💡 Strategy for Hourly Rate & Pricing:\n\n1. **Give Advance Notice**: Provide 30 to 45 days notice before applying new rates.\n2. **Emphasize Value & Growth**: Highlight your increased speed, reliability, and expanded capabilities.\n3. **Grandfathering Options**: Offer existing clients a transitional period or retainer discount.\n\n**Sample Template to Client:**\n> *"Hi [Client Name], as I continue to expand my tools and capabilities, my standard rate will update starting next month. Because I deeply appreciate our collaboration, all ongoing projects and pre-booked hours will be honored at our current rate through next month. Looking forward to our continued success!"*`;
   }
-  if (q.includes('email') || q.includes('follow up') || q.includes('invoice') || q.includes('overdue') || q.includes('unpaid')) {
+  if (
+    q.includes('email') ||
+    q.includes('follow up') ||
+    q.includes('invoice') ||
+    q.includes('overdue') ||
+    q.includes('unpaid')
+  ) {
     return `### 📧 Overdue Invoice Follow-Up Draft:\n\n**Subject:** *Follow-up: Invoice status for [Project Name]*\n\n> *"Hi [Client Name],\n>\n> I hope you are having a productive week!\n>\n> I am reaching out to check on the status of invoice **#INV-2026-X**, which was due recently. Please let me know if your accounts team requires any additional documentation or updated bank details to process this.\n>\n> Thank you for your prompt attention!\n>\n> Best regards,\n> Freelancer*"*`;
   }
   if (q.includes('scope') || q.includes('extra') || q.includes('creep') || q.includes('change')) {
@@ -679,7 +641,15 @@ function generateSmartFallback(message, req) {
   if (q.includes('pitch') || q.includes('proposal') || q.includes('new client') || q.includes('win client')) {
     return `### 🎯 High-Converting Client Pitch Template:\n\n**Subject:** *Partnering on [Client Company]'s UI & Web Product Growth*\n\n> *"Hi [Client Name],\n>\n> I’ve been following [Client Company]'s recent developments and was very impressed with your latest release.\n>\n> As an independent specialist, I help teams build fast, clean, and high-converting digital products.\n>\n> I’d love to share 2 quick ideas on how we can optimize your upcoming roadmap. Do you have 15 minutes for a quick introductory chat next Tuesday?\n>\n> Best regards*"*`;
   }
-  if (q.includes('summary') || q.includes('status') || q.includes('overview') || q.includes('work') || q.includes('dashboard') || q.includes('client') || q.includes('project')) {
+  if (
+    q.includes('summary') ||
+    q.includes('status') ||
+    q.includes('overview') ||
+    q.includes('work') ||
+    q.includes('dashboard') ||
+    q.includes('client') ||
+    q.includes('project')
+  ) {
     return `### 📊 Workspace Overview:\n\n• **Active Clients (${clients.length})**: ${clientNames || 'None yet'}\n• **Projects (${projects.length})**: ${projects.map(p => p.title).slice(0, 5).join(', ') || 'None yet'}\n• **Pending Tasks**: **${pending} tasks** remaining across all boards.\n\n**Freelancer Productivity Recommendation:** Focus on high-priority deadlines first, track every hour with the live stopwatch, and keep client communication transparent with weekly digest emails.`;
   }
 
@@ -831,8 +801,9 @@ ${customInstructions ? `\nCUSTOM INSTRUCTIONS:\n${customInstructions}` : ''}`;
       }
     } catch (err) {
       console.warn('Gemini API call failed, falling back to smart reply:', err.message);
+      const fallbackReply = await generateSmartFallback(query, req);
       return res.json({
-        reply: `⚠️ **Google Gemini Notice**: ${err.message}\n\n*Falling back to built-in advisor:*\n\n${generateSmartFallback(query, req)}`,
+        reply: `⚠️ **Google Gemini Notice**: ${err.message}\n\n*Falling back to built-in advisor:*\n\n${fallbackReply}`,
         provider: 'builtin',
         model: 'builtin',
       });
@@ -858,7 +829,7 @@ ${customInstructions ? `\nCUSTOM INSTRUCTIONS:\n${customInstructions}` : ''}`;
       const messages = [
         { role: 'system', content: systemPrompt },
         ...history.slice(-8).map(h => ({
-          role: h.role === 'model' ? 'assistant' : (h.role || 'user'),
+          role: h.role === 'model' ? 'assistant' : h.role || 'user',
           content: h.content || h.text || '',
         })),
         { role: 'user', content: query },
@@ -889,8 +860,9 @@ ${customInstructions ? `\nCUSTOM INSTRUCTIONS:\n${customInstructions}` : ''}`;
       }
     } catch (err) {
       console.warn('OpenAI API call failed, falling back to smart reply:', err.message);
+      const fallbackReply = await generateSmartFallback(query, req);
       return res.json({
-        reply: `⚠️ **OpenAI Notice**: ${err.message}\n\n*Falling back to built-in advisor:*\n\n${generateSmartFallback(query, req)}`,
+        reply: `⚠️ **OpenAI Notice**: ${err.message}\n\n*Falling back to built-in advisor:*\n\n${fallbackReply}`,
         provider: 'builtin',
         model: 'builtin',
       });
@@ -898,20 +870,22 @@ ${customInstructions ? `\nCUSTOM INSTRUCTIONS:\n${customInstructions}` : ''}`;
   }
 
   // 3. Built-in Smart Advisor
+  const smartReply = await generateSmartFallback(query, req);
   return res.json({
-    reply: generateSmartFallback(query, req),
+    reply: smartReply,
     provider: 'builtin',
     model: 'builtin',
   });
 });
 
 // --- Reset Data Endpoint ---
-app.post('/api/reset', (req, res) => {
-  const data = resetDbToSeed();
-  res.json({ success: true, data });
+app.post('/api/reset', async (req, res) => {
+  const result = await resetDatabase();
+  res.json(result);
 });
 
 // Start Server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Me Plus Backend REST API running at http://localhost:${PORT}`);
+  await initDatabase();
 });
