@@ -1225,7 +1225,7 @@ export const SettingsView: React.FC = () => {
             </li>
             <li className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-              <span><strong>6 Time Logs</strong> (~17.5h) with billable rates &amp; CSV export</span>
+              <span><strong>6 Time Logs</strong> (~17.5h) tracking project work time &amp; CSV export</span>
             </li>
             <li className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>

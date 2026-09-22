@@ -6,7 +6,7 @@ import {
   Pause,
   Square,
   Plus,
-  DollarSign,
+  FolderKanban,
   Download,
   Trash2,
   Calendar,
@@ -54,23 +54,18 @@ export const TimeTrackerView: React.FC = () => {
     );
   };
 
-  // Simple, intuitive metrics
+  // Simple, intuitive work metrics
   const totalSeconds = timeEntries.reduce((acc, curr) => acc + (curr.durationSeconds || 0), 0);
   const totalHours = (totalSeconds / 3600).toFixed(1);
-
-  const totalEarned = timeEntries.reduce(
-    (acc, curr) => acc + Math.round(((curr.durationSeconds || 0) / 3600) * (curr.hourlyRate || 0)),
-    0
-  );
+  const uniqueProjectsCount = new Set(timeEntries.map(e => e.projectId).filter(Boolean)).size;
 
   const handleExportCSV = () => {
-    const headers = ['ID,Date,Client,Project,Description,Duration (Hours),Rate,Total ($)'];
+    const headers = ['ID,Date,Client,Project,Work Description,Duration (Hours)'];
     const rows = timeEntries.map(e => {
       const client = clients.find(c => c.id === e.clientId);
       const project = projects.find(p => p.id === e.projectId);
       const durationHours = (e.durationSeconds / 3600).toFixed(2);
-      const totalAmount = (Number(durationHours) * e.hourlyRate).toFixed(2);
-      return `"${e.id}","${e.date}","${client?.name || 'Client'}","${project?.title || 'Project'}","${e.description.replace(/"/g, '""')}","${durationHours}","${e.hourlyRate}","${totalAmount}"`;
+      return `"${e.id}","${e.date}","${client?.name || 'Client'}","${project?.title || 'Project'}","${e.description.replace(/"/g, '""')}","${durationHours}"`;
     });
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
@@ -228,7 +223,7 @@ export const TimeTrackerView: React.FC = () => {
         </div>
       </div>
 
-      {/* Simple Summary Cards */}
+      {/* Simple Work Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex items-center gap-3.5">
           <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
@@ -244,12 +239,12 @@ export const TimeTrackerView: React.FC = () => {
 
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex items-center gap-3.5">
           <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400">
-            <DollarSign className="w-5 h-5" />
+            <FolderKanban className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase">Total Earned</span>
-            <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
-              {user?.currency || '$'}{totalEarned.toLocaleString()}
+            <span className="text-[11px] font-bold text-slate-400 uppercase">Projects Worked On</span>
+            <div className="text-xl font-black text-teal-700 dark:text-teal-400 mt-0.5">
+              {uniqueProjectsCount} {uniqueProjectsCount === 1 ? 'Project' : 'Projects'}
             </div>
           </div>
         </div>
@@ -261,7 +256,7 @@ export const TimeTrackerView: React.FC = () => {
           <div>
             <span className="text-[11px] font-bold text-slate-400 uppercase">Recorded Sessions</span>
             <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-              {timeEntries.length} {timeEntries.length === 1 ? 'Entry' : 'Entries'}
+              {timeEntries.length} {timeEntries.length === 1 ? 'Session' : 'Sessions'}
             </div>
           </div>
         </div>
@@ -288,9 +283,8 @@ export const TimeTrackerView: React.FC = () => {
               <tr>
                 <th className="py-3 px-4">Date</th>
                 <th className="py-3 px-4">Client &amp; Project</th>
-                <th className="py-3 px-4">Description</th>
+                <th className="py-3 px-4">Work Description</th>
                 <th className="py-3 px-4">Duration</th>
-                <th className="py-3 px-4">Earned</th>
                 <th className="py-3 px-4 text-right">Delete</th>
               </tr>
             </thead>
@@ -299,9 +293,7 @@ export const TimeTrackerView: React.FC = () => {
                 const client = clients.find(c => c.id === entry.clientId);
                 const project = projects.find(p => p.id === entry.projectId);
                 const secs = entry.durationSeconds || 0;
-                const rate = entry.hourlyRate || 0;
                 const hoursNum = (secs / 3600).toFixed(2);
-                const entryTotal = Math.round(Number(hoursNum) * rate);
 
                 return (
                   <tr key={entry.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
@@ -318,16 +310,12 @@ export const TimeTrackerView: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-3 px-4 text-slate-700 dark:text-slate-300 max-w-xs truncate">
+                    <td className="py-3 px-4 text-slate-700 dark:text-slate-300 max-w-md">
                       {entry.description}
                     </td>
 
                     <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
                       {hoursNum} hrs
-                    </td>
-
-                    <td className="py-3 px-4 font-bold text-emerald-700 dark:text-emerald-400">
-                      {user?.currency || '$'}{(entryTotal ?? 0).toLocaleString()}
                     </td>
 
                     <td className="py-3 px-4 text-right">

@@ -21,7 +21,6 @@ export const ManualLogModal: React.FC = () => {
   const [taskId, setTaskId] = useState('');
   const [description, setDescription] = useState('');
   const [hours, setHours] = useState<number>(1.5);
-  const [isBillable, setIsBillable] = useState(true);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [error, setError] = useState('');
 
@@ -35,8 +34,6 @@ export const ManualLogModal: React.FC = () => {
 
   const projectTasks = tasks.filter(t => t.projectId === projectId);
   const selectedProject = projects.find(p => p.id === projectId);
-  const selectedClient = clients.find(c => c.id === selectedProject?.clientId);
-  const hourlyRate = selectedClient?.hourlyRate || user?.hourlyRate || 65;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,8 +63,8 @@ export const ManualLogModal: React.FC = () => {
       durationSeconds,
       startTime: now.toISOString(),
       endTime: now.toISOString(),
-      isBillable,
-      hourlyRate,
+      isBillable: false,
+      hourlyRate: 0,
       isBilled: false,
       date,
     });
@@ -94,7 +91,7 @@ export const ManualLogModal: React.FC = () => {
                 Log Working Hours
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Record completed project time &amp; billable rate
+                Record your work time and project sessions
               </p>
             </div>
           </div>
@@ -198,25 +195,6 @@ export const ManualLogModal: React.FC = () => {
                 required
               />
             </div>
-          </div>
-
-          {/* Billing Toggle & Computed Cost */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
-            <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-800 dark:text-slate-200">
-              <input
-                type="checkbox"
-                checked={isBillable}
-                onChange={e => setIsBillable(e.target.checked)}
-                className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
-              />
-              <span>Billable Work ({user?.currency || '$'}{hourlyRate}/hr)</span>
-            </label>
-
-            {isBillable && (
-              <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 font-mono">
-                +{user?.currency || '$'}{Math.round(hours * hourlyRate)}
-              </span>
-            )}
           </div>
         </form>
 

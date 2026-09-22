@@ -26,12 +26,6 @@ export const StatCards: React.FC = () => {
   const totalSecondsTracked = timeEntries.reduce((acc, curr) => acc + (curr.durationSeconds || 0), 0);
   const totalHoursTracked = (totalSecondsTracked / 3600).toFixed(1);
 
-  const unbilledEntries = timeEntries.filter(t => !t.isBilled && t.isBillable);
-  const unbilledEarnings = unbilledEntries.reduce(
-    (acc, curr) => acc + Math.round(((curr.durationSeconds || 0) / 3600) * (curr.hourlyRate || 0)),
-    0
-  );
-
   const stats = [
     {
       id: 'clients',
@@ -71,7 +65,7 @@ export const StatCards: React.FC = () => {
       id: 'time',
       title: 'Tracked Hours',
       value: `${totalHoursTracked}h`,
-      subValue: `+${user?.currency || '$'}${unbilledEarnings.toLocaleString()} unbilled`,
+      subValue: `${timeEntries.length} logged sessions`,
       icon: Clock,
       iconColor: 'text-emerald-700 dark:text-emerald-400',
       bgLight: 'bg-emerald-500/10',
