@@ -184,6 +184,11 @@ export const SettingsView: React.FC = () => {
 
   const handlePreviewScreensaver = () => {
     window.dispatchEvent(new CustomEvent('meplus:trigger-screensaver-preview'));
+    window.dispatchEvent(
+      new CustomEvent('meplus:trigger-screensaver-preview', {
+        detail: { style: idleStyle },
+      })
+    );
   };
 
   const presetAvatars = [
