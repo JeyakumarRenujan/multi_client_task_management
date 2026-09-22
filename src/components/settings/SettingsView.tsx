@@ -1161,20 +1161,6 @@ export const SettingsView: React.FC = () => {
           </div>
         )}
 
-        {/* Custom Instructions Textarea */}
-        <div>
-          <label className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 block">
-            Custom System Instructions / Persona Guidance (Optional)
-          </label>
-          <textarea
-            value={aiInstructions}
-            onChange={e => setAiInstructions(e.target.value)}
-            rows={2}
-            placeholder="e.g. Always write polite but firm email drafts under 150 words. Suggest a 20% margin on all project scope change estimates."
-            className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
-        </div>
-
         {/* Connection Test Banner */}
         {aiTestResult && (
           <div
