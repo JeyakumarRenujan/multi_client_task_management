@@ -65,7 +65,7 @@ export const DashboardView: React.FC = () => {
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
+          <div className="min-w-0 flex-1">
             {/* Live Date & Time Badges */}
             <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-emerald-100 mb-2.5">
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/30 border border-emerald-400/25 backdrop-blur-xs">
@@ -89,11 +89,11 @@ export const DashboardView: React.FC = () => {
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3">
+          {/* Action Buttons with Proper Flex Alignment & No-Wrap */}
+          <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
             <button
               onClick={() => setIsAiModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600/35 hover:bg-purple-600/50 border border-purple-300/40 text-purple-100 text-xs font-bold transition-all shadow-sm group cursor-pointer backdrop-blur-xs hover:scale-[1.02] active:scale-[0.98]"
+              className="h-10 px-4 rounded-xl bg-purple-600/35 hover:bg-purple-600/50 border border-purple-300/40 text-purple-100 text-xs font-bold transition-all shadow-sm group cursor-pointer backdrop-blur-xs flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Sparkles className="w-4 h-4 text-purple-200 group-hover:rotate-12 transition-transform" />
               <span>AI Copilot</span>
@@ -101,7 +101,7 @@ export const DashboardView: React.FC = () => {
 
             <button
               onClick={() => setIsTaskModalOpen(true)}
-              className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-whatsapp-light hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-lg shadow-black/20 hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+              className="h-10 px-4 rounded-xl bg-whatsapp-light hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-md shadow-black/20 transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Plus className="w-4 h-4 text-slate-950 font-black stroke-[3]" />
               <span>New Task</span>
