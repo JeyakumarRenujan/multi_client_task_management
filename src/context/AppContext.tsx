@@ -1288,8 +1288,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(`${STORAGE_KEYS.NOTIFS_PREFIX}usr-1`, JSON.stringify(initialNotifications));
 
     showToast({
-      title: 'Demo Data Refreshed! 🚀',
-      message: 'Restored fresh sample clients, projects, tasks, invoices & time logs for presentation.',
+      title: 'Sample Data Restored! 🚀',
+      message: 'Restored fresh sample clients, projects, tasks, invoices & time logs.',
       type: 'success',
     });
   };
