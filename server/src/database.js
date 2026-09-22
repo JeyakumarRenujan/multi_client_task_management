@@ -33,16 +33,21 @@ let isMongoConnected = false;
  * Tries external MongoDB first; falls back to embedded JSON store if unavailable or unconfigured.
  */
 export async function initDatabase() {
+  if (mongoose.connection.readyState === 1) {
+    isMongoConnected = true;
+    return { mode: 'mongodb', host: mongoose.connection.host };
+  }
+
   const uri = process.env.MONGODB_URI;
 
   if (uri && uri.trim()) {
     try {
-      console.log(`🍃 [Database] Attempting connection to external MongoDB...`);
+      console.log(`🍃 [Database] Connecting to MongoDB Atlas...`);
       await mongoose.connect(uri.trim(), {
-        serverSelectionTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 8000,
       });
       isMongoConnected = true;
-      console.log(`🍃 [MongoDB] Connected successfully to external database: ${mongoose.connection.host}`);
+      console.log(`🍃 [MongoDB] Connected successfully to MongoDB Atlas: ${mongoose.connection.host}`);
 
       // Check if DB is fresh/empty; if so, auto-seed with initialSeed
       const userCount = await UserModel.countDocuments();
@@ -54,14 +59,12 @@ export async function initDatabase() {
       return { mode: 'mongodb', host: mongoose.connection.host };
     } catch (err) {
       isMongoConnected = false;
-      console.warn(`⚠️  [MongoDB] Connection failed: ${err.message}`);
-      console.warn(`📦 [Database] Resilient Fallback: Active database is local Embedded JSON store.`);
-      return { mode: 'json_fallback', error: err.message };
+      console.error(`❌ [MongoDB] Connection failed: ${err.message}`);
+      throw err;
     }
   } else {
     isMongoConnected = false;
-    console.log(`📦 [Database] Running with Embedded JSON store (server/data/db.json).`);
-    console.log(`💡 [Tip] To connect to MongoDB, set MONGODB_URI in .env`);
+    console.warn(`⚠️ [MongoDB] MONGODB_URI is not set! Falling back to storage.`);
     return { mode: 'json' };
   }
 }
