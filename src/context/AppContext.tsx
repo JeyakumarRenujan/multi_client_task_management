@@ -53,7 +53,7 @@ interface AppContextType {
   loginDemoUser: () => void;
   resetDemoData: () => void;
   logout: () => void;
-  updateUserProfile: (profile: Partial<UserProfile>) => void;
+  updateUserProfile: (profile: Partial<UserProfile>, options?: { silent?: boolean }) => void;
 
   // Clients
   clients: Client[];
@@ -1329,7 +1329,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const updateUserProfile = (profile: Partial<UserProfile>) => {
+  const updateUserProfile = (profile: Partial<UserProfile>, options?: { silent?: boolean }) => {
     if (!user) return;
     const updatedUser: UserProfile = { ...user, ...profile };
     setUser(updatedUser);
@@ -1374,11 +1374,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('Could not sync profile to backend:', err);
     });
 
-    showToast({
-      title: 'Profile Updated',
-      message: 'Your personal settings and profile photo have been saved.',
-      type: 'success',
-    });
+    if (!options?.silent) {
+      showToast({
+        title: 'Profile Updated',
+        message: 'Your personal settings and profile photo have been saved.',
+        type: 'success',
+      });
+    }
   };
 
   // Client Actions

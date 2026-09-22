@@ -163,13 +163,16 @@ export const SettingsView: React.FC = () => {
     if (updates.timeoutMinutes !== undefined) setIdleTimeout(newTimeout);
     if (updates.style !== undefined) setIdleStyle(newStyle);
 
-    updateUserProfile({
-      idleSettings: {
-        enabled: newEnabled,
-        timeoutMinutes: newTimeout,
-        style: newStyle,
+    updateUserProfile(
+      {
+        idleSettings: {
+          enabled: newEnabled,
+          timeoutMinutes: newTimeout,
+          style: newStyle,
+        },
       },
-    });
+      { silent: true }
+    );
   };
 
   const handleTestAi = async () => {
@@ -211,7 +214,7 @@ export const SettingsView: React.FC = () => {
     };
 
     saveStoredAiSettings(updated);
-    updateUserProfile({ aiSettings: updated });
+    updateUserProfile({ aiSettings: updated }, { silent: true });
     setAiTestResult(null);
 
     const providerLabel =
@@ -317,7 +320,7 @@ export const SettingsView: React.FC = () => {
 
         setAvatar(finalUrl);
         // Persist immediately like real applications (Slack, GitHub, Twitter)
-        updateUserProfile({ avatar: finalUrl });
+        updateUserProfile({ avatar: finalUrl }, { silent: true });
         showToast({
           title: 'Photo Uploaded! 🎨',
           message: 'Your profile photo has been updated and permanently saved.',
@@ -326,7 +329,7 @@ export const SettingsView: React.FC = () => {
       };
       img.onerror = () => {
         setAvatar(rawDataUrl);
-        updateUserProfile({ avatar: rawDataUrl });
+        updateUserProfile({ avatar: rawDataUrl }, { silent: true });
       };
       img.src = rawDataUrl;
     };

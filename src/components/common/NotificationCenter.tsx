@@ -111,12 +111,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
     playNotificationTone(nextSound ? 'enable' : 'disable');
 
     if (user) {
-      updateUserProfile({
-        notificationSettings: {
-          ...user.notificationSettings,
-          sound: nextSound,
+      updateUserProfile(
+        {
+          notificationSettings: {
+            ...user.notificationSettings,
+            sound: nextSound,
+          },
         },
-      });
+        { silent: true }
+      );
     }
 
     showToast({
