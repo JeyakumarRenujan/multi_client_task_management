@@ -35,6 +35,7 @@ import {
   saveStoredAiSettings,
   testAiConnection,
 } from '../../services/aiService';
+import { playNotificationTone } from '../../services/soundService';
 
 const getIdleThemeStyles = (color: string) => {
   switch (color) {
@@ -173,6 +174,65 @@ export const SettingsView: React.FC = () => {
       },
       { silent: true }
     );
+  };
+
+  const handleToggleNotificationSetting = (
+    key: 'email' | 'sms' | 'sound',
+    nextValue: boolean
+  ) => {
+    if (key === 'email') setEmailAlerts(nextValue);
+    if (key === 'sms') setSmsAlerts(nextValue);
+    if (key === 'sound') setSoundAlerts(nextValue);
+
+    if (key === 'sound') {
+      playNotificationTone(nextValue ? 'enable' : 'disable');
+    }
+
+    if (user) {
+      updateUserProfile(
+        {
+          notificationSettings: {
+            ...(user.notificationSettings || {
+              email: true,
+              sms: true,
+              browser: true,
+              sound: true,
+              deadlineReminderHours: 24,
+            }),
+            [key]: nextValue,
+          },
+        },
+        { silent: true }
+      );
+    }
+
+    showToast({
+      title:
+        key === 'sound'
+          ? nextValue
+            ? '🔊 Audio Sound Feedback Enabled'
+            : '🔇 Audio Sound Feedback Muted'
+          : key === 'email'
+          ? nextValue
+            ? '📧 Email Notifications Enabled'
+            : '📧 Email Notifications Disabled'
+          : nextValue
+          ? '📱 SMS Urgent Alerts Enabled'
+          : '📱 SMS Urgent Alerts Disabled',
+      message:
+        key === 'sound'
+          ? nextValue
+            ? 'Audible chime will play for task deadlines and timer alerts.'
+            : 'In-app audio alert sounds are now muted.'
+          : key === 'email'
+          ? nextValue
+            ? 'You will receive email digests for upcoming client deliverables.'
+            : 'Email deadline alerts paused.'
+          : nextValue
+          ? 'Urgent SMS pings will be dispatched for due deadlines.'
+          : 'SMS alerts paused.',
+      type: nextValue ? 'success' : 'info',
+    });
   };
 
   const handleTestAi = async () => {
@@ -1202,39 +1262,54 @@ export const SettingsView: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer">
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-              Email Notifications for Upcoming Deadlines
-            </span>
+          <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+            <div>
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                Email Notifications for Upcoming Deadlines
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                Receive daily summaries and deadline digest reminders via email
+              </span>
+            </div>
             <input
               type="checkbox"
               checked={emailAlerts}
-              onChange={e => setEmailAlerts(e.target.checked)}
-              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+              onChange={e => handleToggleNotificationSetting('email', e.target.checked)}
+              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
             />
           </label>
 
-          <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer">
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-              SMS Urgent Alerts
-            </span>
+          <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+            <div>
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                SMS Urgent Alerts
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                Automated SMS pings via Twilio for deliverables due within 24 hours
+              </span>
+            </div>
             <input
               type="checkbox"
               checked={smsAlerts}
-              onChange={e => setSmsAlerts(e.target.checked)}
-              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+              onChange={e => handleToggleNotificationSetting('sms', e.target.checked)}
+              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
             />
           </label>
 
-          <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer">
-            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-              In-App Audio Sound Feedback on Timer &amp; Alerts
-            </span>
+          <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
+            <div>
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                In-App Audio Sound Feedback on Timer &amp; Alerts
+              </span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                Audible Web Audio chime played on deadlines and Pomodoro timer intervals
+              </span>
+            </div>
             <input
               type="checkbox"
               checked={soundAlerts}
-              onChange={e => setSoundAlerts(e.target.checked)}
-              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+              onChange={e => handleToggleNotificationSetting('sound', e.target.checked)}
+              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
             />
           </label>
         </div>

@@ -23,6 +23,7 @@ import {
   initialNotifications,
 } from '../data/initialData';
 import { api } from '../services/api';
+import { playNotificationTone } from '../services/soundService';
 
 export interface ToastMessage {
   id: string;
@@ -879,26 +880,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Sound chime for high priority alerts
   const playAlertChime = useCallback(() => {
     if (!user?.notificationSettings?.sound) return;
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
-      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.35);
-    } catch {
-      // Audio context may be blocked by browser policy
-    }
+    playNotificationTone('chime');
   }, [user]);
+
+  const addNotification = useCallback((notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
+    const newNotif: AppNotification = {
+      ...notif,
+      id: `notif-${Date.now()}`,
+      userId: user?.id || 'usr-1',
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+
+    if (notif.priority === 'urgent' || notif.priority === 'high') {
+      playAlertChime();
+    }
+  }, [user, playAlertChime]);
 
   // User Actions - Strict Authentication with Bidirectional Persistence Sync
   const login = async (email: string, password?: string): Promise<{ success: boolean; error?: string }> => {
@@ -1579,6 +1577,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       },
       undoLabel: 'Undo',
     });
+
+    // Real-Time Deadline Sound & Notification Trigger
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isDueToday = newTask.dueDate === todayStr;
+    const isOverdue = newTask.dueDate < todayStr;
+    const isUrgent = newTask.priority === 'urgent' || newTask.priority === 'high' || isDueToday || isOverdue;
+
+    if (isDueToday || isOverdue || isUrgent) {
+      addNotification({
+        title: isOverdue
+          ? '🚨 Overdue Task Alert!'
+          : isDueToday
+          ? '🚨 Urgent Deadline Today!'
+          : '⏰ High Priority Task Scheduled',
+        message: `Task "${newTask.title}" is ${
+          isOverdue ? 'already past due date' : isDueToday ? 'due today' : `scheduled for ${newTask.dueDate}`
+        }.`,
+        type: 'deadline',
+        priority: isDueToday || isOverdue ? 'urgent' : 'high',
+        relatedId: newTask.id,
+        relatedType: 'task',
+      });
+    }
+
     return newTask;
   };
 
@@ -1590,6 +1612,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return next;
     });
     api.updateTask(id, updates).catch(() => {});
+
+    if (updates.dueDate || updates.priority) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const target = tasks.find(t => t.id === id);
+      const newDue = updates.dueDate || target?.dueDate;
+      const newPriority = updates.priority || target?.priority;
+      const isDueToday = newDue === todayStr;
+      const isUrgent = newPriority === 'urgent' || isDueToday;
+
+      if (isDueToday || isUrgent) {
+        addNotification({
+          title: isDueToday ? '🚨 Deadline Alert: Due Today!' : '🚨 Urgent Priority Task',
+          message: `Task "${target?.title || 'Task'}" deadline is ${isDueToday ? 'due today' : newDue}.`,
+          type: 'deadline',
+          priority: 'urgent',
+          relatedId: id,
+          relatedType: 'task',
+        });
+      }
+    }
+
     showToast({
       title: 'Task Updated',
       message: 'Task changes saved successfully.',
@@ -1872,21 +1915,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const markAllNotificationsAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-
-  const addNotification = (notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotif: AppNotification = {
-      ...notif,
-      id: `notif-${Date.now()}`,
-      userId: user?.id || 'usr-1',
-      timestamp: new Date().toISOString(),
-      read: false,
-    };
-    setNotifications(prev => [newNotif, ...prev]);
-
-    if (notif.priority === 'urgent' || notif.priority === 'high') {
-      playAlertChime();
-    }
   };
 
   const clearAllNotifications = () => {
