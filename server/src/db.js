@@ -1,11 +1,21 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = path.join(__dirname, '../data');
-const DB_FILE = path.join(DATA_DIR, 'db.json');
+
+// In serverless / Vercel, the app directory is read-only.
+// We use /tmp if running under Vercel / serverless, and maintain an in-memory cache.
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const BUNDLED_DATA_DIR = path.join(__dirname, '../data');
+const BUNDLED_DB_FILE = path.join(BUNDLED_DATA_DIR, 'db.json');
+
+const DATA_DIR = isServerless ? os.tmpdir() : BUNDLED_DATA_DIR;
+const DB_FILE = isServerless ? path.join(os.tmpdir(), 'hci_db.json') : BUNDLED_DB_FILE;
+
+let inMemoryDb = null;
 
 // Initial seed data with userId isolation
 export const initialSeed = {
@@ -780,17 +790,48 @@ export const getDeterministicUserId = (email) => {
 
 // Initialize DB file if not exists
 export const initDb = () => {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (inMemoryDb) return;
+
+  // Load bundled seed or bundled db.json if available
+  let seedToUse = initialSeed;
+  try {
+    if (fs.existsSync(BUNDLED_DB_FILE)) {
+      const raw = fs.readFileSync(BUNDLED_DB_FILE, 'utf-8');
+      seedToUse = JSON.parse(raw);
+    }
+  } catch {
+    seedToUse = initialSeed;
   }
-  if (!fs.existsSync(DB_FILE)) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialSeed, null, 2), 'utf-8');
+
+  if (isServerless) {
+    try {
+      if (!fs.existsSync(DB_FILE)) {
+        fs.writeFileSync(DB_FILE, JSON.stringify(seedToUse, null, 2), 'utf-8');
+      }
+      const raw = fs.readFileSync(DB_FILE, 'utf-8');
+      inMemoryDb = JSON.parse(raw);
+    } catch {
+      inMemoryDb = JSON.parse(JSON.stringify(seedToUse));
+    }
+    return;
+  }
+
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DB_FILE)) {
+      fs.writeFileSync(DB_FILE, JSON.stringify(seedToUse, null, 2), 'utf-8');
+    }
+  } catch {
+    inMemoryDb = JSON.parse(JSON.stringify(seedToUse));
   }
 };
 
 // Read whole DB
 export const readDb = () => {
   initDb();
+  if (inMemoryDb) return inMemoryDb;
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
     const parsed = JSON.parse(raw);
@@ -799,15 +840,20 @@ export const readDb = () => {
     }
     return parsed;
   } catch (error) {
-    console.error('Error reading db.json, returning seed:', error);
-    return initialSeed;
+    return inMemoryDb || initialSeed;
   }
 };
 
 // Write whole DB
 export const writeDb = (data) => {
-  initDb();
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  inMemoryDb = data;
+  try {
+    initDb();
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    // Graceful fallback for read-only environments
+    console.warn('[Storage] File write skipped (in-memory store retained):', err.message);
+  }
 };
 
 // Collection helpers

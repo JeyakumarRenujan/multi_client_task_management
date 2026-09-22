@@ -1094,13 +1094,19 @@ app.post('/api/reset', async (req, res) => {
   res.json(result);
 });
 
-// Start Server
-app.listen(PORT, async () => {
-  console.log(`🚀 Me Plus Backend REST API running at http://localhost:${PORT}`);
-  await initDatabase();
-  if (isEmailConfigured()) {
-    console.log(`✉️  [Email Service] SMTP is configured (${process.env.SMTP_HOST || 'smtp.gmail.com'}). Real OTP emails will be sent.`);
-  } else {
-    console.log(`✉️  [Email Service] Simulated/Dev mode. Configure SMTP_USER and SMTP_PASS in .env to send real emails.`);
-  }
-});
+// Export Express App for Vercel Serverless Function & Testing
+export { app };
+export default app;
+
+// Start Server only if running standalone / locally (not inside Vercel Serverless Function)
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  app.listen(PORT, async () => {
+    console.log(`🚀 Me Plus Backend REST API running at http://localhost:${PORT}`);
+    await initDatabase();
+    if (isEmailConfigured()) {
+      console.log(`✉️  [Email Service] SMTP is configured (${process.env.SMTP_HOST || 'smtp.gmail.com'}). Real OTP emails will be sent.`);
+    } else {
+      console.log(`✉️  [Email Service] Simulated/Dev mode. Configure SMTP_USER and SMTP_PASS in .env to send real emails.`);
+    }
+  });
+}
