@@ -40,14 +40,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
     switch (sidebarTheme) {
       case 'sage':
-        return 'bg-[#edf6f2] border-r border-emerald-200/90 text-slate-900 shadow-[2px_0_10px_-2px_rgba(18,140,126,0.08)]';
+        return 'bg-[#d4ede1] border-r border-emerald-300 text-slate-900 shadow-[2px_0_12px_-2px_rgba(16,185,129,0.15)]';
       case 'dark':
         return 'bg-slate-900 border-r border-slate-800 text-slate-100 shadow-xl';
       case 'white':
         return 'bg-white/95 border-r border-slate-200/80 text-slate-900 shadow-sm';
       case 'slate':
       default:
-        return 'bg-[#eef2f6] border-r border-slate-200 text-slate-900 shadow-[2px_0_10px_-2px_rgba(0,0,0,0.05)]';
+        return 'bg-[#dce5ee] border-r border-slate-300 text-slate-900 shadow-[2px_0_10px_-2px_rgba(0,0,0,0.06)]';
     }
   };
 
@@ -58,20 +58,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
     switch (sidebarTheme) {
       case 'sage':
-        return 'text-slate-700 hover:bg-white hover:text-emerald-800 hover:shadow-2xs border border-transparent hover:border-emerald-200/70';
+        return 'text-emerald-950 hover:bg-white/90 hover:text-emerald-900 hover:shadow-2xs border border-transparent hover:border-emerald-300/70';
       case 'dark':
         return 'text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent';
       case 'white':
         return 'text-slate-600 hover:bg-emerald-50/70 hover:text-emerald-800 border border-transparent';
       case 'slate':
       default:
-        return 'text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-2xs border border-transparent hover:border-slate-200/80';
+        return 'text-slate-700 hover:bg-white/90 hover:text-slate-900 hover:shadow-2xs border border-transparent hover:border-slate-300/80';
     }
   };
 
   const getSectionHeaderClass = () => {
     if (isDark || sidebarTheme === 'dark') return 'text-slate-400';
-    if (sidebarTheme === 'sage') return 'text-emerald-800/70';
+    if (sidebarTheme === 'sage') return 'text-emerald-800';
+    if (sidebarTheme === 'slate') return 'text-slate-600';
     return 'text-slate-500';
   };
 
@@ -81,14 +82,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     }
     switch (sidebarTheme) {
       case 'sage':
-        return 'bg-white border-emerald-300/80 text-slate-800 shadow-2xs hover:border-emerald-500 hover:shadow-xs';
+        return 'bg-white/95 border-emerald-300 text-slate-800 shadow-2xs hover:border-emerald-500 hover:shadow-xs';
       case 'dark':
         return 'bg-slate-800/80 border-slate-700 text-slate-200 hover:border-emerald-500';
       case 'white':
         return 'bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-transparent border-emerald-200/50 text-slate-800 hover:border-emerald-400';
       case 'slate':
       default:
-        return 'bg-white border-emerald-200/90 text-slate-800 shadow-2xs hover:border-emerald-400 hover:shadow-xs';
+        return 'bg-white/95 border-slate-300 text-slate-800 shadow-2xs hover:border-emerald-400 hover:shadow-xs';
     }
   };
 
@@ -261,7 +262,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
         {/* Sidebar Color Switcher */}
         <div className={`p-3.5 border-t shrink-0 ${
-          isDark || sidebarTheme === 'dark' ? 'border-slate-800' : 'border-slate-200/80'
+          isDark || sidebarTheme === 'dark'
+            ? 'border-slate-800'
+            : sidebarTheme === 'sage'
+            ? 'border-emerald-300/70'
+            : sidebarTheme === 'slate'
+            ? 'border-slate-300/80'
+            : 'border-slate-200/80'
         }`}>
           {/* Real-Time Sidebar Color Customizer */}
           <div className="flex items-center justify-between px-1">
@@ -272,21 +279,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
               <button
                 type="button"
                 onClick={() => setSidebarTheme('slate')}
-                title="Cool Slate (Default - Modern gray)"
-                className={`w-4 h-4 rounded-full bg-[#eef2f6] border ${
+                title="Cool Slate (Blue-gray tone)"
+                className={`w-4 h-4 rounded-full bg-[#cbd5e1] border ${
                   sidebarTheme === 'slate'
-                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-slate-400 scale-110'
-                    : 'border-slate-300'
+                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-slate-500 scale-110'
+                    : 'border-slate-400'
                 } cursor-pointer transition-all hover:scale-125`}
               />
               <button
                 type="button"
                 onClick={() => setSidebarTheme('sage')}
-                title="Soft Sage (Teal/Mint tint)"
-                className={`w-4 h-4 rounded-full bg-[#edf6f2] border ${
+                title="Soft Sage (Sage green tone)"
+                className={`w-4 h-4 rounded-full bg-[#82d6b3] border ${
                   sidebarTheme === 'sage'
-                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-emerald-500 scale-110'
-                    : 'border-emerald-300'
+                    ? 'ring-2 ring-emerald-500 ring-offset-1 border-emerald-600 scale-110'
+                    : 'border-emerald-400'
                 } cursor-pointer transition-all hover:scale-125`}
               />
               <button
@@ -306,7 +313,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                 className={`w-4 h-4 rounded-full bg-white border ${
                   sidebarTheme === 'white'
                     ? 'ring-2 ring-emerald-500 ring-offset-1 border-slate-400 scale-110'
-                    : 'border-slate-200'
+                    : 'border-slate-300'
                 } cursor-pointer transition-all hover:scale-125`}
               />
             </div>
