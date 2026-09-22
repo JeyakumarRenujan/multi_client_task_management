@@ -805,19 +805,19 @@ export const SettingsView: React.FC = () => {
                   {
                     id: 'zen' as const,
                     title: 'Ambient Zen Ring',
-                    desc: 'Calming breathing rhythm circle, motivating quote, and live digital clock',
+                    desc: 'Calming breathing halo ring, luxury ambient glow, and live minimalist clock',
                     icon: Coffee,
                   },
                   {
                     id: 'clock' as const,
-                    title: 'Digital Clock & Focus',
-                    desc: 'Minimalist large typography clock and active workspace summary',
+                    title: 'Studio Minimalist Clock',
+                    desc: 'Clean typography clock, floating constellation stardust, and live date',
                     icon: Timer,
                   },
                   {
                     id: 'particles' as const,
-                    title: 'Floating Starfield',
-                    desc: 'Organic glowing teal particle flow and restful ambient backdrop',
+                    title: 'Celestial Constellation',
+                    desc: 'Glowing starfield particle web and restful ethereal backdrop',
                     icon: Sparkles,
                   },
                 ].map(st => {

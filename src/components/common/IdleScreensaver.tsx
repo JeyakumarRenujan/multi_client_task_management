@@ -1,20 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useIdleTimer } from '../../hooks/useIdleTimer';
-import {
-  Clock,
-  Sparkles,
-  Play,
-  Coffee,
-  ShieldCheck,
-  MousePointer,
-  CheckCircle2,
-  FolderKanban,
-  Timer as TimerIcon,
-} from 'lucide-react';
+import { Timer as TimerIcon } from 'lucide-react';
 
 export const IdleScreensaver: React.FC = () => {
-  const { user, activeTimer, tasks, projects } = useApp();
+  const { user, activeTimer } = useApp();
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [previewActive, setPreviewActive] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -58,7 +48,7 @@ export const IdleScreensaver: React.FC = () => {
     return () => clearInterval(interval);
   }, [shouldShow]);
 
-  // Ambient Starry Particles Canvas (Active for 'particles' or subtle background)
+  // Ambient Starry Constellation Canvas
   useEffect(() => {
     if (!shouldShow) return;
     const canvas = canvasRef.current;
@@ -77,28 +67,46 @@ export const IdleScreensaver: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
 
-    const particleCount = style === 'particles' ? 65 : 35;
+    const particleCount = style === 'particles' ? 75 : 45;
+    const maxLineDist = style === 'particles' ? 120 : 90;
+
     const particles = Array.from({ length: particleCount }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      radius: Math.random() * 2.2 + 0.8,
-      speedX: (Math.random() - 0.5) * 0.45,
-      speedY: (Math.random() - 0.5) * 0.45,
-      alpha: Math.random() * 0.5 + 0.2,
-      fadeSpeed: (Math.random() * 0.01 + 0.005) * (Math.random() > 0.5 ? 1 : -1),
+      radius: Math.random() * 1.8 + 0.8,
+      speedX: (Math.random() - 0.5) * 0.35,
+      speedY: (Math.random() - 0.5) * 0.35,
+      baseAlpha: Math.random() * 0.5 + 0.25,
+      pulse: Math.random() * Math.PI * 2,
     }));
 
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
+      // Draw faint delicate constellation connection lines
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < maxLineDist) {
+            const lineAlpha = (1 - dist / maxLineDist) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(45, 212, 191, ${lineAlpha})`;
+            ctx.lineWidth = 0.7;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw luminous particles
       particles.forEach(p => {
         p.x += p.speedX;
         p.y += p.speedY;
-        p.alpha += p.fadeSpeed;
-
-        if (p.alpha > 0.75 || p.alpha < 0.15) {
-          p.fadeSpeed = -p.fadeSpeed;
-        }
+        p.pulse += 0.02;
+        const currentAlpha = Math.max(0.1, p.baseAlpha + Math.sin(p.pulse) * 0.2);
 
         if (p.x < 0) p.x = width;
         if (p.x > width) p.x = 0;
@@ -107,9 +115,9 @@ export const IdleScreensaver: React.FC = () => {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(18, 140, 126, ${p.alpha})`; // Emerald Teal
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = 'rgba(37, 211, 102, 0.5)';
+        ctx.fillStyle = `rgba(52, 211, 153, ${currentAlpha})`;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(37, 211, 102, 0.4)';
         ctx.fill();
       });
 
@@ -131,143 +139,102 @@ export const IdleScreensaver: React.FC = () => {
 
   if (!shouldShow) return null;
 
-  const formattedHoursMinutes = currentTime.toLocaleTimeString([], {
-    hour: '2-digit',
+  const hours12 = currentTime.toLocaleTimeString([], {
+    hour: 'numeric',
+    hour12: true,
+  }).replace(/\s*(AM|PM)/i, '');
+  const minutes12 = currentTime.toLocaleTimeString([], {
     minute: '2-digit',
   });
-  const formattedSeconds = currentTime.toLocaleTimeString([], {
+  const seconds12 = currentTime.toLocaleTimeString([], {
     second: '2-digit',
   });
-  const formattedDate = currentTime.toLocaleDateString([], {
+  const ampm = currentTime.getHours() >= 12 ? 'PM' : 'AM';
+
+  const formattedDate = currentTime.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-    year: 'numeric',
   });
-
-  const activeTasksCount = tasks.filter(t => t.status !== 'done').length;
-  const activeProjectsCount = projects.filter(p => p.status === 'in-progress').length;
 
   return (
     <div
       onClick={handleDismiss}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-between p-6 sm:p-12 bg-slate-950/92 backdrop-blur-xl text-white select-none transition-opacity duration-700 cursor-pointer animate-fade-in"
+      className="fixed inset-0 z-[100] flex flex-col justify-between p-8 sm:p-14 bg-[#050b0a]/95 backdrop-blur-2xl text-white select-none transition-all duration-700 cursor-pointer animate-fade-in"
     >
-      {/* Dynamic Background Canvas for Floating Particles */}
+      {/* Background Animated Stardust Canvas */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none z-0 opacity-80"
       />
 
-      {/* Floating Organic Glow Orbs */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-emerald-500/20 blur-3xl animate-float-slow pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-20 w-96 h-96 rounded-full bg-teal-500/20 blur-3xl animate-float-reverse pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] rounded-full bg-whatsapp-teal/15 blur-3xl pointer-events-none" />
+      {/* Ambient Floating Glow Halos */}
+      <div className="absolute top-1/4 -left-20 w-[450px] h-[450px] rounded-full bg-emerald-500/12 blur-[100px] animate-float-slow pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-20 w-[450px] h-[450px] rounded-full bg-teal-400/10 blur-[100px] animate-float-reverse pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-emerald-950/40 blur-[120px] pointer-events-none" />
 
-      {/* Top Header Bar */}
-      <header className="relative z-10 w-full max-w-5xl flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-whatsapp-teal flex items-center justify-center text-white shadow-lg shadow-emerald-500/25">
-            <Sparkles className="w-5 h-5 animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-white via-slate-200 to-emerald-200 bg-clip-text text-transparent">
-                Me Plus
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
-                Zen Mode
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400">Freelance Workspace Resting</p>
-          </div>
+      {/* Top Header: Minimal Brand Watermark */}
+      <header className="relative z-10 w-full flex items-center justify-between">
+        <div className="flex items-center gap-2.5 opacity-60 hover:opacity-100 transition-opacity">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+          </span>
+          <span className="font-semibold text-xs tracking-[0.2em] uppercase text-slate-300">
+            Me Plus
+          </span>
         </div>
 
-        {/* Live Active Timer Badge if running */}
+        {/* Focus Timer Status Pill (Only shown if running) */}
         {activeTimer.isRunning && (
-          <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-semibold animate-pulse shadow-md">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <TimerIcon className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Active Tracker Running</span>
+          <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-mono backdrop-blur-md shadow-sm">
+            <TimerIcon className="w-3.5 h-3.5 text-emerald-400 animate-spin" style={{ animationDuration: '4s' }} />
+            <span className="text-[11px] font-semibold tracking-wider">TIMER ACTIVE</span>
           </div>
         )}
       </header>
 
-      {/* Center Body: Clock, Breathing Zen Ring, or Motivating Prompt */}
-      <main className="relative z-10 flex flex-col items-center text-center my-auto max-w-xl">
+      {/* Centerpiece: Aesthetic Minimalist Time & Breathing Ambient Ring */}
+      <main className="relative z-10 flex flex-col items-center justify-center my-auto text-center">
         {style === 'zen' && (
-          <div className="relative flex items-center justify-center mb-8">
-            {/* Outer Breathing Rings */}
-            <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full border border-emerald-500/30 animate-breathe-slow flex items-center justify-center shadow-2xl shadow-emerald-500/20">
-              <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-full border border-teal-400/40 bg-gradient-to-tr from-emerald-900/30 via-teal-900/20 to-transparent backdrop-blur-xs flex items-center justify-center">
-                <Coffee className="w-10 h-10 text-emerald-400 animate-pulse" />
-              </div>
-            </div>
+          <div className="relative flex items-center justify-center">
+            {/* Luminous Breathing Ring */}
+            <div className="absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full border border-emerald-500/15 animate-breathe-slow shadow-[0_0_80px_rgba(16,185,129,0.15)] pointer-events-none" />
+            <div className="absolute w-60 h-60 sm:w-80 sm:h-80 rounded-full border border-teal-400/20 animate-breathe-slow [animation-delay:-3s] pointer-events-none" />
+            <div className="absolute w-44 h-44 sm:w-64 sm:h-64 rounded-full bg-gradient-to-tr from-emerald-500/10 via-teal-500/5 to-transparent blur-xl pointer-events-none" />
           </div>
         )}
 
-        {/* Digital Time Display */}
-        <div className="flex items-baseline gap-2 mb-2">
-          <h1 className="text-6xl sm:text-8xl font-black tracking-tight text-white drop-shadow-md">
-            {formattedHoursMinutes}
-          </h1>
-          <span className="text-xl sm:text-2xl font-bold text-emerald-400 drop-shadow-xs">
-            {formattedSeconds}
-          </span>
-        </div>
+        {/* Minimalist Typographic Clock */}
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="flex items-baseline justify-center">
+            <span className="text-7xl sm:text-9xl font-extralight tracking-tighter text-white font-mono drop-shadow-[0_0_40px_rgba(255,255,255,0.12)]">
+              {hours12}:{minutes12}
+            </span>
+            <div className="flex flex-col items-start ml-3 sm:ml-4 text-left">
+              <span className="text-xs sm:text-sm font-bold tracking-widest text-emerald-400 uppercase">
+                {ampm}
+              </span>
+              <span className="text-lg sm:text-2xl font-light text-emerald-300/80 font-mono">
+                :{seconds12}
+              </span>
+            </div>
+          </div>
 
-        {/* Date Display */}
-        <p className="text-base sm:text-lg font-medium text-slate-300 mb-6">
-          {formattedDate}
-        </p>
-
-        {/* Motivating Freelancer Quote & Peace of Mind */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md max-w-md mb-6 shadow-xl">
-          <p className="text-sm sm:text-base font-semibold text-emerald-300 mb-1">
-            "Work Smarter, Freelance Happier"
+          {/* Minimalist Elegant Date */}
+          <p className="text-xs sm:text-sm font-medium tracking-[0.25em] uppercase text-emerald-200/70 mt-4 sm:mt-5 drop-shadow-sm">
+            {formattedDate}
           </p>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Taking a breather? Your workspace is safe. All deadlines, client projects, and active records are preserved.
-          </p>
-        </div>
-
-        {/* Workspace Quick Pulse Snapshot */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/70 border border-slate-800 text-slate-300 text-xs font-semibold">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{activeTasksCount} Pending Tasks</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/70 border border-slate-800 text-slate-300 text-xs font-semibold">
-            <FolderKanban className="w-3.5 h-3.5 text-teal-400" />
-            <span>{activeProjectsCount} Projects In Progress</span>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/70 border border-slate-800 text-slate-300 text-xs font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
-            <span>Encrypted &amp; Auto-Saved</span>
-          </div>
         </div>
       </main>
 
-      {/* Bottom Wakeup Bar & Resume CTA */}
-      <footer className="relative z-10 flex flex-col sm:flex-row items-center gap-4 text-center">
-        <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
-          <MousePointer className="w-4 h-4 text-emerald-400 animate-bounce" />
-          <span>Move your mouse or press any key to resume</span>
+      {/* Bottom Wakeup Hint */}
+      <footer className="relative z-10 w-full flex items-center justify-center">
+        <div className="opacity-40 hover:opacity-80 transition-opacity flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase font-medium text-slate-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Press any key or click anywhere to resume</span>
         </div>
-
-        <button
-          type="button"
-          onClick={e => {
-            e.stopPropagation();
-            handleDismiss();
-          }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-500 hover:to-whatsapp-dark text-white text-xs font-bold shadow-lg shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        >
-          <Play className="w-3.5 h-3.5 fill-current" />
-          <span>Resume Workspace</span>
-        </button>
       </footer>
     </div>
   );
 };
-
