@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
 import {
@@ -15,6 +15,7 @@ import {
   callGeminiDirect,
   callOpenAiDirect,
   testAiConnection,
+  generateSmartAdvisorFallback,
 } from '../../services/aiService';
 import {
   Sparkles,
@@ -35,7 +36,216 @@ import {
   EyeOff,
   Zap,
   Cpu,
+  Mail,
+  Coins,
+  ShieldAlert,
+  ListChecks,
+  Star,
+  Clock,
+  ChevronRight,
+  Info,
 } from 'lucide-react';
+
+// ==========================================
+// Formatted AI Message Renderer Component
+// ==========================================
+
+interface FormattedAiMessageProps {
+  text: string;
+  onCopyDraft: (draftText: string, draftId: string) => void;
+  copiedId: string | null;
+  messageId: string;
+}
+
+const FormattedAiMessage: React.FC<FormattedAiMessageProps> = ({
+  text,
+  onCopyDraft,
+  copiedId,
+  messageId,
+}) => {
+  // Parse message into structured sections: headers, email draft boxes, callout tips, and standard text
+  const renderedElements = useMemo(() => {
+    const lines = text.split('\n');
+    const elements: React.ReactNode[] = [];
+    let currentBlockquote: string[] = [];
+    let inBlockquote = false;
+    let blockquoteSubject = '';
+    let draftIndex = 0;
+
+    const flushBlockquote = () => {
+      if (currentBlockquote.length > 0) {
+        const fullDraft = currentBlockquote.join('\n').trim();
+        const draftKey = `${messageId}-draft-${draftIndex++}`;
+        const isCopied = copiedId === draftKey;
+
+        // Strip leading quote markers and formatting for clean clipboard copy
+        const cleanClipboardText = fullDraft
+          .split('\n')
+          .map(l => l.replace(/^>\s*(\*)?/, '').replace(/(\*)?$/, ''))
+          .join('\n')
+          .trim();
+
+        elements.push(
+          <div
+            key={draftKey}
+            className="my-3 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-emerald-500/30 dark:border-emerald-500/20 shadow-xs overflow-hidden"
+          >
+            {/* Draft Header */}
+            <div className="px-3.5 py-2 bg-emerald-50/80 dark:bg-emerald-950/50 border-b border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
+                <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Ready-to-Send Client Draft</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onCopyDraft(cleanClipboardText, draftKey)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors shadow-2xs"
+                title="Copy ready-to-send draft to clipboard"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    <span>Copy Draft</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Draft Content */}
+            <div className="p-3.5 sm:p-4 text-xs font-sans text-slate-800 dark:text-slate-200 space-y-2 leading-relaxed">
+              {blockquoteSubject && (
+                <div className="pb-2 mb-2 border-b border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                  <span className="text-slate-400 font-normal">Subject:</span>
+                  <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">
+                    {blockquoteSubject}
+                  </span>
+                </div>
+              )}
+              {currentBlockquote.map((line, idx) => {
+                const cleanLine = line.replace(/^>\s*/, '').replace(/^\*"|"\*$/g, '');
+                if (!cleanLine.trim()) return <div key={idx} className="h-1.5" />;
+                return <p key={idx}>{cleanLine}</p>;
+              })}
+            </div>
+          </div>
+        );
+
+        currentBlockquote = [];
+        inBlockquote = false;
+        blockquoteSubject = '';
+      }
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Detect Subject Line
+      if (line.includes('**Subject:**') || line.startsWith('Subject:')) {
+        const rawSubject = line.replace(/.*\*\*Subject:\*\*\s*\*?|\*?/g, '').replace(/Subject:\s*/, '').replace(/^\*|\*$/g, '').trim();
+        blockquoteSubject = rawSubject;
+        continue;
+      }
+
+      // Detect Blockquote (Email Template)
+      if (line.startsWith('>')) {
+        inBlockquote = true;
+        currentBlockquote.push(line);
+        continue;
+      } else if (inBlockquote) {
+        // End of blockquote
+        flushBlockquote();
+      }
+
+      // Detect Heading 3
+      if (line.startsWith('### ')) {
+        const title = line.replace('### ', '');
+        elements.push(
+          <div key={`h3-${i}`} className="mt-4 mb-2 flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">
+              {title}
+            </h3>
+          </div>
+        );
+        continue;
+      }
+
+      // Detect Heading 4
+      if (line.startsWith('#### ')) {
+        const title = line.replace('#### ', '');
+        elements.push(
+          <h4 key={`h4-${i}`} className="mt-3 mb-1 text-xs font-bold text-slate-800 dark:text-slate-200">
+            {title}
+          </h4>
+        );
+        continue;
+      }
+
+      // Detect Horizontal Dividers
+      if (line.trim() === '---') {
+        elements.push(
+          <hr key={`hr-${i}`} className="my-3 border-slate-200/80 dark:border-slate-800" />
+        );
+        continue;
+      }
+
+      // Detect Callout Tips & Workspace Alerts
+      if (line.includes('💡') || line.includes('📌') || line.startsWith('*Tip:')) {
+        elements.push(
+          <div
+            key={`tip-${i}`}
+            className="my-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 dark:bg-amber-950/20 text-slate-700 dark:text-slate-300 text-xs flex items-start gap-2 leading-relaxed"
+          >
+            <div className="shrink-0 mt-0.5 font-bold">💡</div>
+            <div>{line.replace(/^💡\s*|\*Tip:\s*/, '')}</div>
+          </div>
+        );
+        continue;
+      }
+
+      // Detect Bullet points
+      if (line.startsWith('• ') || line.startsWith('- ') || line.startsWith('* ')) {
+        const cleanItem = line.replace(/^[•\-\*]\s*/, '');
+        elements.push(
+          <div key={`bullet-${i}`} className="flex items-start gap-2 text-xs leading-relaxed my-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 mt-1.5 shrink-0" />
+            <span>{cleanItem}</span>
+          </div>
+        );
+        continue;
+      }
+
+      // Empty Lines
+      if (!line.trim()) {
+        elements.push(<div key={`empty-${i}`} className="h-2" />);
+        continue;
+      }
+
+      // Standard Paragraph
+      elements.push(
+        <p key={`p-${i}`} className="text-xs leading-relaxed text-slate-800 dark:text-slate-200">
+          {line}
+        </p>
+      );
+    }
+
+    // Flush any pending blockquote at the end
+    flushBlockquote();
+
+    return elements;
+  }, [text, messageId, copiedId, onCopyDraft]);
+
+  return <div className="space-y-1 font-sans">{renderedElements}</div>;
+};
+
+// ==========================================
+// Main AI Assistant Modal Component
+// ==========================================
 
 export const AiAssistantModal: React.FC = () => {
   const {
@@ -77,9 +287,10 @@ export const AiAssistantModal: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<'popular' | 'emails' | 'rates' | 'scope' | 'sprints'>('popular');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Sync AI Settings if user profile updates
   useEffect(() => {
@@ -102,29 +313,44 @@ export const AiAssistantModal: React.FC = () => {
           ? 'Google Gemini (' + (aiSettings.geminiModel || 'gemini-1.5-flash') + ')'
           : aiSettings.provider === 'openai'
           ? 'OpenAI ChatGPT (' + (aiSettings.openaiModel || 'gpt-4o-mini') + ')'
-          : 'Me Plus Smart Advisor';
+          : 'Me Plus Smart Advisor (Offline-Ready)';
 
       const initialGreeting: ChatMessage = {
         id: 'msg-init',
         sender: 'ai',
-        text: `Hello ${user?.name ? user.name.split(' ')[0] : 'there'}! 👋 I am your **Me Plus AI Freelancer Copilot**, currently powered by **${activeModelName}**.\n\nI have full awareness of your current projects, clients, and deadlines. I can assist you with:\n• 💬 **Drafting client communications** (payment follow-ups, proposals, milestone updates)\n• 💰 **Pricing & Rate Strategy** (hourly vs fixed pricing, rate increase notices)\n• 🛡️ **Managing Scope Creep** (polite pushback, budget addendums, contract terms)\n• ⚡ **Daily Task Prioritization** (sprint planning, deadline risk assessment)\n\nWhat would you like assistance with today?`,
+        text: `### 👋 Welcome to Me Plus Freelancer Copilot!\n\nHello **${user?.name ? user.name.split(' ')[0] : 'there'}**! I am your executive business strategist and communications coach, currently active with **${activeModelName}**.\n\nI have live awareness of your **${clients.length} clients**, **${projects.length} projects**, and **${tasks.filter(t => t.status !== 'done').length} pending tasks**.\n\nHere are popular ways I can help right now:\n• 💬 **Draft ready-to-send client emails** (invoices, proposals, delays, reviews)\n• 💰 **Calculate rate increases** & write 30-day client adjustment notices\n• 🛡️ **Push back on scope creep** with structured add-on pricing\n• ⚡ **Prioritize your daily sprint** based on active deadlines\n\nChoose an action chip below or type any question to begin!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         provider: aiSettings.provider,
         model: activeModelName,
       };
       setMessages([initialGreeting]);
     }
-  }, [isAiModalOpen, user?.name, messages.length, aiSettings.provider, aiSettings.geminiModel, aiSettings.openaiModel]);
+  }, [isAiModalOpen, user?.name, messages.length, aiSettings.provider, aiSettings.geminiModel, aiSettings.openaiModel, clients.length, projects.length, tasks]);
 
   // Focus input when modal opens
   useEffect(() => {
     if (isAiModalOpen && !isSettingsOpen) {
       setTimeout(() => {
-        inputRef.current?.focus();
+        textareaRef.current?.focus();
         scrollToBottom();
       }, 100);
     }
   }, [isAiModalOpen, isSettingsOpen]);
+
+  // ESC key listener to dismiss modal or settings drawer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isAiModalOpen) {
+        if (isSettingsOpen) {
+          setIsSettingsOpen(false);
+        } else {
+          setIsAiModalOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAiModalOpen, isSettingsOpen, setIsAiModalOpen]);
 
   // Scroll to bottom on message change
   useEffect(() => {
@@ -137,60 +363,118 @@ export const AiAssistantModal: React.FC = () => {
 
   if (!isAiModalOpen) return null;
 
-  const quickPrompts = [
-    {
-      label: '💰 Rate Increase Notice',
-      prompt: 'How do I politely inform an existing client that my hourly rates are increasing by $15?',
-    },
-    {
-      label: '📧 Overdue Invoice Follow-Up',
-      prompt: 'Draft a polite but firm follow-up email for an overdue invoice with a clear payment deadline.',
-    },
-    {
-      label: '🛡️ Scope Creep Handling',
-      prompt: 'A client is requesting 3 additional unplanned features. How should I propose an add-on budget professionally?',
-    },
-    {
-      label: '📊 Workspace Status Digest',
-      prompt: 'Summarize my current clients and urgent tasks, and recommend 3 priorities for today.',
-    },
-    {
-      label: '🚀 Client Proposal Pitch',
-      prompt: 'Write a high-converting short proposal pitch to win a new web design & development project.',
-    },
-  ];
+  // Categorized Starter Action Chips
+  const promptCategories = [
+    { id: 'popular', label: '🌟 Top Starters', icon: <Star className="w-3 h-3" /> },
+    { id: 'emails', label: '✉️ Client Emails', icon: <Mail className="w-3 h-3" /> },
+    { id: 'rates', label: '💰 Rates & Invoices', icon: <Coins className="w-3 h-3" /> },
+    { id: 'scope', label: '🛡️ Scope & Boundaries', icon: <ShieldAlert className="w-3 h-3" /> },
+    { id: 'sprints', label: '⚡ Daily Priorities', icon: <ListChecks className="w-3 h-3" /> },
+  ] as const;
 
-  // Client-side fallback rule generator
-  const generateAiReply = (userQuery: string): string => {
-    const q = userQuery.toLowerCase();
-    const clientNames = clients.map(c => c.company || c.name).slice(0, 5).join(', ');
-    const projectTitles = projects.map(p => p.title).slice(0, 5).join(', ');
-
-    if (q.includes('rate') || q.includes('price') || q.includes('pricing') || q.includes('increase')) {
-      return `### 💡 Strategy for Hourly Rate & Pricing:\n\n1. **Give 30-45 Days Notice**: Provide ample runway before applying new rates.\n2. **Highlight Compounded Value**: Point out your improved turnaround speed and senior skillset.\n3. **Grandfathering Discount**: Offer existing clients a grace month for pre-booked milestone blocks.\n\n**Draft Email Template:**\n> *"Hi [Client Name], as I continue to expand my tools, certifications, and capabilities, my standard rate will adjust from $${user?.hourlyRate || 65}/hr to $${(user?.hourlyRate || 65) + 15}/hr starting next month. Because I deeply appreciate our long-standing partnership, all ongoing projects and hours booked this month will be honored at our current rate. Looking forward to our continued success!"*`;
-    }
-
-    if (q.includes('overdue') || q.includes('invoice') || q.includes('payment') || q.includes('unpaid')) {
-      return `### 📧 Overdue Invoice Follow-Up Draft:\n\n**Subject:** *Follow-up: Invoice status for [Project Name]*\n\n> *"Hi [Client Name],\n>\n> I hope you are having a productive week!\n>\n> I am following up on invoice **#INV-2026-X**, which was due recently. Please let me know if your finance team requires any additional documentation, tax forms, or updated bank details to process this.\n>\n> I have re-attached the invoice copy for your convenience. Thank you for your prompt attention!\n>\n> Best regards,\n> ${user?.name || 'Freelancer'}*"*\n\n**Tip:** If payment is overdue by 14+ days, politely pause subsequent milestones until cleared.`;
-    }
-
-    if (q.includes('scope') || q.includes('creep') || q.includes('extra') || q.includes('change')) {
-      return `### 🛡️ Managing Scope Creep with Grace:\n\nWhen a client asks for tasks outside the agreed milestone, **never say a flat 'No'**—say **'Yes, and here is how we can budget it'**:\n\n**Recommended Response Template:**\n> *"Hi [Client Name],\n>\n> That is a fantastic feature idea and would certainly elevate the project! \n>\n> Since this falls outside our original milestone deliverables, I can create a quick add-on scope estimate for you (approx. 5–8 hours). We can either:\n> 1. Add it to our current sprint as Phase 2, or\n> 2. Swap out an existing lower-priority task from this sprint to keep the launch date on track.\n>\n> Let me know which approach you prefer!"*`;
-    }
-
-    if (q.includes('pitch') || q.includes('proposal') || q.includes('new client') || q.includes('win client')) {
-      return `### 🎯 High-Converting Client Pitch Template:\n\n**Subject:** *Partnering on [Client Company]'s UI & Web Product Growth*\n\n> *"Hi [Client Name],\n>\n> I’ve been following [Client Company]'s recent developments and was very impressed with your latest release.\n>\n> As an independent specialist in ${user?.title || 'full-stack web development and UI/UX engineering'}, I help teams build fast, clean, and high-converting digital products.\n>\n> I’d love to share 2 quick ideas on how we can optimize your upcoming roadmap. Do you have 15 minutes for a quick introductory chat next Tuesday?\n>\n> Best,\n> ${user?.name || 'Freelancer'}*"*`;
-    }
-
-    return `### 📊 Workspace Overview & Action Plan:\n\n• **Active Clients (${clients.length})**: ${clientNames || 'None yet'}\n• **Projects (${projects.length})**: ${projectTitles || 'None yet'}\n• **Pending Tasks**: ${tasks.filter(t => t.status !== 'done').length} tasks remaining across all boards.\n\n**Productivity Recommendation:** Focus on urgent deadlines first, log time with the live stopwatch, and share proactive status updates with clients every 48 hours to maintain high trust.\n\n*Tip: Switch provider to Google Gemini or OpenAI ChatGPT in the settings to chat with live generative intelligence!*`;
+  const promptsByCategory: Record<typeof activeCategory, { label: string; prompt: string }[]> = {
+    popular: [
+      {
+        label: '💰 Rate Increase Notice (+15%)',
+        prompt: 'How do I politely inform an existing client that my hourly rates are increasing by 15%?',
+      },
+      {
+        label: '📧 Friendly Overdue Invoice Check-in',
+        prompt: 'Draft a polite level 1 follow-up email for an invoice that is 3 days overdue with re-attached invoice.',
+      },
+      {
+        label: '🛡️ Out-of-Scope Feature Pushback',
+        prompt: 'A client requested 3 additional unplanned features. How should I propose an add-on budget or task swap?',
+      },
+      {
+        label: '📊 Today\'s 3-Priority Battle Plan',
+        prompt: 'Summarize my current clients and urgent tasks, and give me a 3-priority focus plan for today.',
+      },
+      {
+        label: '🚫 Politely Decline Low Budget Request',
+        prompt: 'How do I politely decline a project inquiry because their budget is far below my minimum engagement?',
+      },
+    ],
+    emails: [
+      {
+        label: '📧 Friendly Invoice Reminder (Level 1)',
+        prompt: 'Draft a polite level 1 reminder email for an overdue invoice with a clear payment check-in.',
+      },
+      {
+        label: '🚨 Past Due Pause Work Notice (Level 3)',
+        prompt: 'Draft a firm 14-day past due invoice notice stating active development is paused until payment clears.',
+      },
+      {
+        label: '⏰ Milestone Delivery Extension',
+        prompt: 'Draft a proactive email notifying a client of a 2-day delivery extension with revised milestone timeline.',
+      },
+      {
+        label: '🎯 High-Converting Client Pitch',
+        prompt: 'Write a high-converting short proposal pitch to win a new web design & development project.',
+      },
+      {
+        label: '⭐ 5-Star Testimonial & Referral Request',
+        prompt: 'Draft an email asking a satisfied client for a short 3-question testimonial and LinkedIn recommendation.',
+      },
+    ],
+    rates: [
+      {
+        label: '📈 30-Day Rate Adjustment Letter',
+        prompt: 'Draft a professional 30-day notice letter for existing clients honoring current milestone commitments.',
+      },
+      {
+        label: '💵 Transition to Value-Based Pricing',
+        prompt: 'Explain how I should transition from hourly billing to value-based project pricing for new clients.',
+      },
+      {
+        label: '🛑 50% Upfront Deposit Agreement',
+        prompt: 'How do I explain my requirement for a 50% upfront deposit to a new client without sounding pushy?',
+      },
+      {
+        label: '⚡ Weekend / 25% Rush Fee Policy',
+        prompt: 'How do I communicate a 25% rush fee when a client needs a deliverable completed over the weekend?',
+      },
+    ],
+    scope: [
+      {
+        label: '🛡️ Scope Creep Add-On Estimate',
+        prompt: 'Draft an email offering two choices for unplanned work: an add-on scope quote or a task swap.',
+      },
+      {
+        label: '🤝 De-escalate Revision Fatigue',
+        prompt: 'A client is frustrated with recent revisions. How do I de-escalate and organize a single consolidated punch-list?',
+      },
+      {
+        label: '🚫 Decline Project (Fully Booked)',
+        prompt: 'Draft a polite email turning down a project inquiry because my schedule is fully committed through next month.',
+      },
+      {
+        label: '🔄 Limiting Endless Revision Rounds',
+        prompt: 'How do I politely tell a client that they have reached their 2-revision limit without burning the relationship?',
+      },
+    ],
+    sprints: [
+      {
+        label: '📊 Workspace Intelligence & Sprint Digest',
+        prompt: 'Review my current workspace clients, pending deadlines, and provide a 3-step action plan for today.',
+      },
+      {
+        label: '⏱️ Time-Boxing & Billable Hours Audit',
+        prompt: 'Give me a practical time-boxing routine to maximize my billable hours and prevent freelance burnout.',
+      },
+      {
+        label: '🚀 Milestone Handover & Sign-Off Checklist',
+        prompt: 'What should be included in a professional final milestone delivery package to guarantee immediate client sign-off?',
+      },
+    ],
   };
 
   const handleTestConnection = async () => {
     if (tempProvider === 'builtin') {
       setTestResult({
         success: true,
-        message: 'Built-in Smart Advisor is ready and requires no API key.',
-        latencyMs: 10,
+        message: 'Built-in Freelance Copilot is ready and requires zero configuration.',
+        latencyMs: 8,
       });
       return;
     }
@@ -236,11 +520,11 @@ export const AiAssistantModal: React.FC = () => {
         ? 'Google Gemini (' + updated.geminiModel + ')'
         : updated.provider === 'openai'
         ? 'OpenAI ChatGPT (' + updated.openaiModel + ')'
-        : 'Me Plus Built-in Advisor';
+        : 'Me Plus Built-in Copilot';
 
     showToast({
-      title: 'AI Copilot Configured',
-      message: `Active AI set to ${providerLabel}. Ready to chat!`,
+      title: 'AI Copilot Updated',
+      message: `Active AI set to ${providerLabel}. Ready for action!`,
       type: 'success',
     });
   };
@@ -281,7 +565,7 @@ export const AiAssistantModal: React.FC = () => {
         : 'Smart Advisor';
 
     try {
-      // 1. Try backend /api/ai/chat
+      // 1. Backend /api/ai/chat
       const res = await api.sendAiMessage(queryText, {
         history: historyPayload,
         provider: activeProvider,
@@ -306,7 +590,7 @@ export const AiAssistantModal: React.FC = () => {
         return;
       }
     } catch (backendErr) {
-      console.warn('Backend AI chat error, attempting direct client fallback:', backendErr);
+      console.warn('Backend AI chat request error, attempting direct client fallback:', backendErr);
     }
 
     // 2. Direct client fallback if backend is unreachable
@@ -357,7 +641,7 @@ export const AiAssistantModal: React.FC = () => {
       const errorMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: `⚠️ **Could not connect to ${activeProvider === 'gemini' ? 'Google Gemini' : 'OpenAI'}**: ${directErr.message || 'Network error'}\n\n*Here is built-in workspace guidance instead:*\n\n${generateAiReply(queryText)}`,
+        text: `⚠️ **Could not connect to ${activeProvider === 'gemini' ? 'Google Gemini' : 'OpenAI'}**: ${directErr.message || 'Network error'}\n\n*Here is built-in workspace guidance instead:*\n\n${generateSmartAdvisorFallback(queryText, user, clients, projects, tasks, invoices)}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         provider: 'builtin',
         model: 'Fallback Advisor',
@@ -369,7 +653,7 @@ export const AiAssistantModal: React.FC = () => {
 
     // 3. Built-in Smart Advisor fallback
     setTimeout(() => {
-      const fallbackText = generateAiReply(queryText);
+      const fallbackText = generateSmartAdvisorFallback(queryText, user, clients, projects, tasks, invoices);
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
@@ -380,7 +664,7 @@ export const AiAssistantModal: React.FC = () => {
       };
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
-    }, 450);
+    }, 350);
   };
 
   const handleSendMessage = (e?: React.FormEvent) => {
@@ -388,6 +672,13 @@ export const AiAssistantModal: React.FC = () => {
     const query = inputMessage.trim();
     if (!query || isTyping) return;
     executeSend(query);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
   const handleQuickPrompt = (promptText: string) => {
@@ -401,15 +692,26 @@ export const AiAssistantModal: React.FC = () => {
     setTimeout(() => setCopiedId(null), 2000);
     showToast({
       title: 'Copied!',
-      message: 'AI response copied to clipboard.',
+      message: 'Full response copied to clipboard.',
       type: 'info',
+    });
+  };
+
+  const handleCopyDraft = (draftText: string, draftId: string) => {
+    navigator.clipboard.writeText(draftText);
+    setCopiedId(draftId);
+    setTimeout(() => setCopiedId(null), 2000);
+    showToast({
+      title: 'Draft Copied!',
+      message: 'Ready-to-send draft copied to clipboard.',
+      type: 'success',
     });
   };
 
   const handleClearChat = () => {
     confirmAction({
-      title: 'Clear Conversation?',
-      message: 'Are you sure you want to clear all chat messages in this AI copilot session? Your conversation history will be reset.',
+      title: 'Clear AI Conversation?',
+      message: 'Are you sure you want to reset this conversation history? Your active projects and workspace data will not be affected.',
       confirmText: 'Clear Chat',
       danger: true,
       itemType: 'chat',
@@ -417,7 +719,7 @@ export const AiAssistantModal: React.FC = () => {
         const initialGreeting: ChatMessage = {
           id: `msg-init-${Date.now()}`,
           sender: 'ai',
-          text: `Conversation cleared! 👋 How can I help you right now with your projects, clients, or rates?`,
+          text: `Conversation cleared! 👋 How can I help you right now with your projects, clients, rates, or email drafts?`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           provider: aiSettings.provider,
         };
@@ -433,6 +735,7 @@ export const AiAssistantModal: React.FC = () => {
         label: `Gemini: ${aiSettings.geminiModel || '1.5 Flash'}`,
         color: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800',
         icon: <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />,
+        statusText: 'Connected to Google AI Studio',
       };
     }
     if (aiSettings.provider === 'openai') {
@@ -440,25 +743,27 @@ export const AiAssistantModal: React.FC = () => {
         label: `ChatGPT: ${aiSettings.openaiModel || '4o-mini'}`,
         color: 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800',
         icon: <Bot className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />,
+        statusText: 'Connected to OpenAI',
       };
     }
     return {
-      label: 'Built-in Copilot',
-      color: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700',
+      label: 'Built-in Copilot (Free)',
+      color: 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800',
       icon: <Zap className="w-3 h-3 text-amber-500" />,
+      statusText: 'Live Workspace Intelligence (No API key required)',
     };
   };
 
   const pill = getProviderPill();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
       <div
-        className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[88vh] max-h-[800px] overflow-hidden relative"
+        className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[90vh] max-h-[850px] overflow-hidden relative"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/80 dark:bg-slate-900/90 flex items-center justify-between">
+        <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-900/90 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-whatsapp-dark via-whatsapp-teal to-whatsapp-light text-white shadow-md shadow-emerald-700/20">
@@ -468,7 +773,7 @@ export const AiAssistantModal: React.FC = () => {
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
                   Me Plus AI Copilot
                 </h2>
@@ -477,15 +782,15 @@ export const AiAssistantModal: React.FC = () => {
                 <button
                   onClick={() => setIsSettingsOpen(prev => !prev)}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all hover:scale-105 active:scale-95 shadow-xs ${pill.color}`}
-                  title="Click to change AI Model & API Key"
+                  title="Click to configure AI Model & API Key"
                 >
                   {pill.icon}
                   <span>{pill.label}</span>
                   <Sliders className="w-3 h-3 ml-0.5 opacity-60" />
                 </button>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Freelance Business, Client Communications &amp; Strategy Assistant
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {pill.statusText}
               </p>
             </div>
           </div>
@@ -498,20 +803,21 @@ export const AiAssistantModal: React.FC = () => {
                   ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
                   : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
-              title="AI Connection & API Key Settings"
+              title="AI Connection Settings"
             >
               <Sliders className="w-4 h-4" />
             </button>
             <button
               onClick={handleClearChat}
               className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-              title="Clear Conversation"
+              title="Clear Conversation History"
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setIsAiModalOpen(false)}
               className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Close (Esc)"
             >
               <X className="w-5 h-5" />
             </button>
@@ -537,12 +843,40 @@ export const AiAssistantModal: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 mb-4">
-              Connect your own AI account to empower the copilot with real, cutting-edge generative AI models.
-              Your keys are stored securely in your private workspace.
+              Choose between the <strong>100% Free Built-in Advisor</strong> (works offline with zero setup) or connect your personal <strong>Google Gemini</strong> or <strong>OpenAI</strong> key for open-ended conversation.
             </p>
 
-            {/* Provider Tabs */}
+            {/* Provider Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-4">
+              {/* Built-in Smart Advisor Card */}
+              <button
+                type="button"
+                onClick={() => {
+                  setTempProvider('builtin');
+                  setTestResult(null);
+                }}
+                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all ${
+                  tempProvider === 'builtin'
+                    ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 ring-2 ring-amber-500/20'
+                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full mb-2">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                    <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
+                      Built-in Advisor
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
+                    No Key Needed
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Instant freelance rules, invoice drafts &amp; workspace intelligence.
+                </p>
+              </button>
+
               {/* Google Gemini Card */}
               <button
                 type="button"
@@ -568,7 +902,7 @@ export const AiAssistantModal: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Fast, accurate &amp; free tier via Google AI Studio.
+                  Ultra-fast generative intelligence via free Google AI Studio key.
                 </p>
               </button>
 
@@ -593,40 +927,11 @@ export const AiAssistantModal: React.FC = () => {
                     </span>
                   </div>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200">
-                    GPT-4o
+                    GPT-4o Mini
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Direct connection with GPT-4o Mini or GPT-4o.
-                </p>
-              </button>
-
-              {/* Built-in Smart Advisor Card */}
-              <button
-                type="button"
-                onClick={() => {
-                  setTempProvider('builtin');
-                  setTestResult(null);
-                }}
-                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all ${
-                  tempProvider === 'builtin'
-                    ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 ring-2 ring-amber-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-2">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                      Built-in Advisor
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
-                    No Key
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Workspace rule-based advice &amp; templates without API keys.
+                  Connect GPT-4o Mini or GPT-4o with your personal API key.
                 </p>
               </button>
             </div>
@@ -747,13 +1052,13 @@ export const AiAssistantModal: React.FC = () => {
             {/* Custom Instructions (Optional) */}
             <div className="mb-4">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                Custom Instructions / AI Persona (Optional)
+                Custom Instructions / Freelance Persona (Optional)
               </label>
               <textarea
                 value={tempInstructions}
                 onChange={e => setTempInstructions(e.target.value)}
                 rows={2}
-                placeholder="e.g., Keep email drafts under 120 words. Always suggest charging 20% higher than the client's initial budget."
+                placeholder="e.g., Keep email drafts concise and under 120 words. Always suggest a 20% advance milestone."
                 className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
@@ -828,24 +1133,6 @@ export const AiAssistantModal: React.FC = () => {
           </div>
         )}
 
-        {/* Promotional Connect Banner when in Built-in Mode */}
-        {aiSettings.provider === 'builtin' && (
-          <div className="px-4 py-2 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 dark:from-emerald-950/50 dark:via-teal-950/40 dark:to-cyan-950/50 border-b border-emerald-200/60 dark:border-emerald-800/50 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>
-                Want real-time AI? Connect your <strong>Google Gemini (Free)</strong> or <strong>ChatGPT</strong> key in 1 click.
-              </span>
-            </div>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 ml-2 shadow-xs transition-colors"
-            >
-              Connect Real AI
-            </button>
-          </div>
-        )}
-
         {/* Chat Message Stream */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/40">
           {messages.map(msg => (
@@ -868,21 +1155,32 @@ export const AiAssistantModal: React.FC = () => {
 
               {/* Message Bubble */}
               <div
-                className={`max-w-[85%] sm:max-w-[78%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm shadow-sm relative group ${
+                className={`max-w-[88%] sm:max-w-[82%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm shadow-sm relative group ${
                   msg.sender === 'user'
                     ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal text-white rounded-tr-sm'
                     : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/60 rounded-tl-sm'
                 }`}
               >
                 {/* Content formatted with clean line breaks & markdown highlights */}
-                <div className="leading-relaxed whitespace-pre-wrap font-sans">
-                  {msg.text}
-                </div>
+                {msg.sender === 'ai' ? (
+                  <FormattedAiMessage
+                    text={msg.text}
+                    onCopyDraft={handleCopyDraft}
+                    copiedId={copiedId}
+                    messageId={msg.id}
+                  />
+                ) : (
+                  <div className="leading-relaxed whitespace-pre-wrap font-sans">
+                    {msg.text}
+                  </div>
+                )}
 
                 {/* Footer Time, Model Tag & Copy Button */}
                 <div
-                  className={`mt-2.5 flex items-center justify-between text-[10px] ${
-                    msg.sender === 'user' ? 'text-emerald-100/80' : 'text-slate-400'
+                  className={`mt-2.5 pt-2 border-t flex items-center justify-between text-[10px] ${
+                    msg.sender === 'user'
+                      ? 'border-emerald-500/30 text-emerald-100/80'
+                      : 'border-slate-100 dark:border-slate-700/60 text-slate-400'
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
@@ -897,14 +1195,15 @@ export const AiAssistantModal: React.FC = () => {
                   {msg.sender === 'ai' && (
                     <button
                       onClick={() => handleCopy(msg.text, msg.id)}
-                      className="opacity-0 group-hover:opacity-100 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-1 transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-1 transition-opacity text-[10px]"
+                      title="Copy full text"
                     >
                       {copiedId === msg.id ? (
                         <Check className="w-3 h-3 text-emerald-500" />
                       ) : (
                         <Copy className="w-3 h-3" />
                       )}
-                      <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                      <span>{copiedId === msg.id ? 'Copied' : 'Copy Full Response'}</span>
                     </button>
                   )}
                 </div>
@@ -923,7 +1222,7 @@ export const AiAssistantModal: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-whatsapp-teal animate-bounce" style={{ animationDelay: '150ms' }} />
                 <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-bounce" style={{ animationDelay: '300ms' }} />
                 <span className="text-[11px] text-slate-400 ml-1">
-                  {aiSettings.provider === 'gemini' ? 'Gemini thinking...' : aiSettings.provider === 'openai' ? 'ChatGPT thinking...' : 'Analyzing workspace...'}
+                  {aiSettings.provider === 'gemini' ? 'Gemini is drafting...' : aiSettings.provider === 'openai' ? 'ChatGPT is thinking...' : 'Analyzing live workspace & synthesizing...'}
                 </span>
               </div>
             </div>
@@ -932,38 +1231,61 @@ export const AiAssistantModal: React.FC = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick Suggestion Prompts */}
-        <div className="px-4 py-2 border-t border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-slate-900/80 overflow-x-auto flex items-center gap-2 no-scrollbar">
-          {quickPrompts.map((p, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleQuickPrompt(p.prompt)}
-              className="px-3 py-1.5 rounded-full text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 hover:bg-emerald-100 hover:border-emerald-300 whitespace-nowrap transition-colors flex items-center gap-1 shrink-0"
-            >
-              <span>{p.label}</span>
-            </button>
-          ))}
+        {/* Categorized Quick Action Selector */}
+        <div className="border-t border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-900/95">
+          {/* Category Tabs */}
+          <div className="px-3 pt-2 pb-1 overflow-x-auto flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/50 no-scrollbar">
+            {promptCategories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap transition-all shrink-0 ${
+                  activeCategory === cat.id
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                }`}
+              >
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Quick Suggestion Chips for Active Category */}
+          <div className="px-3 py-2 overflow-x-auto flex items-center gap-2 no-scrollbar">
+            {promptsByCategory[activeCategory].map((p, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleQuickPrompt(p.prompt)}
+                className="px-3 py-1.5 rounded-full text-[11px] font-medium text-slate-700 dark:text-slate-300 bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/70 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 whitespace-nowrap transition-all flex items-center gap-1 shrink-0 shadow-2xs group"
+                title={p.prompt}
+              >
+                <span>{p.label}</span>
+                <ChevronRight className="w-3 h-3 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-emerald-600" />
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Chat Input Bar */}
         <form
           onSubmit={handleSendMessage}
-          className="p-3 sm:p-4 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-center gap-2"
+          className="p-3 sm:p-4 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-end gap-2"
         >
           <div className="relative flex-1">
-            <input
-              ref={inputRef}
-              type="text"
+            <textarea
+              ref={textareaRef}
+              rows={1}
               value={inputMessage}
               onChange={e => setInputMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder={
                 aiSettings.provider === 'gemini'
-                  ? 'Ask Gemini anything with live context of your projects, clients, or rates...'
+                  ? 'Ask Gemini anything (Enter to send, Shift+Enter for new line)...'
                   : aiSettings.provider === 'openai'
-                  ? 'Ask ChatGPT anything about your tasks, invoices, or client emails...'
-                  : 'Ask anything about your projects, clients, rates, or email drafts...'
+                  ? 'Ask ChatGPT anything (Enter to send, Shift+Enter for new line)...'
+                  : 'Ask anything or request email drafts (Enter to send, Shift+Enter for new line)...'
               }
-              className="w-full pl-4 pr-4 py-3 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              className="w-full pl-3.5 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner resize-none min-h-[44px] max-h-[100px] leading-relaxed"
             />
           </div>
 
@@ -975,6 +1297,7 @@ export const AiAssistantModal: React.FC = () => {
                 ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white active:scale-95 shadow-emerald-700/25'
                 : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
             }`}
+            title="Send Message"
           >
             <Send className="w-4 h-4" />
           </button>
