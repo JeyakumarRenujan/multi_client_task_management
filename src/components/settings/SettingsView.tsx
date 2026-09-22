@@ -36,6 +36,52 @@ import {
   testAiConnection,
 } from '../../services/aiService';
 
+const getIdleThemeStyles = (color: string) => {
+  switch (color) {
+    case 'rose':
+      return {
+        activeCard: 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 ring-2 ring-rose-500/20 shadow-xs',
+        icon: 'text-rose-600 dark:text-rose-400',
+        badge: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+        previewBtn: 'bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800',
+        toggle: 'bg-rose-600',
+      };
+    case 'blue':
+      return {
+        activeCard: 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 ring-2 ring-blue-500/20 shadow-xs',
+        icon: 'text-blue-600 dark:text-blue-400',
+        badge: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+        previewBtn: 'bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
+        toggle: 'bg-blue-600',
+      };
+    case 'purple':
+      return {
+        activeCard: 'border-purple-500 bg-purple-50/50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 ring-2 ring-purple-500/20 shadow-xs',
+        icon: 'text-purple-600 dark:text-purple-400',
+        badge: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300',
+        previewBtn: 'bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
+        toggle: 'bg-purple-600',
+      };
+    case 'amber':
+      return {
+        activeCard: 'border-amber-500 bg-amber-50/50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 ring-2 ring-amber-500/20 shadow-xs',
+        icon: 'text-amber-600 dark:text-amber-400',
+        badge: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+        previewBtn: 'bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
+        toggle: 'bg-amber-600',
+      };
+    case 'emerald':
+    default:
+      return {
+        activeCard: 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 ring-2 ring-emerald-500/20 shadow-xs',
+        icon: 'text-emerald-600 dark:text-emerald-400',
+        badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+        previewBtn: 'bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
+        toggle: 'bg-emerald-600',
+      };
+  }
+};
+
 export const SettingsView: React.FC = () => {
   const {
     user,
@@ -713,7 +759,7 @@ export const SettingsView: React.FC = () => {
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Idle Animation &amp; Screensaver
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${getIdleThemeStyles(accentColor).badge}`}>
                   2-Min Default
                 </span>
               </div>
@@ -726,10 +772,10 @@ export const SettingsView: React.FC = () => {
           <button
             type="button"
             onClick={handlePreviewScreensaver}
-            className="self-start sm:self-auto flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+            className={`self-start sm:self-auto flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 ${getIdleThemeStyles(accentColor).previewBtn}`}
             title="Preview how the screensaver animation looks right now"
           >
-            <Eye className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Eye className={`w-3.5 h-3.5 ${getIdleThemeStyles(accentColor).icon}`} />
             <span>Preview Screensaver Now</span>
           </button>
         </div>
@@ -748,7 +794,7 @@ export const SettingsView: React.FC = () => {
             type="button"
             onClick={() => updateIdlePreferences({ enabled: !idleEnabled })}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-              idleEnabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
+              idleEnabled ? getIdleThemeStyles(accentColor).toggle : 'bg-slate-300 dark:bg-slate-700'
             }`}
           >
             <span
@@ -777,26 +823,29 @@ export const SettingsView: React.FC = () => {
                   { value: 2, label: '2 Minutes', desc: 'Recommended default' },
                   { value: 5, label: '5 Minutes', desc: 'Standard pause' },
                   { value: 10, label: '10 Minutes', desc: 'Extended focus' },
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => updateIdlePreferences({ timeoutMinutes: opt.value })}
-                    className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                      idleTimeout === opt.value
-                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 ring-2 ring-emerald-500/20 font-bold shadow-xs'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-bold">{opt.label}</span>
-                      {idleTimeout === opt.value && (
-                        <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      )}
-                    </div>
-                    <span className="text-[10px] text-slate-400 block">{opt.desc}</span>
-                  </button>
-                ))}
+                ].map(opt => {
+                  const isSelected = idleTimeout === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => updateIdlePreferences({ timeoutMinutes: opt.value })}
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? `${getIdleThemeStyles(accentColor).activeCard} font-bold`
+                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold">{opt.label}</span>
+                        {isSelected && (
+                          <Check className={`w-3.5 h-3.5 ${getIdleThemeStyles(accentColor).icon}`} />
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-400 block">{opt.desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -810,36 +859,37 @@ export const SettingsView: React.FC = () => {
                   {
                     id: 'zen' as const,
                     title: 'Ambient Zen Ring',
-                    desc: 'Calming breathing halo ring, luxury ambient glow, and live minimalist clock',
+                    desc: 'Breathing halo & minimal clock',
                     icon: Coffee,
                   },
                   {
                     id: 'clock' as const,
-                    title: 'Studio Minimalist Clock',
-                    desc: 'Clean typography clock, floating constellation stardust, and live date',
+                    title: 'Studio Digital Clock',
+                    desc: 'Digital LED & live chronometer',
                     icon: Timer,
                   },
                   {
                     id: 'particles' as const,
                     title: 'Celestial Constellation',
-                    desc: 'Glowing starfield particle web and restful ethereal backdrop',
+                    desc: 'Starfield & luxury serif clock',
                     icon: Sparkles,
                   },
                 ].map(st => {
                   const Icon = st.icon;
+                  const isSelected = idleStyle === st.id;
                   return (
                     <button
                       key={st.id}
                       type="button"
                       onClick={() => updateIdlePreferences({ style: st.id })}
                       className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                        idleStyle === st.id
-                          ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 ring-2 ring-emerald-500/20 shadow-xs'
+                        isSelected
+                          ? getIdleThemeStyles(accentColor).activeCard
                           : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1.5">
-                        <Icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <Icon className={`w-4 h-4 ${isSelected ? getIdleThemeStyles(accentColor).icon : 'text-slate-500 dark:text-slate-400'}`} />
                         <span className="text-xs font-bold text-slate-900 dark:text-white">
                           {st.title}
                         </span>
