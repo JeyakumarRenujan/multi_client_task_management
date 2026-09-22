@@ -196,7 +196,7 @@ export const AuthPage: React.FC = () => {
     setOtpPreview(res.otpPreview || '');
     setResendCooldown(60);
     setForgotStep('otp');
-    setSuccessMessage(`A 6-digit verification code has been sent to ${email}.`);
+    setSuccessMessage(res.message || `A 6-digit verification code has been sent to ${email}.`);
   };
 
   const handleForgotStep2OtpSubmit = async (e: React.FormEvent) => {
@@ -236,11 +236,9 @@ export const AuthPage: React.FC = () => {
       return;
     }
 
-    if (res.otpPreview) {
-      setOtpPreview(res.otpPreview);
-    }
+    setOtpPreview(res.otpPreview || '');
     setResendCooldown(60);
-    setSuccessMessage('A new 6-digit verification code has been sent to your email.');
+    setSuccessMessage(res.message || 'A new 6-digit verification code has been sent to your email.');
   };
 
   const handleForgotStep3Submit = async (e: React.FormEvent) => {
@@ -889,16 +887,28 @@ export const AuthPage: React.FC = () => {
                         </button>
                       </div>
 
-                      {/* Simulated Inbox / Dev Notification Banner */}
-                      {otpPreview && (
+                      {/* Email Status Banner: Real Email Sent vs Dev Fallback */}
+                      {!otpPreview ? (
+                        <div className="p-3 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-slate-800 dark:text-slate-200 text-xs">
+                          <div className="flex items-start gap-2.5">
+                            <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                            <div>
+                              <div className="font-bold text-blue-900 dark:text-blue-300">Verification Email Dispatched</div>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                                We've sent your 6-digit security code to <strong>{email}</strong>. Please check your inbox (and spam folder) and enter it below.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
                         <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-emerald-500/10 border border-amber-500/30 dark:border-amber-500/20 text-slate-800 dark:text-slate-200">
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
                               <Inbox className="w-3.5 h-3.5" />
-                              <span>Simulated Email Notification</span>
+                              <span>Simulated Email (Dev Mode)</span>
                             </div>
                             <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
-                              Demo Mode
+                              SMTP Not Set
                             </span>
                           </div>
                           <div className="flex items-center justify-between pt-1">

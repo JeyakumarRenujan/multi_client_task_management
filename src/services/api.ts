@@ -50,6 +50,7 @@ export const api = {
       message: string;
       email: string;
       otpPreview?: string;
+      isRealEmail?: boolean;
       expiresInSeconds?: number;
     }>('/auth/forgot-password', {
       method: 'POST',
@@ -68,11 +69,22 @@ export const api = {
       message: string;
       email: string;
       otpPreview?: string;
+      isRealEmail?: boolean;
       expiresInSeconds?: number;
     }>('/auth/resend-otp', {
       method: 'POST',
       body: JSON.stringify({ email }),
     }),
+
+  getSmtpStatus: () =>
+    fetchJson<{
+      configured: boolean;
+      host: string;
+      user: string | null;
+      connected?: boolean;
+      error?: string;
+      message?: string;
+    }>('/auth/smtp-status'),
 
   resetPassword: (email: string, newPassword: string, otp?: string, resetToken?: string) =>
     fetchJson<{ success: boolean; message: string }>('/auth/reset-password', {

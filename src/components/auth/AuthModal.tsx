@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Logo } from '../common/Logo';
 import {
@@ -17,6 +17,8 @@ import {
   Eye,
   EyeOff,
   PenTool,
+  Inbox,
+  Copy,
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -25,7 +27,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { login, register, forgotPassword, resetPassword, loginDemoUser } = useApp();
+  const { login, register, forgotPassword, verifyOtp, resendOtp, resetPassword, loginDemoUser } = useApp();
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
 
   // Form states
@@ -41,7 +43,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Forgot password states
-  const [forgotStep, setForgotStep] = useState<'email' | 'reset' | 'success'>('email');
+  const [forgotStep, setForgotStep] = useState<'email' | 'otp' | 'reset' | 'success'>('email');
+  const [otp, setOtp] = useState('');
+  const [otpPreview, setOtpPreview] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -51,6 +58,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Resend cooldown timer
+  useEffect(() => {
+    let timer: any;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown(prev => (prev <= 1 ? 0 : prev - 1));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   if (!isOpen) return null;
 
@@ -75,6 +93,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setSuccessMessage('');
     setPassword('');
     setConfirmPassword('');
+    setOtp('');
+    setOtpPreview('');
+    setResetToken('');
+    setResendCooldown(0);
     setNewPassword('');
     setConfirmNewPassword('');
     setForgotStep('email');
@@ -168,10 +190,55 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    setForgotStep('reset');
+    setOtpPreview(res.otpPreview || '');
+    setResendCooldown(60);
+    setForgotStep('otp');
+    setSuccessMessage(res.message || `A 6-digit verification code has been sent to ${email}.`);
   };
 
-  const handleForgotStep2Submit = async (e: React.FormEvent) => {
+  const handleForgotStep2OtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    const cleanOtp = otp.trim();
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      setError('Please enter the complete 6-digit verification code.');
+      return;
+    }
+
+    setIsLoading(true);
+    const res = await verifyOtp(email, cleanOtp);
+    setIsLoading(false);
+
+    if (!res.success) {
+      setError(res.error || 'Invalid or expired verification code.');
+      return;
+    }
+
+    setResetToken(res.resetToken || '');
+    setForgotStep('reset');
+    setSuccessMessage('Email verified successfully! You may now set your new password.');
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || isResending) return;
+    setError('');
+    setIsResending(true);
+    const res = await resendOtp(email);
+    setIsResending(false);
+
+    if (!res.success) {
+      setError(res.error || 'Failed to resend verification code.');
+      return;
+    }
+
+    setOtpPreview(res.otpPreview || '');
+    setResendCooldown(60);
+    setSuccessMessage(res.message || 'A new 6-digit verification code has been sent to your email.');
+  };
+
+  const handleForgotStep3Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
@@ -187,7 +254,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     }
 
     setIsLoading(true);
-    const res = await resetPassword(email, newPassword);
+    const res = await resetPassword(email, newPassword, otp, resetToken);
     setIsLoading(false);
 
     if (!res.success) {
@@ -574,8 +641,118 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               </form>
             )}
 
+            {/* Step 2: Verify OTP */}
+            {forgotStep === 'otp' && (
+              <form onSubmit={handleForgotStep2OtpSubmit} className="space-y-3">
+                <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span className="truncate">Sent to: <strong>{email}</strong></span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotStep('email');
+                      setOtp('');
+                      setError('');
+                    }}
+                    className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
+                  >
+                    Change
+                  </button>
+                </div>
+
+                {/* Email Status Banner: Real Email Sent vs Dev Fallback */}
+                {!otpPreview ? (
+                  <div className="p-3 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-slate-800 dark:text-slate-200 text-xs">
+                    <div className="flex items-start gap-2.5">
+                      <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-blue-900 dark:text-blue-300">Verification Email Dispatched</div>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                          We've sent your 6-digit security code to <strong>{email}</strong>. Please check your inbox (and spam folder) and enter it below.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-emerald-500/10 border border-amber-500/30 dark:border-amber-500/20 text-slate-800 dark:text-slate-200">
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
+                        <Inbox className="w-3.5 h-3.5" />
+                        <span>Simulated Email (Dev Mode)</span>
+                      </div>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
+                        SMTP Not Set
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="text-[11px] text-slate-600 dark:text-slate-300">
+                        OTP Code: <strong className="font-mono text-emerald-700 dark:text-emerald-400 text-sm tracking-wider">{otpPreview}</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setOtp(otpPreview)}
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>Auto-fill</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* OTP Input Field */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    6-Digit Verification Code *
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      value={otp}
+                      onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000"
+                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-lg font-mono font-black tracking-[0.35em] text-slate-900 dark:text-slate-100 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                      required
+                      disabled={isLoading}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+
+                {/* Resend OTP Bar */}
+                <div className="flex items-center justify-between pt-1 text-[11px]">
+                  <span className="text-slate-500 dark:text-slate-400">Didn't receive code?</span>
+                  <button
+                    type="button"
+                    disabled={resendCooldown > 0 || isResending}
+                    onClick={handleResendOtp}
+                    className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
+                  >
+                    {isResending ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
+                  </button>
+                </div>
+
+                {/* Submit OTP */}
+                <button
+                  type="submit"
+                  disabled={isLoading || otp.length !== 6}
+                  className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs md:text-sm shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                >
+                  <span>{isLoading ? 'Verifying Code...' : 'Verify Code & Continue'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
+            )}
+
+            {/* Step 3: Set New Password */}
             {forgotStep === 'reset' && (
-              <form onSubmit={handleForgotStep2Submit} className="space-y-3">
+              <form onSubmit={handleForgotStep3Submit} className="space-y-3">
                 <div className="p-2.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
                   <div>
                     Verified Account: <strong>{email}</strong>

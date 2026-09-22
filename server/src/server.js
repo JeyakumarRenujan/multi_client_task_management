@@ -40,6 +40,12 @@ import {
   writeDb,
 } from './db.js';
 
+import {
+  sendOtpEmail,
+  isEmailConfigured,
+  testSmtpConnection,
+} from './emailService.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -212,20 +218,38 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     createdAt: Date.now(),
   });
 
-  console.log(`\n======================================================`);
-  console.log(`📧 [EMAIL SERVICE - PASSWORD RESET OTP]`);
-  console.log(`To: ${normalizedEmail}`);
-  console.log(`Subject: Your Me Plus Password Reset Verification Code`);
-  console.log(`Your 6-Digit OTP Code is: 👉 ${otp} 👈 (Valid for 10 minutes)`);
-  console.log(`======================================================\n`);
+  try {
+    const emailResult = await sendOtpEmail({
+      toEmail: normalizedEmail,
+      otp,
+      userName: user.name,
+    });
 
-  res.json({
-    success: true,
-    message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
-    email: normalizedEmail,
-    otpPreview: otp,
-    expiresInSeconds: 600,
-  });
+    if (emailResult.isRealEmail) {
+      return res.json({
+        success: true,
+        message: `A 6-digit verification code has been sent to ${normalizedEmail}. Please check your inbox and spam folder.`,
+        email: normalizedEmail,
+        isRealEmail: true,
+        expiresInSeconds: 600,
+      });
+    }
+
+    // Dev / Demo fallback (when SMTP is not yet configured in .env)
+    return res.json({
+      success: true,
+      message: `[Demo Mode] Verification code generated. Configure SMTP in .env for real email delivery.`,
+      email: normalizedEmail,
+      otpPreview: otp,
+      isRealEmail: false,
+      expiresInSeconds: 600,
+    });
+  } catch (err) {
+    console.error('❌ Failed to deliver OTP email:', err);
+    return res.status(500).json({
+      error: `Failed to deliver verification email: ${err.message || 'SMTP delivery error'}. Please verify SMTP settings.`,
+    });
+  }
 });
 
 app.post('/api/auth/verify-otp', (req, res) => {
@@ -313,18 +337,47 @@ app.post('/api/auth/resend-otp', async (req, res) => {
     createdAt: Date.now(),
   });
 
-  console.log(`\n======================================================`);
-  console.log(`📧 [EMAIL SERVICE - RESENT OTP]`);
-  console.log(`To: ${normalizedEmail}`);
-  console.log(`Your New 6-Digit OTP Code is: 👉 ${otp} 👈`);
-  console.log(`======================================================\n`);
+  try {
+    const emailResult = await sendOtpEmail({
+      toEmail: normalizedEmail,
+      otp,
+      userName: user.name,
+    });
 
+    if (emailResult.isRealEmail) {
+      return res.json({
+        success: true,
+        message: `A new 6-digit verification code has been sent to ${normalizedEmail}.`,
+        email: normalizedEmail,
+        isRealEmail: true,
+        expiresInSeconds: 600,
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `[Demo Mode] New verification code generated.`,
+      email: normalizedEmail,
+      otpPreview: otp,
+      isRealEmail: false,
+      expiresInSeconds: 600,
+    });
+  } catch (err) {
+    console.error('❌ Failed to resend OTP email:', err);
+    return res.status(500).json({
+      error: `Failed to deliver verification email: ${err.message || 'SMTP delivery error'}. Please verify SMTP settings.`,
+    });
+  }
+});
+
+// Check SMTP Configuration / Health
+app.get('/api/auth/smtp-status', async (req, res) => {
+  const status = await testSmtpConnection();
   res.json({
-    success: true,
-    message: `A new 6-digit verification code has been sent to ${normalizedEmail}.`,
-    email: normalizedEmail,
-    otpPreview: otp,
-    expiresInSeconds: 600,
+    configured: isEmailConfigured(),
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    user: process.env.SMTP_USER ? `${process.env.SMTP_USER.slice(0, 3)}***@***` : null,
+    ...status,
   });
 });
 
@@ -888,4 +941,9 @@ app.post('/api/reset', async (req, res) => {
 app.listen(PORT, async () => {
   console.log(`🚀 Me Plus Backend REST API running at http://localhost:${PORT}`);
   await initDatabase();
+  if (isEmailConfigured()) {
+    console.log(`✉️  [Email Service] SMTP is configured (${process.env.SMTP_HOST || 'smtp.gmail.com'}). Real OTP emails will be sent.`);
+  } else {
+    console.log(`✉️  [Email Service] Simulated/Dev mode. Configure SMTP_USER and SMTP_PASS in .env to send real emails.`);
+  }
 });

@@ -46,9 +46,9 @@ interface AppContextType {
   isAuthenticated: boolean;
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, email: string, password: string, profession?: string) => Promise<{ success: boolean; error?: string }>;
-  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }>;
+  forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }>;
   verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; error?: string; message?: string; resetToken?: string }>;
-  resendOtp: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }>;
+  resendOtp: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }>;
   resetPassword: (email: string, newPassword: string, otp?: string, resetToken?: string) => Promise<{ success: boolean; error?: string; message?: string }>;
   loginDemoUser: () => void;
   logout: () => void;
@@ -1107,7 +1107,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const forgotPassword = async (
     email: string
-  ): Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }> => {
+  ): Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }> => {
     const normalizedEmail = (email || '').trim().toLowerCase();
 
     if (!normalizedEmail || !normalizedEmail.includes('@')) {
@@ -1121,6 +1121,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           success: true,
           message: res.message,
           otpPreview: res.otpPreview,
+          isRealEmail: res.isRealEmail,
           expiresInSeconds: res.expiresInSeconds,
         };
       }
@@ -1141,6 +1142,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       success: true,
       message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
       otpPreview: dummyOtp,
+      isRealEmail: false,
       expiresInSeconds: 600,
     };
   };
@@ -1174,7 +1176,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resendOtp = async (
     email: string
-  ): Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; expiresInSeconds?: number }> => {
+  ): Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }> => {
     const normalizedEmail = (email || '').trim().toLowerCase();
     try {
       const res = await api.resendOtp(normalizedEmail);
@@ -1182,6 +1184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         success: true,
         message: res.message,
         otpPreview: res.otpPreview,
+        isRealEmail: res.isRealEmail,
         expiresInSeconds: res.expiresInSeconds,
       };
     } catch (err: any) {
