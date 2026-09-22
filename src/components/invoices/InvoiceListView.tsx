@@ -1,27 +1,23 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Invoice, InvoiceStatus } from '../../types';
+import { downloadInvoicePdf } from './pdfGenerator';
 import confetti from 'canvas-confetti';
 import {
   FileText,
   Plus,
   Search,
-  Printer,
+  Download,
   CheckCircle2,
   Clock,
-  AlertTriangle,
   Edit2,
   Trash2,
-  DollarSign,
   FolderKanban,
-  ArrowUpRight,
-  Sparkles,
 } from 'lucide-react';
 
 export const InvoiceListView: React.FC = () => {
   const {
     invoices,
-    clients,
     projects,
     setIsInvoiceModalOpen,
     setSelectedInvoiceForEdit,
@@ -64,6 +60,16 @@ export const InvoiceListView: React.FC = () => {
   const handleEdit = (inv: Invoice) => {
     setSelectedInvoiceForEdit(inv);
     setIsInvoiceModalOpen(true);
+  };
+
+  const handleDownloadPdf = (e: React.MouseEvent, inv: Invoice) => {
+    e.stopPropagation();
+    downloadInvoicePdf(inv, user);
+    showToast({
+      title: 'PDF Downloaded',
+      message: `Invoice #${inv.invoiceNumber}.pdf downloaded successfully.`,
+      type: 'success',
+    });
   };
 
   const handleMarkAsPaid = (e: React.MouseEvent, inv: Invoice) => {
@@ -111,7 +117,7 @@ export const InvoiceListView: React.FC = () => {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Fixed project budget billing, 1-click payment verification, and automated revenue metrics.
+            Fixed project budget billing, 1-click payment tracking, and PDF download.
           </p>
         </div>
 
@@ -127,7 +133,7 @@ export const InvoiceListView: React.FC = () => {
         </button>
       </div>
 
-      {/* The 3 Core Financial Overview Cards */}
+      {/* The 3 Financial Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Invoiced */}
         <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex items-center justify-between">
@@ -224,7 +230,7 @@ export const InvoiceListView: React.FC = () => {
         </div>
       </div>
 
-      {/* Invoice Table / Cards */}
+      {/* Invoice Table */}
       {filteredInvoices.length === 0 ? (
         <div className="py-16 text-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
           <FileText className="w-12 h-12 mx-auto text-slate-400 mb-3 opacity-50" />
@@ -234,7 +240,7 @@ export const InvoiceListView: React.FC = () => {
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             {search || statusFilter !== 'all'
               ? 'Try changing your search query or status filter.'
-              : 'Create your first invoice by selecting a project and defining its budget.'}
+              : 'Create an invoice to bill clients for project deliverables.'}
           </p>
           <button
             onClick={() => {
@@ -254,7 +260,7 @@ export const InvoiceListView: React.FC = () => {
                 <th className="py-3.5 px-4">Invoice #</th>
                 <th className="py-3.5 px-4">Client &amp; Project</th>
                 <th className="py-3.5 px-4">Service / Scope</th>
-                <th className="py-3.5 px-4">Status &amp; Payment</th>
+                <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4">Due Date</th>
                 <th className="py-3.5 px-4 font-mono text-right">Project Budget</th>
                 <th className="py-3.5 px-4 text-right">Actions</th>
@@ -296,17 +302,11 @@ export const InvoiceListView: React.FC = () => {
                       <div className="truncate font-medium text-slate-700 dark:text-slate-300">
                         {firstDescription}
                       </div>
-                      {inv.items && inv.items.length > 1 && (
-                        <span className="text-[10px] text-slate-400">
-                          +{inv.items.length - 1} more line item{inv.items.length > 2 ? 's' : ''}
-                        </span>
-                      )}
                     </td>
 
                     {/* Status & 1-Click "Mark as Paid" */}
                     <td className="py-3.5 px-4" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
-                        {/* Status Select */}
                         <select
                           value={inv.status}
                           onChange={e => updateInvoiceStatus(inv.id, e.target.value as InvoiceStatus)}
@@ -320,13 +320,12 @@ export const InvoiceListView: React.FC = () => {
                           <option value="overdue">Overdue</option>
                         </select>
 
-                        {/* 1-Click Fast "Mark as Paid" button if unpaid */}
                         {!isPaid && (
                           <button
                             type="button"
                             onClick={e => handleMarkAsPaid(e, inv)}
                             className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
-                            title="1-Click: Mark this invoice as Paid and move amount into Paid Revenue"
+                            title="1-Click: Mark this invoice as Paid"
                           >
                             <CheckCircle2 className="w-3 h-3" />
                             <span>Mark Paid</span>
@@ -348,19 +347,22 @@ export const InvoiceListView: React.FC = () => {
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <div
-                        className="flex items-center justify-end gap-1"
+                        className="flex items-center justify-end gap-1.5"
                         onClick={e => e.stopPropagation()}
                       >
+                        {/* Download PDF Button */}
                         <button
-                          onClick={() => handleEdit(inv)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition-colors"
-                          title="View / Print Slip"
+                          onClick={e => handleDownloadPdf(e, inv)}
+                          className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                          title="Download Invoice as PDF"
                         >
-                          <Printer className="w-4 h-4" />
+                          <Download className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">PDF</span>
                         </button>
+
                         <button
                           onClick={() => handleEdit(inv)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-colors cursor-pointer"
                           title="Edit Invoice"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -377,7 +379,7 @@ export const InvoiceListView: React.FC = () => {
                               onConfirm: () => deleteInvoice(inv.id),
                             });
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                           title="Delete Invoice"
                         >
                           <Trash2 className="w-4 h-4" />
