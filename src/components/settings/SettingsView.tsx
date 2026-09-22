@@ -13,28 +13,15 @@ import {
   Layout,
   Sparkles,
   Timer,
-  Eye,
-  EyeOff,
   Coffee,
   Bot,
-  Cpu,
-  Key,
+  Eye,
   ExternalLink,
-  ShieldCheck,
-  AlertCircle,
-  Loader2,
-  CheckCircle2,
+  ArrowUpRight,
   Zap,
   RotateCcw,
   GraduationCap,
 } from 'lucide-react';
-import { AiProvider, AiSettings } from '../../types';
-import {
-  AI_MODELS,
-  getStoredAiSettings,
-  saveStoredAiSettings,
-  testAiConnection,
-} from '../../services/aiService';
 import { playNotificationTone } from '../../services/soundService';
 
 const getIdleThemeStyles = (color: string) => {
@@ -89,6 +76,7 @@ export const SettingsView: React.FC = () => {
     updateUserProfile,
     showToast,
     resetDemoData,
+    setIsAiModalOpen,
   } = useApp();
 
   const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme, accentColor, setAccentColor } = useTheme();
@@ -110,22 +98,6 @@ export const SettingsView: React.FC = () => {
   const [idleTimeout, setIdleTimeout] = useState<number>(user?.idleSettings?.timeoutMinutes ?? 2);
   const [idleStyle, setIdleStyle] = useState<'zen' | 'clock' | 'particles'>(user?.idleSettings?.style ?? 'zen');
 
-  // AI Copilot Settings
-  const initialAi = getStoredAiSettings(user);
-  const [aiProvider, setAiProvider] = useState<AiProvider>(initialAi.provider || 'builtin');
-  const [geminiKey, setGeminiKey] = useState(initialAi.geminiApiKey || '');
-  const [openAiKey, setOpenAiKey] = useState(initialAi.openaiApiKey || '');
-  const [geminiModel, setGeminiModel] = useState(initialAi.geminiModel || 'gemini-1.5-flash');
-  const [openAiModel, setOpenAiModel] = useState(initialAi.openaiModel || 'gpt-4o-mini');
-  const [aiInstructions, setAiInstructions] = useState(initialAi.customInstructions || '');
-  const [showAiKey, setShowAiKey] = useState(false);
-  const [isTestingAi, setIsTestingAi] = useState(false);
-  const [aiTestResult, setAiTestResult] = useState<{
-    success?: boolean;
-    message?: string;
-    latencyMs?: number;
-  } | null>(null);
-
   // Sync state when active user updates
   useEffect(() => {
     if (user) {
@@ -143,14 +115,6 @@ export const SettingsView: React.FC = () => {
         setIdleEnabled(user.idleSettings.enabled ?? true);
         setIdleTimeout(user.idleSettings.timeoutMinutes ?? 2);
         setIdleStyle(user.idleSettings.style ?? 'zen');
-      }
-      if (user.aiSettings) {
-        setAiProvider(user.aiSettings.provider || 'builtin');
-        setGeminiKey(user.aiSettings.geminiApiKey || '');
-        setOpenAiKey(user.aiSettings.openaiApiKey || '');
-        setGeminiModel(user.aiSettings.geminiModel || 'gemini-1.5-flash');
-        setOpenAiModel(user.aiSettings.openaiModel || 'gpt-4o-mini');
-        setAiInstructions(user.aiSettings.customInstructions || '');
       }
     }
   }, [user]);
@@ -235,79 +199,6 @@ export const SettingsView: React.FC = () => {
     });
   };
 
-  const handleTestAi = async () => {
-    if (aiProvider === 'builtin') {
-      setAiTestResult({
-        success: true,
-        message: 'Built-in Smart Advisor is active and requires no API key.',
-        latencyMs: 10,
-      });
-      return;
-    }
-
-    const key = aiProvider === 'gemini' ? geminiKey : openAiKey;
-    const model = aiProvider === 'gemini' ? geminiModel : openAiModel;
-
-    if (!key || !key.trim()) {
-      setAiTestResult({
-        success: false,
-        message: `Please enter your ${aiProvider === 'gemini' ? 'Google Gemini' : 'OpenAI'} API key.`,
-      });
-      return;
-    }
-
-    setIsTestingAi(true);
-    setAiTestResult(null);
-    const res = await testAiConnection(aiProvider, key.trim(), model);
-    setIsTestingAi(false);
-    setAiTestResult(res);
-  };
-
-  const handleSaveAiSettings = () => {
-    if (aiProvider === 'gemini' && !geminiKey.trim()) {
-      showToast({
-        title: 'Gemini API Key Required',
-        message: 'Please enter your Google Gemini API key to activate Gemini, or switch to Built-in Copilot.',
-        type: 'warning',
-      });
-      return;
-    }
-
-    if (aiProvider === 'openai' && !openAiKey.trim()) {
-      showToast({
-        title: 'OpenAI API Key Required',
-        message: 'Please enter your OpenAI API key (starts with sk-...) to activate ChatGPT, or switch to Built-in Copilot.',
-        type: 'warning',
-      });
-      return;
-    }
-
-    const updated: AiSettings = {
-      provider: aiProvider,
-      geminiApiKey: geminiKey.trim(),
-      geminiModel,
-      openaiApiKey: openAiKey.trim(),
-      openaiModel: openAiModel,
-      customInstructions: aiInstructions.trim(),
-    };
-
-    saveStoredAiSettings(updated);
-    updateUserProfile({ aiSettings: updated }, { silent: true });
-    setAiTestResult(null);
-
-    const providerLabel =
-      updated.provider === 'gemini'
-        ? 'Google Gemini (' + updated.geminiModel + ')'
-        : updated.provider === 'openai'
-        ? 'OpenAI ChatGPT (' + updated.openaiModel + ')'
-        : 'Built-in Freelance Copilot';
-
-    showToast({
-      title: 'AI Settings Saved',
-      message: `Active copilot model set to ${providerLabel}.`,
-      type: 'success',
-    });
-  };
 
   const handlePreviewScreensaver = () => {
     window.dispatchEvent(new CustomEvent('meplus:trigger-screensaver-preview'));
@@ -347,14 +238,6 @@ export const SettingsView: React.FC = () => {
         enabled: idleEnabled,
         timeoutMinutes: idleTimeout,
         style: idleStyle,
-      },
-      aiSettings: {
-        provider: aiProvider,
-        geminiApiKey: geminiKey.trim(),
-        geminiModel,
-        openaiApiKey: openAiKey.trim(),
-        openaiModel: openAiModel,
-        customInstructions: aiInstructions.trim(),
       },
       accentColor,
     });
@@ -416,46 +299,6 @@ export const SettingsView: React.FC = () => {
     e.target.value = '';
   };
 
-  const savedAiProvider = user?.aiSettings?.provider || 'builtin';
-
-  const getAiBadge = () => {
-    if (aiProvider === 'builtin') {
-      return {
-        label: 'Built-in Copilot Active',
-        badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40',
-      };
-    }
-    if (aiProvider === 'gemini') {
-      if (geminiKey.trim()) {
-        return {
-          label: 'Gemini Live (Key Ready)',
-          badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40',
-        };
-      }
-      return {
-        label: 'Gemini (Key Required)',
-        badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40',
-      };
-    }
-    if (aiProvider === 'openai') {
-      if (openAiKey.trim()) {
-        return {
-          label: 'ChatGPT Live (Key Ready)',
-          badgeClass: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-300/40',
-        };
-      }
-      return {
-        label: 'ChatGPT (Key Required)',
-        badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40',
-      };
-    }
-    return {
-      label: 'Built-in Copilot',
-      badgeClass: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
-    };
-  };
-
-  const aiBadge = getAiBadge();
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in pb-12">
@@ -1027,8 +870,8 @@ export const SettingsView: React.FC = () => {
         )}
       </div>
 
-      {/* AI Copilot & Models Configuration */}
-      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-5 sm:space-y-6">
+      {/* Direct AI Tools & Workspace Guide (No Developer API Keys Required) */}
+      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-whatsapp-teal text-white shadow-md shadow-emerald-700/20">
@@ -1037,292 +880,94 @@ export const SettingsView: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                  AI Copilot &amp; Models Configuration
+                  Direct AI Tools &amp; Assistant
                 </h2>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${aiBadge.badgeClass}`}>
-                  {aiBadge.label}
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  No API Key Required
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Connect your Google Gemini or OpenAI account for real generative intelligence across all workspace tools
+                Direct access to Google Gemini and OpenAI ChatGPT, plus the built-in Me Plus Guide
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {aiProvider !== 'builtin' && (
-              <button
-                type="button"
-                onClick={handleTestAi}
-                disabled={isTestingAi}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all shadow-xs disabled:opacity-50"
-              >
-                {isTestingAi ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Testing...</span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Test Connection</span>
-                  </>
-                )}
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={handleSaveAiSettings}
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-700/20 active:scale-95 transition-all"
-            >
-              Save AI Settings
-            </button>
-          </div>
-        </div>
-
-        {/* Provider Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* Google Gemini */}
           <button
             type="button"
-            onClick={() => {
-              setAiProvider('gemini');
-              setAiTestResult(null);
-            }}
-            className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
-              aiProvider === 'gemini'
-                ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 ring-2 ring-emerald-500/25 shadow-xs'
-                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}
+            onClick={() => setIsAiModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-700/20 active:scale-95 transition-all self-start sm:self-auto cursor-pointer"
           >
-            <div className="flex items-center justify-between w-full mb-2">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Google Gemini</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {savedAiProvider === 'gemini' && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
-                    Active
-                  </span>
-                )}
+            <Sparkles className="w-4 h-4" />
+            <span>Open In-App Guide</span>
+          </button>
+        </div>
+
+        {/* Direct Access Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Google Gemini Direct */}
+          <div className="p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col justify-between hover:border-emerald-400/80 transition-all">
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                    G
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-white">Google Gemini</h3>
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">gemini.google.com</span>
+                  </div>
+                </div>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
-                  Free Tier
+                  Direct Web Access
                 </span>
               </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                Log in with your standard Google account to brainstorm, review proposals, and analyze project scopes directly in Google's official interface.
+              </p>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              High speed &amp; quality. Generous free API limits on Google AI Studio.
-            </p>
-          </button>
+            <a
+              href="https://gemini.google.com"
+              target="_blank"
+              rel="noreferrer"
+              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+            >
+              <span>Launch Google Gemini</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </a>
+          </div>
 
-          {/* OpenAI ChatGPT */}
-          <button
-            type="button"
-            onClick={() => {
-              setAiProvider('openai');
-              setAiTestResult(null);
-            }}
-            className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
-              aiProvider === 'openai'
-                ? 'border-cyan-500 bg-cyan-50/60 dark:bg-cyan-950/40 ring-2 ring-cyan-500/25 shadow-xs'
-                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}
-          >
-            <div className="flex items-center justify-between w-full mb-2">
-              <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">OpenAI ChatGPT</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {savedAiProvider === 'openai' && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-600 text-white shadow-xs">
-                    Active
-                  </span>
-                )}
+          {/* OpenAI ChatGPT Direct */}
+          <div className="p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col justify-between hover:border-cyan-400/80 transition-all">
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 to-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-white">OpenAI ChatGPT</h3>
+                    <span className="text-[10px] font-semibold text-cyan-600 dark:text-cyan-400">chatgpt.com</span>
+                  </div>
+                </div>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200">
-                  GPT-4o
+                  Direct Web Access
                 </span>
               </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                Open OpenAI ChatGPT in a new tab. Ideal for drafting client contracts, revision policies, email communication, and rate negotiations.
+              </p>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Connect directly to GPT-4o Mini or GPT-4o using your OpenAI API key.
-            </p>
-          </button>
-
-          {/* Built-in Smart Advisor */}
-          <button
-            type="button"
-            onClick={() => {
-              setAiProvider('builtin');
-              setAiTestResult(null);
-            }}
-            className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
-              aiProvider === 'builtin'
-                ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 ring-2 ring-amber-500/25 shadow-xs'
-                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}
-          >
-            <div className="flex items-center justify-between w-full mb-2">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Built-in Copilot</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {savedAiProvider === 'builtin' && (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-600 text-white shadow-xs">
-                    Active
-                  </span>
-                )}
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
-                  No Key
-                </span>
-              </div>
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Intelligent freelance rule templates &amp; workspace digest without external accounts.
-            </p>
-          </button>
+            <a
+              href="https://chatgpt.com"
+              target="_blank"
+              rel="noreferrer"
+              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
+            >
+              <span>Launch OpenAI ChatGPT</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </a>
+          </div>
         </div>
-
-        {/* Model & API Key Configuration */}
-        {aiProvider === 'gemini' && (
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Selected Gemini Model
-              </label>
-              <a
-                href="https://aistudio.google.com/app/apikey"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline"
-              >
-                <span>Get a free Google Gemini API Key at Google AI Studio</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-
-            <select
-              value={geminiModel}
-              onChange={e => setGeminiModel(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              {AI_MODELS.gemini.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.name} — {m.description}
-                </option>
-              ))}
-            </select>
-
-            <div>
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 block">
-                Google Gemini API Key
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Key className="w-4 h-4" />
-                </div>
-                <input
-                  type={showAiKey ? 'text' : 'password'}
-                  value={geminiKey}
-                  onChange={e => setGeminiKey(e.target.value)}
-                  placeholder="AIzaSy..."
-                  className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAiKey(!showAiKey)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                >
-                  {showAiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {aiProvider === 'openai' && (
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Selected OpenAI Model
-              </label>
-              <a
-                href="https://platform.openai.com/api-keys"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-600 hover:text-cyan-700 hover:underline"
-              >
-                <span>Get your OpenAI API Key at platform.openai.com</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-
-            <select
-              value={openAiModel}
-              onChange={e => setOpenAiModel(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              {AI_MODELS.openai.map(m => (
-                <option key={m.id} value={m.id}>
-                  {m.name} — {m.description}
-                </option>
-              ))}
-            </select>
-
-            <div>
-              <label className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 block">
-                OpenAI API Key
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <Key className="w-4 h-4" />
-                </div>
-                <input
-                  type={showAiKey ? 'text' : 'password'}
-                  value={openAiKey}
-                  onChange={e => setOpenAiKey(e.target.value)}
-                  placeholder="sk-proj-..."
-                  className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAiKey(!showAiKey)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                >
-                  {showAiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Connection Test Banner */}
-        {aiTestResult && (
-          <div
-            className={`p-3.5 rounded-2xl text-xs flex items-start gap-2.5 ${
-              aiTestResult.success
-                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800'
-                : 'bg-rose-50 dark:bg-rose-950/60 text-rose-900 dark:text-rose-200 border border-rose-200 dark:border-rose-800'
-            }`}
-          >
-            {aiTestResult.success ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-            )}
-            <div>
-              <div className="font-semibold">{aiTestResult.message}</div>
-              {aiTestResult.latencyMs && (
-                <div className="text-[10px] opacity-75 mt-0.5">
-                  Latency: {aiTestResult.latencyMs}ms
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Notifications & Sound Settings */}
