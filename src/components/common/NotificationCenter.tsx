@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   Bell,
@@ -20,6 +20,54 @@ interface NotificationCenterProps {
   onClose: () => void;
 }
 
+// Synthesize real audible notification tone with Web Audio API
+const playNotificationTone = (action: 'enable' | 'disable' | 'chime') => {
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+
+    if (action === 'enable' || action === 'chime') {
+      // Pleasant harmonic ascending chime: D5 (587.33Hz) -> A5 (880Hz)
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now);
+      osc.frequency.setValueAtTime(880, now + 0.1);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } else {
+      // Gentle descending tone for mute: A4 (440Hz) -> D4 (293.66Hz)
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(293.66, now + 0.08);
+
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+      osc.start(now);
+      osc.stop(now + 0.22);
+    }
+  } catch (err) {
+    console.warn('Notification audio feedback blocked or unavailable:', err);
+  }
+};
+
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, onClose }) => {
   const {
     notifications,
@@ -30,23 +78,62 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
     user,
     updateUserProfile,
     setActiveTab,
+    showToast,
   } = useApp();
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
   const [showSimulatedPreview, setShowSimulatedPreview] = useState<boolean>(false);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const filteredNotifs = notifications.filter(n => (activeFilter === 'unread' ? !n.read : true));
+  const isSoundOn = user?.notificationSettings?.sound ?? true;
 
-  const toggleSound = () => {
-    if (!user) return;
-    updateUserProfile({
-      notificationSettings: {
-        ...user.notificationSettings,
-        sound: !user.notificationSettings.sound,
-      },
+  const toggleSound = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const nextSound = !isSoundOn;
+
+    // Immediately play the corresponding audio tone
+    playNotificationTone(nextSound ? 'enable' : 'disable');
+
+    if (user) {
+      updateUserProfile({
+        notificationSettings: {
+          ...user.notificationSettings,
+          sound: nextSound,
+        },
+      });
+    }
+
+    showToast({
+      title: nextSound ? 'Notification Sound Enabled' : 'Notification Sound Muted',
+      message: nextSound
+        ? 'Audible chime will play for task deadlines and timer alerts.'
+        : 'Notification alert sounds have been muted.',
+      type: nextSound ? 'success' : 'info',
     });
+  };
+
+  const handleSimulatePush = () => {
+    const nextState = !showSimulatedPreview;
+    setShowSimulatedPreview(nextState);
+    if (nextState && isSoundOn) {
+      playNotificationTone('chime');
+    }
   };
 
   const getNotificationIcon = (type: string, priority: string) => {
@@ -75,42 +162,66 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
   };
 
   return (
-    <div
-      className="absolute right-0 top-14 w-96 max-w-[92vw] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden flex flex-col max-h-[80vh] animate-slide-up"
-      onClick={e => e.stopPropagation()}
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-        <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Notifications</h3>
-          {unreadNotificationsCount > 0 && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">
-              {unreadNotificationsCount} new
-            </span>
-          )}
-        </div>
+    <>
+      {/* Invisible Global Backdrop to close notification on click anywhere */}
+      <div
+        className="fixed inset-0 z-40 bg-black/5 dark:bg-black/20 cursor-default"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={toggleSound}
-            title={user?.notificationSettings?.sound ? 'Mute Alert Sound' : 'Enable Alert Sound'}
-            className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-          >
-            {user?.notificationSettings?.sound ? (
-              <Volume2 className="w-4 h-4 text-emerald-600" />
-            ) : (
-              <VolumeX className="w-4 h-4 text-slate-400" />
+      <div
+        className="absolute right-0 top-14 w-96 max-w-[92vw] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden flex flex-col max-h-[80vh] animate-slide-up"
+        onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-label="Notification Center"
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-2">
+            <Bell className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Notifications</h3>
+            {unreadNotificationsCount > 0 && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">
+                {unreadNotificationsCount} new
+              </span>
             )}
-          </button>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {/* Functional Audio Sound Toggle */}
+            <button
+              type="button"
+              onClick={toggleSound}
+              title={isSoundOn ? 'Notification Sound: ON (Click to mute)' : 'Notification Sound: MUTED (Click to enable)'}
+              className={`px-2 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                isSoundOn
+                  ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 hover:bg-emerald-200/70 border border-emerald-300/60 dark:border-emerald-800/60'
+                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 border border-transparent'
+              }`}
+              aria-label={isSoundOn ? 'Mute notification sound' : 'Enable notification sound'}
+            >
+              {isSoundOn ? (
+                <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-slate-400" />
+              )}
+              <span className="text-[10px] font-bold hidden sm:inline">
+                {isSoundOn ? 'Sound On' : 'Muted'}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              title="Close Notifications (Esc)"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      </div>
 
       {/* Tabs & Controls */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/30 dark:bg-slate-900/30 text-xs">
@@ -209,8 +320,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
             Channels: Email &bull; SMS &bull; Browser
           </span>
           <button
-            onClick={() => setShowSimulatedPreview(!showSimulatedPreview)}
-            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline"
+            onClick={handleSimulatePush}
+            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
           >
             {showSimulatedPreview ? 'Hide Sim' : 'Simulate Push'}
           </button>
@@ -233,5 +344,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
         )}
       </div>
     </div>
-  );
+  </>
+);
 };

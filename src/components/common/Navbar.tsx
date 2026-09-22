@@ -69,6 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const quickAddRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const accentMenuRef = useRef<HTMLDivElement>(null);
+  const notificationsRef = useRef<HTMLDivElement>(null);
 
   // Live real-time ticking clock
   useEffect(() => {
@@ -88,6 +89,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       }
       if (accentMenuRef.current && !accentMenuRef.current.contains(event.target as Node)) {
         setIsAccentMenuOpen(false);
+      }
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -356,7 +360,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         {/* Notification Bell with Badge */}
-        <div className="relative">
+        <div className="relative" ref={notificationsRef}>
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
             title="Notifications & Deadline Alerts"
