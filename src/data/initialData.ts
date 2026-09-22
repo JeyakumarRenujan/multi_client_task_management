@@ -12,7 +12,7 @@ export const initialUser: UserProfile = {
   id: 'usr-1',
   name: 'Alex Rivera',
   email: 'alex.rivera@gmail.com',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
+  avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4',
   title: 'Senior UI/UX & Full-Stack Freelancer',
   hourlyRate: 75,
   currency: '$',

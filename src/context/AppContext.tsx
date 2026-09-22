@@ -187,19 +187,19 @@ const defaultRegisteredUsers: RegisteredAccount[] = [
     name: 'Alex Rivera',
     email: 'alex.rivera@gmail.com',
     password: 'password123',
-    title: 'Senior Graphic & UI Designer',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-    hourlyRate: 65,
+    title: 'Senior UI/UX & Full-Stack Freelancer',
+    avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4',
+    hourlyRate: 75,
     currency: '$',
-    bio: 'Specialized in building modern web interfaces, digital branding, and UI systems.',
+    bio: 'Specialized in building modern web apps, design systems, and responsive digital interfaces for startups and enterprises.',
   },
   {
     id: 'usr-demo',
     name: 'Alex Rivera',
     email: 'demo@meplus.io',
     password: 'password123',
-    title: 'Senior Graphic & UI Designer',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
+    title: 'Senior UI/UX & Full-Stack Freelancer',
+    avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4',
     hourlyRate: 65,
     currency: '$',
     bio: 'Specialized in building modern web interfaces, digital branding, and UI systems.',
@@ -422,7 +422,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<UserProfile | null>(() => {
     const u = safeGetStorage<UserProfile | null>(STORAGE_KEYS.USER, null);
     if (u && u.email) {
-      return { ...u, id: getDeterministicUserId(u.email) };
+      const deterministicId = getDeterministicUserId(u.email);
+      const backupAvatar =
+        safeGetStorage<string | null>(`meplus_avatar_${deterministicId}`, null) ||
+        safeGetStorage<string | null>(`meplus_avatar_${u.id}`, null) ||
+        safeGetStorage<string | null>(`meplus_avatar_${u.email.toLowerCase()}`, null);
+      return {
+        ...u,
+        id: deterministicId,
+        avatar: backupAvatar || u.avatar || initialUser.avatar,
+      };
     }
     return u;
   });
@@ -905,10 +914,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const res = await api.login(normalizedEmail, password);
       if (res && res.user) {
+        const backupAvatar =
+          safeGetStorage<string | null>(`meplus_avatar_${deterministicId}`, null) ||
+          safeGetStorage<string | null>(`meplus_avatar_${normalizedEmail}`, null);
         const authenticatedUser: UserProfile = {
           ...res.user,
           id: deterministicId,
-          avatar: res.user.avatar || initialUser.avatar,
+          avatar: res.user.avatar || backupAvatar || initialUser.avatar,
         };
         setUser(authenticatedUser);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(authenticatedUser));
@@ -926,7 +938,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 email: normalizedEmail,
                 password,
                 title: res.user.title,
-                avatar: res.user.avatar || initialUser.avatar,
+                avatar: res.user.avatar || backupAvatar || initialUser.avatar,
                 bio: res.user.bio,
                 hourlyRate: res.user.hourlyRate,
                 currency: res.user.currency,
@@ -940,7 +952,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                     id: deterministicId,
                     name: res.user.name || u.name,
                     title: res.user.title || u.title,
-                    avatar: res.user.avatar || u.avatar || initialUser.avatar,
+                    avatar: res.user.avatar || backupAvatar || u.avatar || initialUser.avatar,
                     bio: res.user.bio ?? u.bio,
                     hourlyRate: res.user.hourlyRate ?? u.hourlyRate,
                     currency: res.user.currency ?? u.currency,
@@ -986,11 +998,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Seamless auto-sync to backend in background if backend was missing this user
     api.register(matched.name, matched.email, password, matched.title).catch(() => {});
 
+    const backupAvatar =
+      safeGetStorage<string | null>(`meplus_avatar_${deterministicId}`, null) ||
+      safeGetStorage<string | null>(`meplus_avatar_${matched.email.toLowerCase()}`, null);
+
     const authenticatedUser: UserProfile = {
       id: deterministicId,
       name: matched.name,
       email: matched.email,
-      avatar: matched.avatar || initialUser.avatar,
+      avatar: matched.avatar || backupAvatar || initialUser.avatar,
       title: matched.title || initialUser.title,
       hourlyRate: matched.hourlyRate || 65,
       currency: matched.currency || '$',
@@ -1245,7 +1261,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('Error clearing cached demo keys', e);
     }
 
-    setUser(initialUser);
+    const backupAvatar =
+      safeGetStorage<string | null>('meplus_avatar_usr-1', null) ||
+      safeGetStorage<string | null>('meplus_avatar_alex.rivera@gmail.com', null);
+
+    const resetUser: UserProfile = {
+      ...initialUser,
+      avatar: backupAvatar || initialUser.avatar,
+    };
+
+    setUser(resetUser);
     setClients(initialClients);
     setProjects(initialProjects);
     setTasks(initialTasks);
@@ -1253,7 +1278,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setInvoices(initialInvoices);
     setNotifications(initialNotifications);
 
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(initialUser));
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(resetUser));
     localStorage.setItem(`${STORAGE_KEYS.CLIENTS_PREFIX}usr-1`, JSON.stringify(initialClients));
     localStorage.setItem(`${STORAGE_KEYS.PROJECTS_PREFIX}usr-1`, JSON.stringify(initialProjects));
     localStorage.setItem(`${STORAGE_KEYS.TASKS_PREFIX}usr-1`, JSON.stringify(initialTasks));
@@ -1269,7 +1294,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const loginDemoUser = () => {
-    resetDemoData();
+    const backupAvatar =
+      safeGetStorage<string | null>('meplus_avatar_usr-1', null) ||
+      safeGetStorage<string | null>('meplus_avatar_alex.rivera@gmail.com', null);
+    const demoUserWithAvatar: UserProfile = {
+      ...initialUser,
+      avatar: backupAvatar || initialUser.avatar,
+    };
+    setUser(demoUserWithAvatar);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(demoUserWithAvatar));
+    loadUserData(demoUserWithAvatar);
     api.login(initialUser.email, 'password123').catch(() => {});
   };
 
@@ -1300,6 +1334,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const updatedUser: UserProfile = { ...user, ...profile };
     setUser(updatedUser);
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+
+    if (profile.avatar) {
+      try {
+        localStorage.setItem(`meplus_avatar_${user.id}`, profile.avatar);
+        if (user.email) {
+          localStorage.setItem(`meplus_avatar_${user.email.toLowerCase()}`, profile.avatar);
+        }
+      } catch (e) {
+        console.warn('Could not cache backup avatar', e);
+      }
+    }
 
     // Update in registered users list so it persists across logouts and logins
     setRegisteredUsers(prev => {

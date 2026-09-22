@@ -149,7 +149,7 @@ app.post('/api/auth/register', async (req, res) => {
     name: name.trim(),
     email: normalizedEmail,
     password,
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
+    avatar: 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4',
     title: profession || 'Independent Freelancer',
     hourlyRate: 65,
     currency: '$',

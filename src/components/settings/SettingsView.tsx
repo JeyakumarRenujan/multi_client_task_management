@@ -51,7 +51,7 @@ export const SettingsView: React.FC = () => {
   const [name, setName] = useState(user?.name || '');
   const [title, setTitle] = useState(user?.title || '');
   const [bio, setBio] = useState(user?.bio || '');
-  const [avatar, setAvatar] = useState(user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256');
+  const [avatar, setAvatar] = useState(user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4');
   
   const [emailAlerts, setEmailAlerts] = useState(user?.notificationSettings?.email ?? true);
   const [smsAlerts, setSmsAlerts] = useState(user?.notificationSettings?.sms ?? true);
@@ -187,12 +187,14 @@ export const SettingsView: React.FC = () => {
   };
 
   const presetAvatars = [
-    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=256',
-    'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=256',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Aneka&backgroundColor=ffd5dc',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Felix&backgroundColor=d1d4f9',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Luna&backgroundColor=c0aede',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=Oliver&backgroundColor=ffdfbf',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=Cosmo&backgroundColor=b6e3f4',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya&backgroundColor=ffd5dc',
+    'https://api.dicebear.com/7.x/lorelei/svg?seed=Leo&backgroundColor=d1d4f9',
   ];
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -230,7 +232,7 @@ export const SettingsView: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Convert file to optimized Base64 Data URL so it can be saved locally and synchronized
+    // Convert file to optimized Base64 Data URL so it can be saved locally and synchronized permanently
     const reader = new FileReader();
     reader.onload = event => {
       const rawDataUrl = event.target?.result as string;
@@ -256,20 +258,30 @@ export const SettingsView: React.FC = () => {
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
+        let finalUrl = rawDataUrl;
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
-          setAvatar(compressedDataUrl);
-        } else {
-          setAvatar(rawDataUrl);
+          finalUrl = canvas.toDataURL('image/jpeg', 0.85);
         }
+
+        setAvatar(finalUrl);
+        // Persist immediately like real applications (Slack, GitHub, Twitter)
+        updateUserProfile({ avatar: finalUrl });
+        showToast({
+          title: 'Photo Uploaded! 🎨',
+          message: 'Your profile photo has been updated and permanently saved.',
+          type: 'success',
+        });
       };
       img.onerror = () => {
         setAvatar(rawDataUrl);
+        updateUserProfile({ avatar: rawDataUrl });
       };
       img.src = rawDataUrl;
     };
     reader.readAsDataURL(file);
+    // Reset file input value so user can upload the same file again if desired
+    e.target.value = '';
   };
 
   return (
@@ -336,19 +348,23 @@ export const SettingsView: React.FC = () => {
                 <span className="text-[11px] text-slate-400 block mb-1.5 font-medium">
                   Or pick a preset avatar:
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {presetAvatars.map((url, idx) => (
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => setAvatar(url)}
-                      className={`relative rounded-xl overflow-hidden ring-2 transition-transform cursor-pointer ${
+                      onClick={() => {
+                        setAvatar(url);
+                        updateUserProfile({ avatar: url });
+                      }}
+                      className={`relative rounded-2xl overflow-hidden ring-2 transition-transform cursor-pointer ${
                         avatar === url
-                          ? 'ring-emerald-600 scale-110'
-                          : 'ring-transparent opacity-70 hover:opacity-100'
+                          ? 'ring-emerald-600 scale-110 shadow-sm shadow-emerald-600/30'
+                          : 'ring-transparent opacity-75 hover:opacity-100 hover:scale-105'
                       }`}
+                      title={`Animated Avatar Preset ${idx + 1}`}
                     >
-                      <img src={url} alt="preset" className="w-8 h-8 object-cover" />
+                      <img src={url} alt={`Animated Preset ${idx + 1}`} className="w-8 h-8 object-cover bg-slate-100 dark:bg-slate-800" />
                       {avatar === url && (
                         <span className="absolute inset-0 bg-emerald-600/30 flex items-center justify-center">
                           <Check className="w-3.5 h-3.5 text-white" />
