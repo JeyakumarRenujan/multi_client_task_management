@@ -4,6 +4,8 @@ import { api } from '../../services/api';
 import { ChatMessage } from '../../types';
 import {
   generateSmartAdvisorFallback,
+  getStoredAiSettings,
+  buildWorkspaceContext,
 } from '../../services/aiService';
 import {
   Send,
@@ -171,6 +173,28 @@ export const AiAssistantModal: React.FC = () => {
     'How should I respond to a client who wants an extra discount after agreeing to a quote?',
   ];
 
+  const activeAi = getStoredAiSettings(user);
+  const activeProvider =
+    activeAi.provider === 'gemini' && activeAi.geminiApiKey?.trim()
+      ? 'gemini'
+      : activeAi.provider === 'openai' && activeAi.openaiApiKey?.trim()
+      ? 'openai'
+      : 'builtin';
+
+  const activeKey =
+    activeProvider === 'gemini'
+      ? activeAi.geminiApiKey
+      : activeProvider === 'openai'
+      ? activeAi.openaiApiKey
+      : undefined;
+
+  const activeModel =
+    activeProvider === 'gemini'
+      ? activeAi.geminiModel
+      : activeProvider === 'openai'
+      ? activeAi.openaiModel
+      : 'Me Plus Guide';
+
   const executeSend = async (queryText: string) => {
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -184,10 +208,19 @@ export const AiAssistantModal: React.FC = () => {
     setIsTyping(true);
 
     try {
-      // 1. Try Backend App Guide endpoint
+      const workspaceContext = buildWorkspaceContext(user, clients, projects, tasks, invoices);
+      // 1. Send to AI chat endpoint with active provider & credentials
       const res = await api.sendAiMessage(queryText, {
-        provider: 'builtin',
+        provider: activeProvider,
+        apiKey: activeKey,
+        model: activeModel,
+        workspaceContext,
+        customInstructions: activeAi.customInstructions,
         userId: user?.id,
+        history: messages.slice(-6).map(m => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.text,
+        })),
       });
 
       if (res && res.reply) {
@@ -196,15 +229,15 @@ export const AiAssistantModal: React.FC = () => {
           sender: 'ai',
           text: res.reply,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          provider: 'builtin',
-          model: 'Me Plus Guide',
+          provider: (res.provider as any) || activeProvider,
+          model: res.model || activeModel,
         };
         setMessages(prev => [...prev, aiMsg]);
         setIsTyping(false);
         return;
       }
     } catch (backendErr) {
-      console.warn('Backend guide request error, using client-side fallback:', backendErr);
+      console.warn('AI request error, using client-side fallback:', backendErr);
     }
 
     // 2. Client-side App Guide fallback
@@ -300,6 +333,15 @@ export const AiAssistantModal: React.FC = () => {
             <div>
               <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>Me Plus Platform Assistant</span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  activeProvider === 'gemini'
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300/40'
+                    : activeProvider === 'openai'
+                    ? 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border border-cyan-300/40'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                }`}>
+                  {activeProvider === 'gemini' ? 'Gemini Live' : activeProvider === 'openai' ? 'ChatGPT Live' : 'Built-in Copilot'}
+                </span>
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Application Guide &amp; External AI Launchpad
@@ -406,7 +448,7 @@ export const AiAssistantModal: React.FC = () => {
                         <span>{msg.timestamp}</span>
                         {msg.sender === 'ai' && (
                           <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-[9px]">
-                            App Help Bot
+                            {msg.model || (activeProvider === 'gemini' ? 'Gemini AI' : activeProvider === 'openai' ? 'ChatGPT' : 'Me Plus Guide')}
                           </span>
                         )}
                       </div>

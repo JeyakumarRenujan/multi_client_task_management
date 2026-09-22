@@ -47,3 +47,4 @@ export const playNotificationTone = (action: 'enable' | 'disable' | 'chime') => 
     console.warn('Audio feedback blocked or unavailable:', err);
   }
 };
+

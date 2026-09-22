@@ -264,6 +264,24 @@ export const SettingsView: React.FC = () => {
   };
 
   const handleSaveAiSettings = () => {
+    if (aiProvider === 'gemini' && !geminiKey.trim()) {
+      showToast({
+        title: 'Gemini API Key Required',
+        message: 'Please enter your Google Gemini API key to activate Gemini, or switch to Built-in Copilot.',
+        type: 'warning',
+      });
+      return;
+    }
+
+    if (aiProvider === 'openai' && !openAiKey.trim()) {
+      showToast({
+        title: 'OpenAI API Key Required',
+        message: 'Please enter your OpenAI API key (starts with sk-...) to activate ChatGPT, or switch to Built-in Copilot.',
+        type: 'warning',
+      });
+      return;
+    }
+
     const updated: AiSettings = {
       provider: aiProvider,
       geminiApiKey: geminiKey.trim(),
@@ -282,7 +300,7 @@ export const SettingsView: React.FC = () => {
         ? 'Google Gemini (' + updated.geminiModel + ')'
         : updated.provider === 'openai'
         ? 'OpenAI ChatGPT (' + updated.openaiModel + ')'
-        : 'Built-in Smart Advisor';
+        : 'Built-in Freelance Copilot';
 
     showToast({
       title: 'AI Settings Saved',
@@ -397,6 +415,47 @@ export const SettingsView: React.FC = () => {
     // Reset file input value so user can upload the same file again if desired
     e.target.value = '';
   };
+
+  const savedAiProvider = user?.aiSettings?.provider || 'builtin';
+
+  const getAiBadge = () => {
+    if (aiProvider === 'builtin') {
+      return {
+        label: 'Built-in Copilot Active',
+        badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40',
+      };
+    }
+    if (aiProvider === 'gemini') {
+      if (geminiKey.trim()) {
+        return {
+          label: 'Gemini Live (Key Ready)',
+          badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300/40',
+        };
+      }
+      return {
+        label: 'Gemini (Key Required)',
+        badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40',
+      };
+    }
+    if (aiProvider === 'openai') {
+      if (openAiKey.trim()) {
+        return {
+          label: 'ChatGPT Live (Key Ready)',
+          badgeClass: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-300/40',
+        };
+      }
+      return {
+        label: 'ChatGPT (Key Required)',
+        badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-300/40',
+      };
+    }
+    return {
+      label: 'Built-in Copilot',
+      badgeClass: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
+    };
+  };
+
+  const aiBadge = getAiBadge();
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in pb-12">
@@ -980,8 +1039,8 @@ export const SettingsView: React.FC = () => {
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   AI Copilot &amp; Models Configuration
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                  {aiProvider === 'gemini' ? 'Gemini Live' : aiProvider === 'openai' ? 'ChatGPT Live' : 'Built-in Advisor'}
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${aiBadge.badgeClass}`}>
+                  {aiBadge.label}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -1042,9 +1101,16 @@ export const SettingsView: React.FC = () => {
                 <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span className="text-xs font-bold text-slate-900 dark:text-white">Google Gemini</span>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
-                Free Tier
-              </span>
+              <div className="flex items-center gap-1.5">
+                {savedAiProvider === 'gemini' && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow-xs">
+                    Active
+                  </span>
+                )}
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
+                  Free Tier
+                </span>
+              </div>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
               High speed &amp; quality. Generous free API limits on Google AI Studio.
@@ -1069,9 +1135,16 @@ export const SettingsView: React.FC = () => {
                 <Bot className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                 <span className="text-xs font-bold text-slate-900 dark:text-white">OpenAI ChatGPT</span>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200">
-                GPT-4o
-              </span>
+              <div className="flex items-center gap-1.5">
+                {savedAiProvider === 'openai' && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-600 text-white shadow-xs">
+                    Active
+                  </span>
+                )}
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200">
+                  GPT-4o
+                </span>
+              </div>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Connect directly to GPT-4o Mini or GPT-4o using your OpenAI API key.
@@ -1096,9 +1169,16 @@ export const SettingsView: React.FC = () => {
                 <Zap className="w-4 h-4 text-amber-500" />
                 <span className="text-xs font-bold text-slate-900 dark:text-white">Built-in Copilot</span>
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
-                No Key
-              </span>
+              <div className="flex items-center gap-1.5">
+                {savedAiProvider === 'builtin' && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-600 text-white shadow-xs">
+                    Active
+                  </span>
+                )}
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
+                  No Key
+                </span>
+              </div>
             </div>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">
               Intelligent freelance rule templates &amp; workspace digest without external accounts.
