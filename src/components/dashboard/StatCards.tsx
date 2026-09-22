@@ -82,26 +82,26 @@ export const StatCards: React.FC = () => {
           <div
             key={stat.id}
             onClick={stat.onClick}
-            className={`p-5 rounded-2xl bg-white dark:bg-slate-900 border ${
+            className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border ${
               stat.borderColor
             } shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group flex flex-col justify-between ${
               stat.highlight ? 'ring-2 ring-rose-500/30' : ''
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 {stat.title}
               </span>
               <div
-                className={`p-2 rounded-xl ${stat.bgLight} ${stat.iconColor} transition-transform group-hover:scale-110`}
+                className={`p-1.5 sm:p-2 rounded-xl ${stat.bgLight} ${stat.iconColor} transition-transform group-hover:scale-110`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
             </div>
 
-            <div className="mt-4 flex items-baseline justify-between">
+            <div className="mt-3 sm:mt-4 flex items-baseline justify-between">
               <div>
-                <div className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
                   {stat.value}
                 </div>
                 <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">

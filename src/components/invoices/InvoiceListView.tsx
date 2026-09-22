@@ -133,65 +133,65 @@ export const InvoiceListView: React.FC = () => {
         </button>
       </div>
 
-      {/* The 3 Financial Overview Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Revenue & Receivables Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
         {/* Total Invoiced */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex items-center justify-between">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
               Total Invoiced
             </span>
-            <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+            <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
               {user?.currency || '$'}{totalInvoiced.toLocaleString()}
             </div>
             <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 block">
               {invoices.length} total invoices billed
             </span>
           </div>
-          <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-            <FileText className="w-6 h-6" />
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Paid Revenue */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200/60 dark:border-emerald-900/40 shadow-sm flex items-center justify-between">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200/60 dark:border-emerald-900/40 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
               Paid Revenue
             </span>
-            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1">
+            <div className="text-xl sm:text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1">
               {user?.currency || '$'}{totalPaid.toLocaleString()}
             </div>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5 block font-medium">
               {paidInvoices.length} payments received in bank
             </span>
           </div>
-          <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="w-6 h-6" />
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Pending Receivables */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-amber-200/60 dark:border-amber-900/40 shadow-sm flex items-center justify-between">
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-amber-200/60 dark:border-amber-900/40 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
               Pending Receivables
             </span>
-            <div className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
+            <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
               {user?.currency || '$'}{totalPending.toLocaleString()}
             </div>
             <span className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 block font-medium">
               {pendingInvoices.length} awaiting payment / overdue
             </span>
           </div>
-          <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
-            <Clock className="w-6 h-6" />
+          <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1">
           <input
@@ -205,7 +205,7 @@ export const InvoiceListView: React.FC = () => {
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold overflow-x-auto">
+        <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold overflow-x-auto max-w-full custom-scrollbar">
           {(
             [
               { id: 'all', label: 'All Invoices' },
@@ -230,9 +230,9 @@ export const InvoiceListView: React.FC = () => {
         </div>
       </div>
 
-      {/* Invoice Table */}
+      {/* Invoice Content */}
       {filteredInvoices.length === 0 ? (
-        <div className="py-16 text-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+        <div className="py-16 text-center rounded-2xl sm:rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
           <FileText className="w-12 h-12 mx-auto text-slate-400 mb-3 opacity-50" />
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
             No invoices found
@@ -253,8 +253,112 @@ export const InvoiceListView: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm">
-          <table className="w-full text-left text-xs">
+        <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+          {/* Mobile Invoice Card View (< md) */}
+          <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+            {filteredInvoices.map(inv => {
+              const linkedProject = projects.find(p => p.id === inv.projectId);
+              const isPaid = inv.status === 'paid';
+
+              return (
+                <div
+                  key={inv.id}
+                  onClick={() => handleEdit(inv)}
+                  className="p-3.5 space-y-2.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
+                          {inv.invoiceNumber}
+                        </span>
+                        <select
+                          value={inv.status}
+                          onClick={e => e.stopPropagation()}
+                          onChange={e => updateInvoiceStatus(inv.id, e.target.value as InvoiceStatus)}
+                          className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase border focus:outline-none cursor-pointer ${getStatusBadge(
+                            inv.status
+                          )}`}
+                        >
+                          <option value="draft">Draft</option>
+                          <option value="sent">Sent</option>
+                          <option value="paid">Paid</option>
+                          <option value="overdue">Overdue</option>
+                        </select>
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 truncate">
+                        {inv.clientCompany}
+                      </h4>
+                      <p className="text-[10px] text-slate-400 truncate">
+                        {inv.clientName} {linkedProject ? `• ${linkedProject.title}` : ''}
+                      </p>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <div className="font-mono font-black text-sm text-slate-900 dark:text-white">
+                        {inv.currency || '$'}{getInvTotal(inv).toLocaleString()}
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-0.5">
+                        Due: {inv.dueDate}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+                    <div>
+                      {!isPaid && (
+                        <button
+                          type="button"
+                          onClick={e => handleMarkAsPaid(e, inv)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
+                          title="Mark as Paid"
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          <span>Mark Paid</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={e => handleDownloadPdf(e, inv)}
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 transition-colors"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>PDF</span>
+                      </button>
+                      <button
+                        onClick={() => handleEdit(inv)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          confirmAction({
+                            title: 'Delete Invoice?',
+                            message: `Are you sure you want to delete invoice "${inv.invoiceNumber}" (${user?.currency || '$'}${getInvTotal(inv).toLocaleString()})?`,
+                            confirmText: 'Delete Invoice',
+                            danger: true,
+                            itemType: 'invoice',
+                            onConfirm: () => deleteInvoice(inv.id),
+                          });
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop/Tablet Table View (hidden on mobile) */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
               <tr>
                 <th className="py-3.5 px-4">Invoice #</th>
@@ -392,6 +496,7 @@ export const InvoiceListView: React.FC = () => {
             </tbody>
           </table>
         </div>
+      </div>
       )}
     </div>
   );

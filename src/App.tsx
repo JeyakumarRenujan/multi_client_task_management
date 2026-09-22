@@ -63,7 +63,7 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 min-w-0">
       {/* Top Navbar - Fixed / Sticky at Top */}
       <Navbar
         onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -71,7 +71,7 @@ const MainContent: React.FC = () => {
       />
 
       {/* Main App Layout: Fixed Left Sidebar + Scrollable Content Viewport */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative min-w-0">
         {/* Left Fixed Sidebar */}
         <Sidebar
           isMobileOpen={isMobileSidebarOpen}
@@ -79,7 +79,7 @@ const MainContent: React.FC = () => {
         />
 
         {/* Dynamic Main Workspace Content Viewport (Scrolls independently) */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full min-w-0">
           {renderActiveView()}
         </main>
       </div>

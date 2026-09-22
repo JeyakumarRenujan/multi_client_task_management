@@ -114,14 +114,14 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
       </div>
 
       {/* Weekday Labels */}
-      <div className="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-400 py-1 border-b border-slate-100 dark:border-slate-800">
+      <div className="grid grid-cols-7 gap-1 text-center font-bold text-[10px] sm:text-xs text-slate-400 py-1 border-b border-slate-100 dark:border-slate-800">
         {daysOfWeek.map(d => (
           <div key={d}>{d}</div>
         ))}
       </div>
 
       {/* Grid of Days */}
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
         {calendarCells.map((cell, idx) => {
           const isToday = cell.dateStr === todayStr;
           const dayTasks = filteredTasks.filter(t => t.dueDate === cell.dateStr);
@@ -129,7 +129,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
           return (
             <div
               key={idx}
-              className={`min-h-[105px] md:min-h-[120px] p-2 rounded-2xl border transition-all flex flex-col justify-between ${
+              className={`min-h-[50px] sm:min-h-[105px] md:min-h-[120px] p-1 sm:p-2 rounded-xl sm:rounded-2xl border transition-all flex flex-col justify-between ${
                 isToday
                   ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-500/60 dark:border-emerald-500/40 ring-1 ring-emerald-500/30'
                   : cell.isCurrentMonth
@@ -137,9 +137,9 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                   : 'bg-slate-50/40 dark:bg-slate-950/30 border-slate-100 dark:border-slate-900/60 opacity-40'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-0.5 sm:mb-1">
                 <span
-                  className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${
+                  className={`text-[10px] sm:text-xs font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center ${
                     isToday
                       ? 'bg-emerald-600 text-white shadow-sm'
                       : cell.isCurrentMonth
@@ -151,14 +151,40 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                 </span>
 
                 {dayTasks.length > 0 && (
-                  <span className="text-[10px] font-black px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  <span className="text-[9px] sm:text-[10px] font-black px-1 sm:px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                     {dayTasks.length}
                   </span>
                 )}
               </div>
 
-              {/* Tasks within day */}
-              <div className="space-y-1 overflow-y-auto max-h-[75px]">
+              {/* Mobile View (< sm): Colored dots indicator */}
+              <div className="flex sm:hidden items-center justify-center gap-1 mt-1 flex-wrap">
+                {dayTasks.slice(0, 3).map(task => (
+                  <span
+                    key={task.id}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditTask(task);
+                    }}
+                    className={`w-1.5 h-1.5 rounded-full cursor-pointer ${
+                      task.status === 'done'
+                        ? 'bg-emerald-500'
+                        : task.priority === 'urgent'
+                        ? 'bg-rose-500'
+                        : 'bg-teal-500'
+                    }`}
+                    title={task.title}
+                  />
+                ))}
+                {dayTasks.length > 3 && (
+                  <span className="text-[8px] font-bold text-slate-400">
+                    +{dayTasks.length - 3}
+                  </span>
+                )}
+              </div>
+
+              {/* Tablet/Desktop View (>= sm): Full task chip list */}
+              <div className="hidden sm:block space-y-1 overflow-y-auto max-h-[75px]">
                 {dayTasks.slice(0, 2).map(task => {
                   const client = clients.find(c => c.id === task.clientId);
                   const isDone = task.status === 'done';

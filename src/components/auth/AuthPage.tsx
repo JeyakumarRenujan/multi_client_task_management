@@ -270,7 +270,7 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="h-screen max-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200 relative">
+    <div className="min-h-screen overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200 relative">
       {/* Decorative Ambient Background Gradients & Grid Pattern */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Top-left ambient primary glow */}
@@ -342,39 +342,39 @@ export const AuthPage: React.FC = () => {
             )}
           </div>
 
-          {/* Light / Dark Mode Toggle Pill */}
+          {/* Theme Mode Toggle (Light / Dark) */}
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-800 shadow-2xs cursor-pointer"
             title={`Switch to ${actualTheme === 'dark' ? 'Light' : 'Dark'} mode`}
+            className="p-1.5 sm:p-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-800 shadow-2xs cursor-pointer"
           >
             {actualTheme === 'dark' ? (
-              <>
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-xs font-semibold">Light</span>
-              </>
+              <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
             ) : (
-              <>
-                <Moon className="w-3.5 h-3.5 text-slate-600" />
-                <span className="text-xs font-semibold">Dark</span>
-              </>
+              <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600" />
             )}
           </button>
 
+          {/* Switch Mode Button */}
           <button
-            onClick={() => resetAllFormStates(mode === 'login' ? 'register' : 'login')}
-            className="text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors cursor-pointer"
+            type="button"
+            onClick={() => {
+              setMode(mode === 'login' ? 'register' : 'login');
+              setError('');
+              setSuccessMessage('');
+            }}
+            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 px-3 py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 transition-colors cursor-pointer"
           >
             {mode === 'login'
-              ? 'New to Me Plus? Create Account'
-              : 'Already have an account? Sign In'}
+              ? 'Create Account'
+              : 'Sign In'}
           </button>
         </div>
       </header>
 
-      {/* Main Content Hero (Fitted strictly in One Page) */}
-      <main className="flex-1 flex items-center justify-center p-3 sm:p-4 lg:p-6 overflow-hidden relative z-10">
+      {/* Main Content Hero */}
+      <main className="flex-1 flex items-center justify-center p-3 sm:p-4 lg:p-6 relative z-10 py-4 sm:py-6 lg:py-8">
         <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative my-auto">
           
           {/* Left Column: Hero & 4 Feature Icons (7 Cols) */}
@@ -389,7 +389,7 @@ export const AuthPage: React.FC = () => {
 
             {/* Headline */}
             <div className="space-y-2 sm:space-y-2.5">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[48px] xl:text-[56px] font-black text-slate-900 dark:text-white tracking-tight leading-[1.08]">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[48px] xl:text-[56px] font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
                 Work Smarter,<br />
                 <span className="text-emerald-600 dark:text-emerald-400">Freelance Happier</span>
               </h1>
@@ -459,7 +459,7 @@ export const AuthPage: React.FC = () => {
 
             {/* High-Contrast Card Outer Border & Elevation Frame */}
             <div className="p-[2.5px] rounded-[26px] sm:rounded-[30px] bg-gradient-to-b from-emerald-500/70 via-emerald-400/40 to-teal-600/70 dark:from-emerald-500/80 dark:via-slate-700 dark:to-teal-500/80 shadow-[0_20px_50px_-10px_rgba(5,150,105,0.25),0_12px_28px_-6px_rgba(0,0,0,0.14)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] transition-all">
-              <div className="bg-white dark:bg-slate-900 rounded-[23.5px] sm:rounded-[27.5px] border border-emerald-100/90 dark:border-slate-800 p-4 sm:p-5 lg:p-6 flex flex-col relative max-h-[calc(100vh-5.5rem)] overflow-y-auto custom-scrollbar">
+              <div className="bg-white dark:bg-slate-900 rounded-[23.5px] sm:rounded-[27.5px] border border-emerald-100/90 dark:border-slate-800 p-3.5 sm:p-5 lg:p-6 flex flex-col relative">
                 {/* Solid Green Top Accent Bar with gradient glow */}
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-teal-500 to-whatsapp-teal rounded-t-[23.5px] sm:rounded-t-[27.5px]" />
 

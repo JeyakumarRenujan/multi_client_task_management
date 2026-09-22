@@ -58,29 +58,29 @@ export const DashboardView: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Welcome Hero Banner with Signature WhatsApp Green/Teal Theme */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-whatsapp-dark via-whatsapp-teal to-whatsapp-dark text-white p-6 sm:p-7 md:p-8 shadow-xl border border-emerald-400/25">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-whatsapp-dark via-whatsapp-teal to-whatsapp-dark text-white p-4 sm:p-6 md:p-8 shadow-xl border border-emerald-400/25">
         {/* Soft luminous ambient glows matching screenshot */}
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-80 h-80 bg-whatsapp-light/25 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 -mb-8 w-60 h-60 bg-teal-300/15 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div className="min-w-0 flex-1">
             {/* Live Date & Time Badges */}
-            <div className="flex flex-wrap items-center gap-2.5 text-xs font-semibold text-emerald-100 mb-2.5">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/30 border border-emerald-400/25 backdrop-blur-xs">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs font-semibold text-emerald-100 mb-2 sm:mb-2.5">
+              <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-slate-950/30 border border-emerald-400/25 backdrop-blur-xs text-[11px] sm:text-xs">
                 <Calendar className="w-3.5 h-3.5 text-emerald-300" />
                 <span>{todayFormatted}</span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/30 border border-emerald-400/25 backdrop-blur-xs">
+              <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-slate-950/30 border border-emerald-400/25 backdrop-blur-xs text-[11px] sm:text-xs">
                 <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-pulse" />
                 <Clock className="w-3.5 h-3.5 text-emerald-300" />
                 <span className="font-mono">{timeFormatted}</span>
               </div>
             </div>
 
-            {/* Greeting Headline without Rocket Emoji */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-white">
+            {/* Greeting Headline */}
+            <h1 className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-white">
               {getGreeting()}, {user?.name ? user.name.split(' ')[0] : 'Freelancer'}!
             </h1>
 
@@ -89,11 +89,11 @@ export const DashboardView: React.FC = () => {
             </p>
           </div>
 
-          {/* Action Buttons with Proper Flex Alignment & No-Wrap */}
-          <div className="flex items-center gap-3 shrink-0 flex-wrap sm:flex-nowrap">
+          {/* Action Buttons with Proper Flex Alignment */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
             <button
               onClick={() => setIsAiModalOpen(true)}
-              className="h-10 px-4 rounded-xl bg-purple-600/35 hover:bg-purple-600/50 border border-purple-300/40 text-purple-100 text-xs font-bold transition-all shadow-sm group cursor-pointer backdrop-blur-xs flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
+              className="flex-1 sm:flex-none justify-center h-10 px-4 rounded-xl bg-purple-600/35 hover:bg-purple-600/50 border border-purple-300/40 text-purple-100 text-xs font-bold transition-all shadow-sm group cursor-pointer backdrop-blur-xs flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Sparkles className="w-4 h-4 text-purple-200 group-hover:rotate-12 transition-transform" />
               <span>AI Copilot</span>
@@ -101,7 +101,7 @@ export const DashboardView: React.FC = () => {
 
             <button
               onClick={() => setIsTaskModalOpen(true)}
-              className="h-10 px-4 rounded-xl bg-whatsapp-light hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-md shadow-black/20 transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
+              className="flex-1 sm:flex-none justify-center h-10 px-4 rounded-xl bg-whatsapp-light hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-md shadow-black/20 transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
             >
               <Plus className="w-4 h-4 text-slate-950 font-black stroke-[3]" />
               <span>New Task</span>

@@ -115,10 +115,10 @@ export const TimeTrackerView: React.FC = () => {
       </div>
 
       {/* Hero Stopwatch Tracker Card */}
-      <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-br from-whatsapp-dark via-whatsapp-teal to-slate-900 text-white shadow-xl border border-emerald-500/30">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-whatsapp-dark via-whatsapp-teal to-slate-900 text-white shadow-xl border border-emerald-500/30">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
           {/* Controls */}
-          <div className="space-y-4 flex-1">
+          <div className="space-y-3 sm:space-y-4 flex-1">
             <span className="text-xs font-bold uppercase tracking-widest text-emerald-200 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5" />
               Live Project Stopwatch
@@ -168,21 +168,21 @@ export const TimeTrackerView: React.FC = () => {
           </div>
 
           {/* Big Live Digital Clock Display */}
-          <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full lg:w-auto">
             <div className="text-center sm:text-right">
-              <div className="font-mono text-4xl sm:text-5xl md:text-6xl font-black tracking-wider text-white drop-shadow-md">
+              <div className="font-mono text-3xl sm:text-5xl md:text-6xl font-black tracking-wider text-white drop-shadow-md">
                 {formatTime(activeTimer.elapsedSeconds)}
               </div>
-              <div className="text-xs font-semibold text-emerald-200 mt-1">
+              <div className="text-[11px] sm:text-xs font-semibold text-emerald-200 mt-1">
                 {activeTimer.isRunning ? '● RECORDING LIVE TIME' : activeTimer.elapsedSeconds > 0 ? 'PAUSED' : 'READY TO START'}
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
               {!activeTimer.isRunning && activeTimer.elapsedSeconds === 0 && (
                 <button
                   onClick={handleStartTimer}
-                  className="px-6 py-4 rounded-2xl bg-whatsapp-light hover:brightness-110 text-slate-950 font-black text-sm shadow-xl shadow-black/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-whatsapp-light hover:brightness-110 text-slate-950 font-black text-sm shadow-xl shadow-black/20 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Play className="w-5 h-5 fill-slate-950" />
                   <span>Start Tracking</span>
@@ -192,7 +192,7 @@ export const TimeTrackerView: React.FC = () => {
               {activeTimer.isRunning && (
                 <button
                   onClick={pauseTimer}
-                  className="px-5 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-5 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Pause className="w-5 h-5 fill-slate-950" />
                   <span>Pause</span>
@@ -202,7 +202,7 @@ export const TimeTrackerView: React.FC = () => {
               {!activeTimer.isRunning && activeTimer.elapsedSeconds > 0 && (
                 <button
                   onClick={resumeTimer}
-                  className="px-5 py-4 rounded-2xl bg-whatsapp-light hover:brightness-110 text-slate-950 font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-5 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-whatsapp-light hover:brightness-110 text-slate-950 font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Play className="w-5 h-5 fill-slate-950" />
                   <span>Resume</span>
@@ -212,7 +212,7 @@ export const TimeTrackerView: React.FC = () => {
               {activeTimer.elapsedSeconds > 0 && (
                 <button
                   onClick={stopTimer}
-                  className="px-5 py-4 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto justify-center px-5 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
                 >
                   <Square className="w-5 h-5 fill-white" />
                   <span>Stop &amp; Log</span>
@@ -263,12 +263,12 @@ export const TimeTrackerView: React.FC = () => {
       </div>
 
       {/* Time Entries Table */}
-      <div className="overflow-x-auto rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+      <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+        <div className="p-3.5 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
             Time Entries History ({timeEntries.length})
           </h3>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
             Sorted by most recent
           </span>
         </div>
@@ -278,17 +278,9 @@ export const TimeTrackerView: React.FC = () => {
             No time entries recorded yet. Start the stopwatch above or add a manual log.
           </div>
         ) : (
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
-              <tr>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">Client &amp; Project</th>
-                <th className="py-3 px-4">Work Description</th>
-                <th className="py-3 px-4">Duration</th>
-                <th className="py-3 px-4 text-right">Delete</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+          <>
+            {/* Mobile Cards (< md) */}
+            <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
               {timeEntries.map(entry => {
                 const client = clients.find(c => c.id === entry.clientId);
                 const project = projects.find(p => p.id === entry.projectId);
@@ -296,29 +288,27 @@ export const TimeTrackerView: React.FC = () => {
                 const hoursNum = (secs / 3600).toFixed(2);
 
                 return (
-                  <tr key={entry.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                    <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
-                      {entry.date}
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <div className="font-bold text-slate-900 dark:text-white">
-                        {client?.name || 'Client'}
+                  <div key={entry.id} className="p-3.5 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                          {client?.name || 'Client'} &bull; {project?.title || 'Project'}
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                          {entry.description || 'Logged work session'}
+                        </p>
                       </div>
-                      <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
-                        {project?.title || 'Project'}
+                      <div className="text-right shrink-0">
+                        <span className="font-mono font-black text-xs text-emerald-700 dark:text-emerald-400">
+                          {hoursNum} hrs
+                        </span>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {entry.date}
+                        </div>
                       </div>
-                    </td>
+                    </div>
 
-                    <td className="py-3 px-4 text-slate-700 dark:text-slate-300 max-w-md">
-                      {entry.description}
-                    </td>
-
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
-                      {hoursNum} hrs
-                    </td>
-
-                    <td className="py-3 px-4 text-right">
+                    <div className="flex justify-end pt-1">
                       <button
                         type="button"
                         onClick={() =>
@@ -331,17 +321,85 @@ export const TimeTrackerView: React.FC = () => {
                             onConfirm: () => deleteTimeEntry(entry.id),
                           })
                         }
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                        className="p-1 rounded text-slate-400 hover:text-rose-600 transition-colors"
                         title="Delete log"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+
+            {/* Desktop Table (hidden on mobile) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
+                  <tr>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4">Client &amp; Project</th>
+                    <th className="py-3 px-4">Work Description</th>
+                    <th className="py-3 px-4">Duration</th>
+                    <th className="py-3 px-4 text-right">Delete</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {timeEntries.map(entry => {
+                    const client = clients.find(c => c.id === entry.clientId);
+                    const project = projects.find(p => p.id === entry.projectId);
+                    const secs = entry.durationSeconds || 0;
+                    const hoursNum = (secs / 3600).toFixed(2);
+
+                    return (
+                      <tr key={entry.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                        <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
+                          {entry.date}
+                        </td>
+
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-slate-900 dark:text-white">
+                            {client?.name || 'Client'}
+                          </div>
+                          <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
+                            {project?.title || 'Project'}
+                          </div>
+                        </td>
+
+                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300 max-w-md">
+                          {entry.description}
+                        </td>
+
+                        <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                          {hoursNum} hrs
+                        </td>
+
+                        <td className="py-3 px-4 text-right">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              confirmAction({
+                                title: 'Delete Time Entry?',
+                                message: `Are you sure you want to delete this ${hoursNum} hr logged entry for "${project?.title || 'Unknown Project'}"? This action cannot be undone.`,
+                                confirmText: 'Delete Entry',
+                                danger: true,
+                                itemType: 'time',
+                                onConfirm: () => deleteTimeEntry(entry.id),
+                              })
+                            }
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                            title="Delete log"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

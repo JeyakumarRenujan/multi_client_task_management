@@ -11,7 +11,9 @@ import {
   Settings,
   Sparkles,
   ChevronRight,
+  X,
 } from 'lucide-react';
+import { Logo } from './Logo';
 
 interface SidebarProps {
   isMobileOpen: boolean;
@@ -161,17 +163,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
       {/* Mobile Backdrop */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
           onClick={onCloseMobile}
         />
       )}
 
       {/* Fixed Left Sidebar Container */}
       <aside
-        className={`fixed lg:sticky top-0 lg:top-0 bottom-0 left-0 z-40 w-64 h-full backdrop-blur-lg flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 select-none ${getSidebarContainerClass()} ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        className={`fixed lg:sticky top-0 lg:top-0 bottom-0 left-0 z-50 lg:z-20 w-64 max-w-[85vw] h-full backdrop-blur-lg flex flex-col justify-between transition-all duration-300 ease-in-out shrink-0 select-none ${getSidebarContainerClass()} ${
+          isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'
         }`}
       >
+        {/* Mobile Close Header */}
+        <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/10 shrink-0">
+          <Logo size="sm" />
+          <button
+            onClick={onCloseMobile}
+            className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+            aria-label="Close navigation"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
         {/* Navigation Section (internally scrollable if needed) */}
         <div className="p-4 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           {/* Main Navigation */}

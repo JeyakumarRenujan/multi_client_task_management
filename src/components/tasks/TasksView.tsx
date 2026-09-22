@@ -91,7 +91,7 @@ export const TasksView: React.FC = () => {
       </div>
 
       {/* Control & Filter Toolbar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
           <input
@@ -105,11 +105,11 @@ export const TasksView: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
           <select
             value={clientFilter}
             onChange={e => setClientFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="flex-1 sm:flex-none min-w-[110px] px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="all">All Clients</option>
             {clients.map(c => (
@@ -122,7 +122,7 @@ export const TasksView: React.FC = () => {
           <select
             value={projectFilter}
             onChange={e => setProjectFilter(e.target.value)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="flex-1 sm:flex-none min-w-[110px] px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="all">All Projects</option>
             {projects.map(p => (
@@ -135,7 +135,7 @@ export const TasksView: React.FC = () => {
           <select
             value={priorityFilter}
             onChange={e => setPriorityFilter(e.target.value as any)}
-            className="px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="flex-1 sm:flex-none min-w-[110px] px-2.5 sm:px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="all">All Priorities</option>
             <option value="urgent">Urgent</option>
@@ -145,10 +145,10 @@ export const TasksView: React.FC = () => {
           </select>
 
           {/* View Type Switcher */}
-          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300">
+          <div className="flex items-center justify-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-600 dark:text-slate-300 w-full sm:w-auto mt-1 sm:mt-0">
             <button
               onClick={() => setViewType('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewType === 'kanban'
                   ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-sm'
                   : 'hover:text-slate-900 dark:hover:text-white'
@@ -160,7 +160,7 @@ export const TasksView: React.FC = () => {
 
             <button
               onClick={() => setViewType('calendar')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewType === 'calendar'
                   ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-sm'
                   : 'hover:text-slate-900 dark:hover:text-white'
@@ -172,7 +172,7 @@ export const TasksView: React.FC = () => {
 
             <button
               onClick={() => setViewType('list')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewType === 'list'
                   ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-sm'
                   : 'hover:text-slate-900 dark:hover:text-white'

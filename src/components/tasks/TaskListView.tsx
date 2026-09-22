@@ -32,9 +32,142 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="overflow-x-auto rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm">
-      <table className="w-full text-left text-xs">
-        <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
+    <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+      {/* Mobile Card List View (< md) */}
+      <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {filteredTasks.length === 0 ? (
+          <div className="py-12 text-center text-slate-400 text-xs">
+            No tasks match your filter criteria.
+          </div>
+        ) : (
+          filteredTasks.map(task => {
+            const project = projects.find(p => p.id === task.projectId);
+            const client = clients.find(c => c.id === task.clientId);
+            const isOverdue = task.dueDate < todayStr && task.status !== 'done';
+            const completedSubtasks = task.subtasks.filter(s => s.completed).length;
+
+            return (
+              <div
+                key={task.id}
+                onClick={() => onEditTask(task)}
+                className="p-3.5 space-y-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    <button
+                      onClick={e => {
+                        e.stopPropagation();
+                        moveTaskStatus(task.id, task.status === 'done' ? 'todo' : 'done');
+                      }}
+                      className={`w-5 h-5 mt-0.5 rounded-lg border flex items-center justify-center shrink-0 transition-colors ${
+                        task.status === 'done'
+                          ? 'bg-emerald-600 border-emerald-600 text-white'
+                          : 'border-slate-300 dark:border-slate-600 hover:border-emerald-500'
+                      }`}
+                    >
+                      {task.status === 'done' && <CheckSquare className="w-3.5 h-3.5" />}
+                    </button>
+                    <div className="min-w-0">
+                      <h4
+                        className={`text-xs font-bold leading-snug truncate ${
+                          task.status === 'done'
+                            ? 'line-through text-slate-400'
+                            : 'text-slate-900 dark:text-white'
+                        }`}
+                      >
+                        {task.title}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                        {client?.company || 'Client'} &bull; {project?.title || 'Project'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span
+                    className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase shrink-0 ${
+                      task.priority === 'urgent'
+                        ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400'
+                        : task.priority === 'high'
+                        ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400'
+                        : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300'
+                    }`}
+                  >
+                    {task.priority}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80 text-[11px]">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`font-semibold ${
+                        isOverdue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {task.dueDate}
+                    </span>
+                    {task.subtasks.length > 0 && (
+                      <span className="text-slate-400">
+                        ({completedSubtasks}/{task.subtasks.length})
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+                    <select
+                      value={task.status}
+                      onChange={e => moveTaskStatus(task.id, e.target.value as TaskStatus)}
+                      className="text-[10px] font-bold px-2 py-1 rounded-lg border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 uppercase"
+                    >
+                      <option value="todo">To Do</option>
+                      <option value="in-progress">In Progress</option>
+                      <option value="review">Review</option>
+                      <option value="done">Done</option>
+                    </select>
+                    <button
+                      onClick={() =>
+                        startTimer(task.projectId, task.clientId, task.id, `Task: ${task.title}`)
+                      }
+                      className="p-1 rounded text-slate-400 hover:text-emerald-600"
+                      title="Start Timer"
+                    >
+                      <Play className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => onEditTask(task)}
+                      className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        confirmAction({
+                          title: 'Delete Task?',
+                          message: `Are you sure you want to delete "${task.title}"? This action cannot be undone.`,
+                          confirmText: 'Delete Task',
+                          danger: true,
+                          itemType: 'task',
+                          onConfirm: () => deleteTask(task.id),
+                        });
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-rose-600"
+                      title="Delete task"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop/Tablet Table View (hidden on mobile) */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
           <tr>
             <th className="py-3.5 px-4">Task Deliverable</th>
             <th className="py-3.5 px-4">Client / Project</th>
@@ -200,7 +333,8 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
             })
           )}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 };

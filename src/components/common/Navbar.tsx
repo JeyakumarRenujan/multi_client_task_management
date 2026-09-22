@@ -119,12 +119,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   });
 
   return (
-    <header className="sticky top-0 z-30 w-full h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-4 md:px-6 flex items-center justify-between transition-colors shadow-sm shrink-0">
+    <header className="sticky top-0 z-30 w-full h-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-2.5 sm:px-4 md:px-6 flex items-center justify-between transition-colors shadow-sm shrink-0 min-w-0">
       {/* Left: Mobile Menu & Logo */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
         <button
           onClick={onToggleMobileSidebar}
-          className="lg:hidden p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          className="lg:hidden p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer shrink-0"
           aria-label="Toggle menu"
         >
           <Menu className="w-5 h-5" />
@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Global Search Omni Bar Trigger (Ctrl+K) */}
         <button
           onClick={() => setIsCommandPaletteOpen(true)}
-          className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 ml-4 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-all group cursor-pointer"
+          className="hidden md:flex items-center gap-2.5 px-3 py-1.5 ml-4 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-all group cursor-pointer"
         >
           <span>Search or jump to...</span>
           <div className="flex items-center gap-1.5 ml-1">
@@ -148,9 +148,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Middle: Live Clock & Active Stopwatch Widget */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Live Real-Time Clock Display */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 text-slate-700 dark:text-slate-300">
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/70 text-slate-700 dark:text-slate-300">
           <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-pulse" />
           <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
             {formattedLiveDate}
@@ -162,29 +162,29 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Active Timer Pill */}
         {activeTimer.elapsedSeconds > 0 || activeTimer.isRunning ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 shadow-sm animate-pulse-subtle">
-            <span className="relative flex h-2.5 w-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 shadow-sm animate-pulse-subtle">
+            <span className="relative flex h-2 sm:h-2.5 w-2 sm:w-2.5">
               {activeTimer.isRunning && (
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-whatsapp-light opacity-75" />
               )}
               <span
-                className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                className={`relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 ${
                   activeTimer.isRunning ? 'bg-whatsapp-light' : 'bg-amber-500'
                 }`}
               />
             </span>
 
-            <div className="hidden lg:flex flex-col text-left">
+            <div className="hidden xl:flex flex-col text-left">
               <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate max-w-[120px]">
                 {timerProject ? timerProject.title : 'Active Timer'}
               </span>
             </div>
 
-            <span className="font-mono font-bold text-xs md:text-sm text-emerald-800 dark:text-emerald-300">
+            <span className="font-mono font-bold text-xs sm:text-sm text-emerald-800 dark:text-emerald-300">
               {formatTimer(activeTimer.elapsedSeconds)}
             </span>
 
-            <div className="flex items-center gap-1 ml-1">
+            <div className="flex items-center gap-1 ml-0.5 sm:ml-1">
               {activeTimer.isRunning ? (
                 <button
                   onClick={pauseTimer}
@@ -224,12 +224,13 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Right: Quick Add, AI Copilot, Notifications, Theme, User */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
         {/* Quick Add Button in WhatsApp Teal */}
         <div className="relative" ref={quickAddRef}>
           <button
             onClick={() => setIsQuickAddOpen(!isQuickAddOpen)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
+            title="Quick Add"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden md:inline">Quick Add</span>
@@ -289,10 +290,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           onClick={() => setIsAiModalOpen(true)}
           title="Me Plus App Guide & External AI"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
         >
           <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-          <span className="hidden sm:inline">App Guide &amp; AI</span>
+          <span className="hidden md:inline">App Guide &amp; AI</span>
         </button>
 
         {/* Quick Accent Color Palette Switcher */}
@@ -300,7 +301,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setIsAccentMenuOpen(!isAccentMenuOpen)}
             title="Change Theme Accent Color"
-            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
+            className="p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
           >
             <Palette className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="absolute bottom-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white dark:ring-slate-900" />
@@ -349,7 +350,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           onClick={toggleTheme}
           title={`Switch to ${actualTheme === 'dark' ? 'Light' : 'Dark'} mode`}
-          className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          className="p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
         >
           {actualTheme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
         </button>
@@ -359,11 +360,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
             title="Notifications & Deadline Alerts"
-            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
+            className="p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
           >
             <Bell className="w-4 h-4" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white font-black text-[9px] rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
+              <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 w-4 h-4 bg-rose-500 text-white font-black text-[9px] rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
                 {unreadNotificationsCount}
               </span>
             )}

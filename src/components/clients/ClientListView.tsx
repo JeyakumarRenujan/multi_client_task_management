@@ -86,13 +86,13 @@ export const ClientListView: React.FC = () => {
         </div>
 
         {/* Status Filter & View Toggle */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between w-full md:w-auto">
+          <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold overflow-x-auto max-w-full custom-scrollbar">
             {(['all', 'active', 'lead', 'inactive'] as const).map(st => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`px-3 py-1.5 rounded-lg capitalize transition-all ${
+                className={`px-3 py-1.5 rounded-lg capitalize whitespace-nowrap transition-all ${
                   statusFilter === st
                     ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-sm'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'

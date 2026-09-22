@@ -87,10 +87,10 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
             key={col.id}
             onDragOver={handleDragOver}
             onDrop={e => handleDrop(e, col.id)}
-            className="flex flex-col bg-slate-100/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-3 min-h-[500px]"
+            className="flex flex-col bg-slate-100/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-2.5 sm:p-3 min-h-[140px] md:min-h-[480px]"
           >
             {/* Column Header */}
-            <div className="flex items-center justify-between px-2 py-1.5 mb-3">
+            <div className="flex items-center justify-between px-2 py-1.5 mb-2.5">
               <div className="flex items-center gap-2">
                 <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                   {col.label}
@@ -113,9 +113,9 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
             </div>
 
             {/* Task Cards in Column */}
-            <div className="flex-1 space-y-3">
+            <div className="flex-1 space-y-2.5 sm:space-y-3">
               {colTasks.length === 0 ? (
-                <div className="h-32 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-center p-3">
+                <div className="h-16 sm:h-32 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-center p-2 sm:p-3">
                   <span className="text-[11px] text-slate-400 font-medium">
                     Drag tasks here
                   </span>
