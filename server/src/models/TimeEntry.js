@@ -29,3 +29,4 @@ const timeEntrySchema = new mongoose.Schema(
 );
 
 export const TimeEntryModel = mongoose.models.TimeEntry || mongoose.model('TimeEntry', timeEntrySchema);
+

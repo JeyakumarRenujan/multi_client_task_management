@@ -839,9 +839,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Global Keyboard Shortcuts (Ctrl+K for Command Palette, Esc to close)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen(prev => !prev);
+      } else if (e.key === 'Escape') {
+        setIsCommandPaletteOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);

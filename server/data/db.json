@@ -453,7 +453,7 @@
         "email": true,
         "sms": true,
         "browser": true,
-        "sound": true,
+        "sound": false,
         "deadlineReminderHours": 24
       },
       "userId": "usr_renujanrenu5_gmail_com",
@@ -1572,21 +1572,38 @@
     }
   ],
   "user": {
-    "id": "usr_avatar_1789547625456_example_com",
-    "name": "Avatar Test User",
-    "email": "avatar_1789547625456@example.com",
-    "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkWP+/HgAEtAH5s+OuvwAAAABJRU5ErkJggg==",
-    "title": "Motion Designer",
+    "_id": "6aaa5c38109de183288f182d",
+    "id": "usr_renujanrenu5_gmail_com",
+    "name": "RENUJAN",
+    "email": "renujanrenu5@gmail.com",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256",
+    "title": "Photographer & Videographer",
     "hourlyRate": 65,
     "currency": "$",
-    "bio": "Updated custom bio for freelancer.",
+    "bio": "Freelancer specializing in Photographer & Videographer.",
     "notificationSettings": {
       "email": true,
       "sms": true,
       "browser": true,
       "sound": true,
       "deadlineReminderHours": 24
-    }
+    },
+    "idleSettings": {
+      "enabled": true,
+      "timeoutMinutes": 5,
+      "style": "starfield"
+    },
+    "aiSettings": {
+      "provider": "builtin",
+      "geminiApiKey": "",
+      "geminiModel": "gemini-1.5-flash",
+      "openaiApiKey": "",
+      "openaiModel": "gpt-4o-mini",
+      "customInstructions": ""
+    },
+    "createdAt": "2026-09-16T09:07:04.422Z",
+    "updatedAt": "2026-09-16T09:08:35.317Z",
+    "__v": 0
   },
   "clients": [
     {

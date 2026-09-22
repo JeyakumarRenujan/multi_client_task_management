@@ -41,6 +41,22 @@ export const CommandPalette: React.FC = () => {
     }
   }, [isCommandPaletteOpen]);
 
+  // Handle keyboard shortcuts (Esc to close)
+  useEffect(() => {
+    if (!isCommandPaletteOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsCommandPaletteOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isCommandPaletteOpen, setIsCommandPaletteOpen]);
+
   if (!isCommandPaletteOpen) return null;
 
   const filteredClients = clients.filter(
@@ -76,7 +92,10 @@ export const CommandPalette: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in cursor-default"
+      onClick={() => setIsCommandPaletteOpen(false)}
+    >
       <div
         className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[75vh]"
         onClick={e => e.stopPropagation()}
@@ -88,16 +107,28 @@ export const CommandPalette: React.FC = () => {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                setIsCommandPaletteOpen(false);
+              }
+            }}
             placeholder="Search clients, projects, tasks, invoices, or type a command..."
             className="flex-1 bg-transparent border-none text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-sm md:text-base font-medium"
           />
           <Search className="w-5 h-5 text-emerald-600 shrink-0" />
-          <kbd className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400 bg-slate-200/60 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700">
+          <button
+            type="button"
+            onClick={() => setIsCommandPaletteOpen(false)}
+            title="Press Esc to close"
+            className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
+          >
             ESC
-          </kbd>
+          </button>
           <button
             onClick={() => setIsCommandPaletteOpen(false)}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+            title="Close"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
