@@ -134,8 +134,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
   const handleSimulatePush = () => {
     const nextState = !showSimulatedPreview;
     setShowSimulatedPreview(nextState);
-    if (nextState && isSoundOn) {
-      playNotificationTone('chime');
+    if (nextState) {
+      if (isSoundOn) {
+        playNotificationTone('chime');
+      }
+      showToast({
+        title: '🚨 Deadline Alert Ping',
+        message: 'FinTech Pulse deliverable "Dark Theme WCAG Audit" deadline at 6:00 PM!',
+        type: 'warning',
+      });
     }
   };
 
@@ -324,9 +331,10 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
           </span>
           <button
             onClick={handleSimulatePush}
-            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1"
           >
-            {showSimulatedPreview ? 'Hide Sim' : 'Simulate Push'}
+            <Bell className="w-3 h-3" />
+            <span>{showSimulatedPreview ? 'Hide Preview' : 'Simulate Deadline Alert'}</span>
           </button>
         </div>
 

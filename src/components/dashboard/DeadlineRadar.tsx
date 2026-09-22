@@ -7,10 +7,25 @@ import {
   Calendar,
   ArrowRight,
   Sparkles,
+  Volume2,
 } from 'lucide-react';
 
 export const DeadlineRadar: React.FC = () => {
-  const { tasks, projects, clients, moveTaskStatus, setActiveTab } = useApp();
+  const { tasks, projects, clients, moveTaskStatus, setActiveTab, addNotification, showToast } = useApp();
+
+  const handleTestDeadlineAlert = () => {
+    addNotification({
+      title: '🚨 Urgent Deadline Ping',
+      message: 'FinTech Pulse: "Dark Theme WCAG 2.1 Audit" is due today at 6:00 PM.',
+      type: 'deadline',
+      priority: 'urgent',
+    });
+    showToast({
+      title: '🚨 Urgent Deadline Alert',
+      message: 'FinTech Pulse deliverable is due today at 6:00 PM!',
+      type: 'warning',
+    });
+  };
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -140,7 +155,15 @@ export const DeadlineRadar: React.FC = () => {
           <Sparkles className="w-3.5 h-3.5" />
           Auto-reminders active
         </span>
-        <span>Synced with Email / SMS</span>
+        <button
+          type="button"
+          onClick={handleTestDeadlineAlert}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 font-semibold transition-colors cursor-pointer"
+          title="Play simulated deadline sound alert"
+        >
+          <Volume2 className="w-3.5 h-3.5" />
+          <span>Test Alert Sound</span>
+        </button>
       </div>
     </div>
   );
