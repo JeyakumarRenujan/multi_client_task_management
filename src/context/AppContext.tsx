@@ -1646,6 +1646,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const stopTimer = () => {
     if (activeTimer.elapsedSeconds > 0) {
+      const activeClient = clients.find(c => c.id === activeTimer.clientId);
+      const effectiveRate = activeClient?.hourlyRate || user?.hourlyRate || 65;
       const newEntry: Omit<TimeEntry, 'id'> = {
         userId: user?.id || 'usr-1',
         projectId: activeTimer.projectId,
@@ -1656,7 +1658,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         startTime: new Date(activeTimer.startTime || Date.now() - activeTimer.elapsedSeconds * 1000).toISOString(),
         endTime: new Date().toISOString(),
         isBillable: true,
-        hourlyRate: user?.hourlyRate || 65,
+        hourlyRate: effectiveRate,
         isBilled: false,
         date: new Date().toISOString().split('T')[0],
       };
