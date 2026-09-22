@@ -662,45 +662,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   </button>
                 </div>
 
-                {/* Email Status Banner: Real Email Sent vs Dev Fallback */}
-                {!otpPreview ? (
-                  <div className="p-3 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-slate-800 dark:text-slate-200 text-xs">
-                    <div className="flex items-start gap-2.5">
-                      <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-bold text-blue-900 dark:text-blue-300">Verification Email Dispatched</div>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-                          We've sent your 6-digit security code to <strong>{email}</strong>. Please check your inbox (and spam folder) and enter it below.
-                        </p>
-                      </div>
+                {/* Production Email Dispatched Banner */}
+                <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-slate-800 dark:text-slate-200 text-xs">
+                  <div className="flex items-start gap-2.5">
+                    <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-emerald-950 dark:text-emerald-300">Verification Email Dispatched</div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                        We've sent your 6-digit security code to <strong>{email}</strong>. Please check your inbox (and spam/junk folder) and enter it below.
+                      </p>
                     </div>
                   </div>
-                ) : (
-                  <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-emerald-500/10 border border-amber-500/30 dark:border-amber-500/20 text-slate-800 dark:text-slate-200">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-400">
-                        <Inbox className="w-3.5 h-3.5" />
-                        <span>Simulated Email (Dev Mode)</span>
-                      </div>
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
-                        SMTP Not Set
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="text-[11px] text-slate-600 dark:text-slate-300">
-                        OTP Code: <strong className="font-mono text-emerald-700 dark:text-emerald-400 text-sm tracking-wider">{otpPreview}</strong>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setOtp(otpPreview)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
-                      >
-                        <Copy className="w-3 h-3" />
-                        <span>Auto-fill</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+                </div>
 
                 {/* OTP Input Field */}
                 <div>

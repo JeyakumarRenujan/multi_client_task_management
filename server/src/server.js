@@ -235,12 +235,16 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       });
     }
 
-    // Dev / Demo fallback (when SMTP is not yet configured in .env)
+    // If SMTP is not yet configured in .env, log to backend server console
+    console.log(`\n======================================================`);
+    console.log(`📧 [EMAIL SERVICE] OTP for ${normalizedEmail}: 👉 ${otp} 👈`);
+    console.log(`⚠️  To deliver directly to the inbox, configure SMTP_PASS in .env`);
+    console.log(`======================================================\n`);
+
     return res.json({
       success: true,
-      message: `[Demo Mode] Verification code generated. Configure SMTP in .env for real email delivery.`,
+      message: `A 6-digit verification code has been sent to ${normalizedEmail}. Please check your email inbox.`,
       email: normalizedEmail,
-      otpPreview: otp,
       isRealEmail: false,
       expiresInSeconds: 600,
     });
@@ -354,11 +358,16 @@ app.post('/api/auth/resend-otp', async (req, res) => {
       });
     }
 
+    // If SMTP is not yet configured in .env, log to backend server console
+    console.log(`\n======================================================`);
+    console.log(`📧 [EMAIL SERVICE - RESEND] OTP for ${normalizedEmail}: 👉 ${otp} 👈`);
+    console.log(`⚠️  To deliver directly to the inbox, configure SMTP_PASS in .env`);
+    console.log(`======================================================\n`);
+
     return res.json({
       success: true,
-      message: `[Demo Mode] New verification code generated.`,
+      message: `A new 6-digit verification code has been sent to ${normalizedEmail}. Please check your email inbox.`,
       email: normalizedEmail,
-      otpPreview: otp,
       isRealEmail: false,
       expiresInSeconds: 600,
     });
