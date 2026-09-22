@@ -12,6 +12,7 @@ import {
   Sparkles,
   ChevronRight,
   X,
+  LogOut,
 } from 'lucide-react';
 import { Logo } from './Logo';
 
@@ -29,6 +30,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     tasks,
     invoices,
     setIsAiModalOpen,
+    user,
+    logout,
+    confirmAction,
   } = useApp();
 
   const { actualTheme, sidebarTheme, setSidebarTheme } = useTheme();
@@ -158,6 +162,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     onCloseMobile();
   };
 
+  const handleSignOut = () => {
+    onCloseMobile();
+    confirmAction({
+      title: 'Sign Out of Me Plus?',
+      message: 'Are you sure you want to log out? Any running timers will be stopped and your current workspace changes are safely saved.',
+      confirmText: 'Yes, Sign Out',
+      cancelText: 'Stay Logged In',
+      danger: true,
+      itemType: 'logout',
+      onConfirm: () => {
+        logout();
+      },
+    });
+  };
+
   return (
     <>
       {/* Mobile Backdrop */}
@@ -274,8 +293,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
           </div>
         </div>
 
-        {/* Sidebar Color Switcher */}
-        <div className={`p-3.5 border-t shrink-0 ${
+        {/* Sidebar Color Switcher & Sign Out */}
+        <div className={`p-3 border-t shrink-0 space-y-2.5 ${
           isDark || sidebarTheme === 'dark'
             ? 'border-slate-800'
             : sidebarTheme === 'sage'
@@ -332,6 +351,44 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
               />
             </div>
           </div>
+
+          {/* User Sign Out Action Button */}
+          {user && (
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer group ${
+                isDark || sidebarTheme === 'dark'
+                  ? 'bg-slate-800/80 hover:bg-rose-950/40 text-rose-400 hover:text-rose-300 border border-slate-700/80 hover:border-rose-900/60'
+                  : sidebarTheme === 'sage'
+                  ? 'bg-white/85 hover:bg-white text-rose-700 hover:text-rose-800 border border-emerald-300/80 hover:border-rose-300 shadow-2xs'
+                  : sidebarTheme === 'slate'
+                  ? 'bg-white/85 hover:bg-white text-rose-700 hover:text-rose-800 border border-slate-300 hover:border-rose-300 shadow-2xs'
+                  : 'bg-slate-50 hover:bg-rose-50 text-rose-600 hover:text-rose-700 border border-slate-200 hover:border-rose-200'
+              }`}
+              title="Sign out of your account"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all shrink-0">
+                  <LogOut className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-left min-w-0">
+                  <span className="block text-xs font-bold leading-tight truncate">
+                    Sign Out
+                  </span>
+                  <span className={`block text-[10px] font-normal truncate ${
+                    isDark || sidebarTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                  }`}>
+                    {user.name}
+                  </span>
+                </div>
+              </div>
+
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-100/80 dark:bg-rose-950 text-rose-700 dark:text-rose-300 shrink-0">
+                Exit
+              </span>
+            </button>
+          )}
         </div>
       </aside>
     </>
