@@ -181,3 +181,4 @@ export const downloadInvoicePdf = (invoice: Invoice, user?: UserProfile | null) 
   // Direct PDF Download
   doc.save(`Invoice-${invoice.invoiceNumber || 'INV'}.pdf`);
 };
+

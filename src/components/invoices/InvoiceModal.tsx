@@ -29,7 +29,7 @@ export const InvoiceModal: React.FC = () => {
   const [dueDate, setDueDate] = useState('');
   const [status, setStatus] = useState<InvoiceStatus>('sent');
   const [serviceDescription, setServiceDescription] = useState('');
-  const [amount, setAmount] = useState<number | string>(500);
+  const [amount, setAmount] = useState<number | string>('');
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -48,21 +48,10 @@ export const InvoiceModal: React.FC = () => {
       const randNum = Math.floor(100 + Math.random() * 900);
       setInvoiceNumber(`INV-2026-${randNum}`);
 
-      const initialClient = clients[0]?.id || '';
-      setClientId(initialClient);
-
-      const matchingProjects = projects.filter(p => !initialClient || p.clientId === initialClient);
-      const initialProj = matchingProjects[0] || projects[0];
-
-      if (initialProj) {
-        setProjectId(initialProj.id);
-        setServiceDescription(initialProj.title);
-        setAmount(initialProj.budget && initialProj.budget > 0 ? initialProj.budget : 500);
-      } else {
-        setProjectId('');
-        setServiceDescription('Freelance Project Deliverables');
-        setAmount(500);
-      }
+      setClientId('');
+      setProjectId('');
+      setServiceDescription('');
+      setAmount('');
 
       setIssueDate(new Date().toISOString().split('T')[0]);
       const due = new Date();
@@ -71,7 +60,7 @@ export const InvoiceModal: React.FC = () => {
       setStatus('sent');
     }
     setError('');
-  }, [selectedInvoiceForEdit, isInvoiceModalOpen, clients, projects]);
+  }, [selectedInvoiceForEdit, isInvoiceModalOpen]);
 
   if (!isInvoiceModalOpen) return null;
 
@@ -88,7 +77,7 @@ export const InvoiceModal: React.FC = () => {
       if (proj.budget && proj.budget > 0) {
         setAmount(proj.budget);
       }
-      if (!serviceDescription || serviceDescription === 'Freelance Project Deliverables' || serviceDescription === 'Project Deliverables') {
+      if (!serviceDescription.trim()) {
         setServiceDescription(proj.title);
       }
     }
@@ -182,6 +171,20 @@ export const InvoiceModal: React.FC = () => {
   };
 
   const handleDownloadPdf = () => {
+    setError('');
+    if (!clientId) {
+      setError('Please select a client before downloading the PDF.');
+      return;
+    }
+    if (!serviceDescription.trim()) {
+      setError('Please enter a service or deliverable description.');
+      return;
+    }
+    if (finalAmount <= 0) {
+      setError('Please enter a valid project budget amount.');
+      return;
+    }
+
     const payload = getPayload();
     const invoiceToDownload: Invoice = {
       ...payload,
@@ -369,7 +372,7 @@ export const InvoiceModal: React.FC = () => {
                 onChange={e => setAmount(e.target.value)}
                 min="1"
                 step="1"
-                placeholder="500"
+                placeholder="0"
                 className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-base font-mono font-black text-slate-900 dark:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 required
               />
