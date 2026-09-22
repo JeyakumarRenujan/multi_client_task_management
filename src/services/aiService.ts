@@ -464,25 +464,29 @@ Me Plus includes both a **Live Real-time Stopwatch** and a **Manual Entry Log**.
 💡 **Did you know?** The live timer keeps running accurately in the background even if you switch tabs or navigate across other pages.`;
   }
 
-  // 4. Invoices & Billing Guide
-  if (/\b(invoice|invoices|bill|billing|tax|download\s*invoice|pdf|create\s*invoice|unpaid)\b/i.test(q)) {
+  // 4. Invoices & Revenue Billing Guide
+  if (/\b(invoice|invoices|bill|billing|tax|download\s*invoice|pdf|create\s*invoice|unpaid|revenue)\b/i.test(q)) {
     const unpaid = (invoices || []).filter(i => i.status === 'sent' || i.status === 'overdue');
-    return `### 💵 How to Create & Export Invoices in Me Plus
+    return `### 💵 How to Create Invoices & Track Revenue in Me Plus
 
-You have **${(invoices || []).length} total invoice(s)** (${unpaid.length} currently unpaid).
+You have **${(invoices || []).length} total invoice(s)** (${unpaid.length} currently pending payment).
 
-#### 📌 Step-by-Step: Creating an Invoice
-1. Go to **"Invoices"** in the sidebar.
+#### 📌 Simple 3-Step Project Budget Invoicing:
+1. Click **"Invoices"** in the left sidebar.
 2. Click the green **"+ Create Invoice"** button.
-3. Select your **Client** — their email and address will auto-populate.
-4. Add line items:
-   • Click **"+ Add Item"**
-   • Enter the task/milestone description, quantity/hours, and rate per hour.
-5. Set the **Issue Date**, **Payment Due Date**, and optional **Tax Rate** (e.g. 5% or 10%).
-6. Choose the initial status (\`Draft\`, \`Sent\`, or \`Paid\`).
-7. Click **"Generate Invoice"**.
+3. Fill in the simple details:
+   • **Client**: Select who you are billing.
+   • **Project (Optional)**: Selecting a project **automatically pre-fills that project's agreed budget**!
+   • **Service Description**: Briefly state what was delivered (e.g., *"Logo Design & Brand Guidelines"*).
+   • **Project Budget / Amount ($)**: Enter your flat agreed fee (no tedious hours math required!).
+   • **Payment Due Date**: Choose payment deadline (defaults to 14 days).
+4. Click **"Generate Invoice"**.
 
-💡 **Exporting & Sharing:** Click on any invoice in your list to view the branded preview, download it, or change its status to \`Paid\` when your client transfers funds!`;
+#### 💰 1-Click Payment & Revenue Tracking:
+• **Total Invoiced**: Shows all money billed across all your client jobs.
+• **Paid Revenue**: Real earnings received. Click the **"Mark Paid"** button next to any invoice to instantly move it into your Paid Revenue!
+• **Pending Receivables**: Live total of all money clients currently owe you.
+• **Printable Slip**: Click the print icon on any invoice to view and print an executive slip!`;
   }
 
   // 5. Tasks & Kanban Board Guide

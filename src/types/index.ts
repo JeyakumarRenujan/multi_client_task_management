@@ -160,7 +160,7 @@ export interface Invoice {
   discount: number;
   total: number;
   currency: string;
-  notes: string;
+  notes?: string;
   clientName: string;
   clientCompany: string;
   clientEmail: string;
