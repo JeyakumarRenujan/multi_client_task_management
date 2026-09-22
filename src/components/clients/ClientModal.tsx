@@ -7,63 +7,15 @@ import {
   Phone,
   X,
   ChevronDown,
+  Check,
 } from 'lucide-react';
-
-export const COUNTRY_DIAL_CODES = [
-  { code: '+94', flag: '🇱🇰', name: 'Sri Lanka (+94)', placeholder: '+94 (77) 123-4567' },
-  { code: '+1', flag: '🇺🇸', name: 'United States (+1)', placeholder: '+1 (555) 019-2834' },
-  { code: '+44', flag: '🇬🇧', name: 'United Kingdom (+44)', placeholder: '+44 7911 123456' },
-  { code: '+91', flag: '🇮🇳', name: 'India (+91)', placeholder: '+91 98765 43210' },
-  { code: '+61', flag: '🇦🇺', name: 'Australia (+61)', placeholder: '+61 412 345 678' },
-  { code: '+971', flag: '🇦🇪', name: 'UAE (+971)', placeholder: '+971 50 123 4567' },
-  { code: '+65', flag: '🇸🇬', name: 'Singapore (+65)', placeholder: '+65 9123 4567' },
-  { code: '+49', flag: '🇩🇪', name: 'Germany (+49)', placeholder: '+49 151 23456789' },
-  { code: '+33', flag: '🇫🇷', name: 'France (+33)', placeholder: '+33 6 12 34 56 78' },
-  { code: '+81', flag: '🇯🇵', name: 'Japan (+81)', placeholder: '+81 90 1234 5678' },
-  { code: '+60', flag: '🇲🇾', name: 'Malaysia (+60)', placeholder: '+60 12-345 6789' },
-  { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia (+966)', placeholder: '+966 50 123 4567' },
-  { code: '+974', flag: '🇶🇦', name: 'Qatar (+974)', placeholder: '+974 3312 3456' },
-  { code: '+64', flag: '🇳🇿', name: 'New Zealand (+64)', placeholder: '+64 21 123 4567' },
-];
-
-export const formatSriLankanPhone = (input: string): string => {
-  const cleaned = input.trim();
-  if (!cleaned) return '';
-
-  // Already properly formatted
-  if (/^\+94\s*\(\d{2}\)\s*\d{3}-\d{4}$/.test(cleaned)) {
-    return cleaned;
-  }
-
-  // Extract all digits
-  const digits = cleaned.replace(/\D/g, '');
-
-  // 10 digits starting with 0 (e.g., 0771305450, 0771234567)
-  if (digits.length === 10 && digits.startsWith('0')) {
-    const operator = digits.substring(1, 3);
-    const part1 = digits.substring(3, 6);
-    const part2 = digits.substring(6, 10);
-    return `+94 (${operator}) ${part1}-${part2}`;
-  }
-
-  // 11 digits starting with 94 (e.g., 94771305450, 94771234567)
-  if (digits.length === 11 && digits.startsWith('94')) {
-    const operator = digits.substring(2, 4);
-    const part1 = digits.substring(4, 7);
-    const part2 = digits.substring(7, 11);
-    return `+94 (${operator}) ${part1}-${part2}`;
-  }
-
-  // 9 digits without leading 0 (e.g., 771305450, 771234567)
-  if (digits.length === 9 && digits.startsWith('7')) {
-    const operator = digits.substring(0, 2);
-    const part1 = digits.substring(2, 5);
-    const part2 = digits.substring(5, 9);
-    return `+94 (${operator}) ${part1}-${part2}`;
-  }
-
-  return cleaned;
-};
+import {
+  SUPPORTED_COUNTRIES,
+  formatAsYouType,
+  validatePhoneNumber,
+  toInternationalFormat,
+  parseStoredPhone,
+} from '../../services/phoneService';
 
 export const ClientModal: React.FC = () => {
   const {
@@ -98,11 +50,9 @@ export const ClientModal: React.FC = () => {
     if (selectedClientForEdit) {
       setName(selectedClientForEdit.name);
       setEmail(selectedClientForEdit.email);
-      setPhone(selectedClientForEdit.phone);
-      if (selectedClientForEdit.phone) {
-        const matched = COUNTRY_DIAL_CODES.find(c => selectedClientForEdit.phone.startsWith(c.code));
-        if (matched) setCountryCode(matched.code);
-      }
+      const parsed = parseStoredPhone(selectedClientForEdit.phone);
+      setCountryCode(parsed.countryCode);
+      setPhone(parsed.localNumber);
       setStatus(selectedClientForEdit.status);
       setNotes(selectedClientForEdit.notes);
       setColor(selectedClientForEdit.color);
@@ -120,6 +70,20 @@ export const ClientModal: React.FC = () => {
 
   if (!isClientModalOpen) return null;
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatAsYouType(e.target.value, countryCode);
+    setPhone(formatted);
+    if (error) setError('');
+  };
+
+  const handleCountryChange = (newCode: string) => {
+    setCountryCode(newCode);
+    if (phone) {
+      setPhone(formatAsYouType(phone, newCode));
+    }
+    if (error) setError('');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -133,9 +97,18 @@ export const ClientModal: React.FC = () => {
       return;
     }
 
+    // Strict Phone Number Validation (if phone is provided)
+    if (phone.trim()) {
+      const validation = validatePhoneNumber(phone, countryCode);
+      if (!validation.isValid) {
+        setError(validation.error || 'Please enter a valid phone number.');
+        return;
+      }
+    }
+
     const defaultRate = selectedClientForEdit?.hourlyRate || user?.hourlyRate || 65;
     const defaultCurrency = selectedClientForEdit?.currency || user?.currency || '$';
-    const finalPhone = countryCode === '+94' ? formatSriLankanPhone(phone) : phone.trim();
+    const finalPhone = phone.trim() ? toInternationalFormat(phone, countryCode) : '';
 
     if (selectedClientForEdit) {
       updateClient(selectedClientForEdit.id, {
@@ -259,20 +232,27 @@ export const ClientModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Phone Number (Optional)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Phone Number (Optional)
+              </label>
+              {countryCode === '+94' && (
+                <span className="text-[10px] text-slate-400 font-medium">
+                  10 digits (e.g. 077 123 4567)
+                </span>
+              )}
+            </div>
 
             <div className="flex rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-emerald-500 overflow-hidden transition-all shadow-2xs">
               {/* Country Code Dropdown */}
               <div className="relative flex items-center bg-slate-100/90 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 px-2.5 shrink-0">
                 <select
                   value={countryCode}
-                  onChange={e => setCountryCode(e.target.value)}
+                  onChange={e => handleCountryChange(e.target.value)}
                   className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer pr-3.5 py-2.5 appearance-none"
                   title="Country Calling Code"
                 >
-                  {COUNTRY_DIAL_CODES.map(c => (
+                  {SUPPORTED_COUNTRIES.map(c => (
                     <option key={c.code} value={c.code} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
                       {c.flag} {c.code}
                     </option>
@@ -281,21 +261,35 @@ export const ClientModal: React.FC = () => {
                 <ChevronDown className="w-3 h-3 text-slate-400 pointer-events-none -ml-2.5" />
               </div>
 
-              {/* Phone Input with Exact Placeholder */}
+              {/* Phone Input with Real-Time Formatting */}
               <div className="relative flex-1 flex items-center">
                 <Phone className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
                 <input
                   type="tel"
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
                   onBlur={() => {
-                    if (countryCode === '+94' || phone.startsWith('07') || phone.startsWith('94') || phone.startsWith('+94')) {
-                      setPhone(formatSriLankanPhone(phone));
+                    if (phone.trim()) {
+                      setPhone(formatAsYouType(phone, countryCode));
                     }
                   }}
-                  placeholder={countryCode === '+94' ? '+94 (77) 123-4567' : (COUNTRY_DIAL_CODES.find(c => c.code === countryCode)?.placeholder || '+94 (77) 123-4567')}
-                  className="w-full pl-9 pr-3 py-2.5 bg-transparent text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+                  placeholder={
+                    SUPPORTED_COUNTRIES.find(c => c.code === countryCode)?.placeholder ||
+                    '077 123 4567'
+                  }
+                  className="w-full pl-9 pr-9 py-2.5 bg-transparent text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none font-mono tracking-wide"
                 />
+                {phone.trim() && (
+                  <div className="absolute right-3 flex items-center">
+                    {validatePhoneNumber(phone, countryCode).isValid ? (
+                      <Check className="w-4 h-4 text-emerald-500" />
+                    ) : countryCode === '+94' ? (
+                      <span className="text-[10px] font-bold text-amber-500 font-mono">
+                        {phone.replace(/\D/g, '').length}/10
+                      </span>
+                    ) : null}
+                  </div>
+                )}
               </div>
             </div>
           </div>
