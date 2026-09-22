@@ -1,251 +1,32 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { api } from '../../services/api';
+import { ChatMessage } from '../../types';
 import {
-  AiProvider,
-  AiSettings,
-  ChatMessage,
-} from '../../types';
-import {
-  AI_MODELS,
-  getStoredAiSettings,
-  saveStoredAiSettings,
-  buildWorkspaceContext,
-  buildSystemPrompt,
-  callGeminiDirect,
-  callOpenAiDirect,
-  testAiConnection,
   generateSmartAdvisorFallback,
 } from '../../services/aiService';
 import {
-  Sparkles,
   Send,
   Bot,
   Copy,
   Check,
   X,
   Trash2,
-  Sliders,
-  Key,
   ExternalLink,
-  ShieldCheck,
-  AlertCircle,
-  Loader2,
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  Zap,
-  Cpu,
-  Mail,
-  Coins,
-  ShieldAlert,
-  ListChecks,
-  Star,
-  Clock,
   ChevronRight,
-  Info,
+  BookOpen,
+  Sparkles,
+  Users,
+  Briefcase,
+  Clock,
+  FileText,
+  Kanban,
+  Settings,
+  Keyboard,
+  Compass,
+  ArrowUpRight,
+  CheckCircle2,
 } from 'lucide-react';
-
-// ==========================================
-// Formatted AI Message Renderer Component
-// ==========================================
-
-interface FormattedAiMessageProps {
-  text: string;
-  onCopyDraft: (draftText: string, draftId: string) => void;
-  copiedId: string | null;
-  messageId: string;
-}
-
-const FormattedAiMessage: React.FC<FormattedAiMessageProps> = ({
-  text,
-  onCopyDraft,
-  copiedId,
-  messageId,
-}) => {
-  // Parse message into structured sections: headers, email draft boxes, callout tips, and standard text
-  const renderedElements = useMemo(() => {
-    const lines = text.split('\n');
-    const elements: React.ReactNode[] = [];
-    let currentBlockquote: string[] = [];
-    let inBlockquote = false;
-    let blockquoteSubject = '';
-    let draftIndex = 0;
-
-    const flushBlockquote = () => {
-      if (currentBlockquote.length > 0) {
-        const fullDraft = currentBlockquote.join('\n').trim();
-        const draftKey = `${messageId}-draft-${draftIndex++}`;
-        const isCopied = copiedId === draftKey;
-
-        // Strip leading quote markers and formatting for clean clipboard copy
-        const cleanClipboardText = fullDraft
-          .split('\n')
-          .map(l => l.replace(/^>\s*(\*)?/, '').replace(/(\*)?$/, ''))
-          .join('\n')
-          .trim();
-
-        elements.push(
-          <div
-            key={draftKey}
-            className="my-3 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-emerald-500/30 dark:border-emerald-500/20 shadow-xs overflow-hidden"
-          >
-            {/* Draft Header */}
-            <div className="px-3.5 py-2 bg-emerald-50/80 dark:bg-emerald-950/50 border-b border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold text-[11px]">
-                <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>Ready-to-Send Client Draft</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onCopyDraft(cleanClipboardText, draftKey)}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 transition-colors shadow-2xs"
-                title="Copy ready-to-send draft to clipboard"
-              >
-                {isCopied ? (
-                  <>
-                    <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3 h-3" />
-                    <span>Copy Draft</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Draft Content */}
-            <div className="p-3.5 sm:p-4 text-xs font-sans text-slate-800 dark:text-slate-200 space-y-2 leading-relaxed">
-              {blockquoteSubject && (
-                <div className="pb-2 mb-2 border-b border-slate-200/70 dark:border-slate-800 flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span className="text-slate-400 font-normal">Subject:</span>
-                  <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">
-                    {blockquoteSubject}
-                  </span>
-                </div>
-              )}
-              {currentBlockquote.map((line, idx) => {
-                const cleanLine = line.replace(/^>\s*/, '').replace(/^\*"|"\*$/g, '');
-                if (!cleanLine.trim()) return <div key={idx} className="h-1.5" />;
-                return <p key={idx}>{cleanLine}</p>;
-              })}
-            </div>
-          </div>
-        );
-
-        currentBlockquote = [];
-        inBlockquote = false;
-        blockquoteSubject = '';
-      }
-    };
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-
-      // Detect Subject Line
-      if (line.includes('**Subject:**') || line.startsWith('Subject:')) {
-        const rawSubject = line.replace(/.*\*\*Subject:\*\*\s*\*?|\*?/g, '').replace(/Subject:\s*/, '').replace(/^\*|\*$/g, '').trim();
-        blockquoteSubject = rawSubject;
-        continue;
-      }
-
-      // Detect Blockquote (Email Template)
-      if (line.startsWith('>')) {
-        inBlockquote = true;
-        currentBlockquote.push(line);
-        continue;
-      } else if (inBlockquote) {
-        // End of blockquote
-        flushBlockquote();
-      }
-
-      // Detect Heading 3
-      if (line.startsWith('### ')) {
-        const title = line.replace('### ', '');
-        elements.push(
-          <div key={`h3-${i}`} className="mt-4 mb-2 flex items-center gap-2">
-            <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">
-              {title}
-            </h3>
-          </div>
-        );
-        continue;
-      }
-
-      // Detect Heading 4
-      if (line.startsWith('#### ')) {
-        const title = line.replace('#### ', '');
-        elements.push(
-          <h4 key={`h4-${i}`} className="mt-3 mb-1 text-xs font-bold text-slate-800 dark:text-slate-200">
-            {title}
-          </h4>
-        );
-        continue;
-      }
-
-      // Detect Horizontal Dividers
-      if (line.trim() === '---') {
-        elements.push(
-          <hr key={`hr-${i}`} className="my-3 border-slate-200/80 dark:border-slate-800" />
-        );
-        continue;
-      }
-
-      // Detect Callout Tips & Workspace Alerts
-      if (line.includes('💡') || line.includes('📌') || line.startsWith('*Tip:')) {
-        elements.push(
-          <div
-            key={`tip-${i}`}
-            className="my-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 dark:bg-amber-950/20 text-slate-700 dark:text-slate-300 text-xs flex items-start gap-2 leading-relaxed"
-          >
-            <div className="shrink-0 mt-0.5 font-bold">💡</div>
-            <div>{line.replace(/^💡\s*|\*Tip:\s*/, '')}</div>
-          </div>
-        );
-        continue;
-      }
-
-      // Detect Bullet points
-      if (line.startsWith('• ') || line.startsWith('- ') || line.startsWith('* ')) {
-        const cleanItem = line.replace(/^[•\-\*]\s*/, '');
-        elements.push(
-          <div key={`bullet-${i}`} className="flex items-start gap-2 text-xs leading-relaxed my-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 mt-1.5 shrink-0" />
-            <span>{cleanItem}</span>
-          </div>
-        );
-        continue;
-      }
-
-      // Empty Lines
-      if (!line.trim()) {
-        elements.push(<div key={`empty-${i}`} className="h-2" />);
-        continue;
-      }
-
-      // Standard Paragraph
-      elements.push(
-        <p key={`p-${i}`} className="text-xs leading-relaxed text-slate-800 dark:text-slate-200">
-          {line}
-        </p>
-      );
-    }
-
-    // Flush any pending blockquote at the end
-    flushBlockquote();
-
-    return elements;
-  }, [text, messageId, copiedId, onCopyDraft]);
-
-  return <div className="space-y-1 font-sans">{renderedElements}</div>;
-};
-
-// ==========================================
-// Main AI Assistant Modal Component
-// ==========================================
 
 export const AiAssistantModal: React.FC = () => {
   const {
@@ -256,101 +37,60 @@ export const AiAssistantModal: React.FC = () => {
     tasks,
     invoices,
     user,
-    updateUserProfile,
     showToast,
     confirmAction,
   } = useApp();
 
-  // AI Configuration State
-  const [aiSettings, setAiSettings] = useState<AiSettings>(() => getStoredAiSettings(user));
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  // Active Main Tab: 1 = App Guide & Help Bot, 2 = External AI (ChatGPT & Gemini)
+  const [activeMainTab, setActiveMainTab] = useState<'app-guide' | 'external-ai'>('app-guide');
 
-  // In-Drawer Settings Form State
-  const [tempProvider, setTempProvider] = useState<AiProvider>(aiSettings.provider || 'builtin');
-  const [tempGeminiKey, setTempGeminiKey] = useState(aiSettings.geminiApiKey || '');
-  const [tempOpenAiKey, setTempOpenAiKey] = useState(aiSettings.openaiApiKey || '');
-  const [tempGeminiModel, setTempGeminiModel] = useState(aiSettings.geminiModel || 'gemini-1.5-flash');
-  const [tempOpenAiModel, setTempOpenAiModel] = useState(aiSettings.openaiModel || 'gpt-4o-mini');
-  const [tempInstructions, setTempInstructions] = useState(aiSettings.customInstructions || '');
-  const [showApiKey, setShowApiKey] = useState(false);
-
-  // Connection Testing State
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{
-    success?: boolean;
-    message?: string;
-    latencyMs?: number;
-  } | null>(null);
-
-  // Chat State
+  // Chat State for App Guide Bot
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<'popular' | 'emails' | 'rates' | 'scope' | 'sprints'>('popular');
+
+  // Active Category Filter for App Guide Starters
+  const [guideCategory, setGuideCategory] = useState<'all' | 'clients' | 'projects' | 'time' | 'invoices' | 'tasks' | 'settings'>('all');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync AI Settings if user profile updates
-  useEffect(() => {
-    if (user?.aiSettings) {
-      setAiSettings(user.aiSettings);
-      setTempProvider(user.aiSettings.provider);
-      setTempGeminiKey(user.aiSettings.geminiApiKey || '');
-      setTempOpenAiKey(user.aiSettings.openaiApiKey || '');
-      setTempGeminiModel(user.aiSettings.geminiModel || 'gemini-1.5-flash');
-      setTempOpenAiModel(user.aiSettings.openaiModel || 'gpt-4o-mini');
-      setTempInstructions(user.aiSettings.customInstructions || '');
-    }
-  }, [user?.aiSettings]);
-
   // Initial greeting if chat is empty
   useEffect(() => {
     if (isAiModalOpen && messages.length === 0) {
-      const activeModelName =
-        aiSettings.provider === 'gemini'
-          ? 'Google Gemini (' + (aiSettings.geminiModel || 'gemini-1.5-flash') + ')'
-          : aiSettings.provider === 'openai'
-          ? 'OpenAI ChatGPT (' + (aiSettings.openaiModel || 'gpt-4o-mini') + ')'
-          : 'Me Plus Smart Advisor (Offline-Ready)';
-
       const initialGreeting: ChatMessage = {
         id: 'msg-init',
         sender: 'ai',
-        text: `### 👋 Welcome to Me Plus Freelancer Copilot!\n\nHello **${user?.name ? user.name.split(' ')[0] : 'there'}**! I am your executive business strategist and communications coach, currently active with **${activeModelName}**.\n\nI have live awareness of your **${clients.length} clients**, **${projects.length} projects**, and **${tasks.filter(t => t.status !== 'done').length} pending tasks**.\n\nHere are popular ways I can help right now:\n• 💬 **Draft ready-to-send client emails** (invoices, proposals, delays, reviews)\n• 💰 **Calculate rate increases** & write 30-day client adjustment notices\n• 🛡️ **Push back on scope creep** with structured add-on pricing\n• ⚡ **Prioritize your daily sprint** based on active deadlines\n\nChoose an action chip below or type any question to begin!`,
+        text: `### 📘 Welcome to the Me Plus App Guide & Help Bot!\n\nHello **${user?.name ? user.name.split(' ')[0] : 'there'}**! I am here to assist you with using this application.\n\nYou can ask me how any feature works, such as:\n• 👥 **Clients**: How to add clients, set custom hourly rates, and manage status.\n• 🚀 **Projects**: Creating projects, assigning clients, and monitoring progress.\n• ⏱️ **Time Tracking**: Using the live stopwatch timer and logging past hours.\n• 💵 **Invoices**: Creating itemized invoices, applying taxes, and exporting.\n• 📌 **Tasks**: Moving cards on the Kanban board and filtering by priority.\n• ⚙️ **Settings & Shortcuts**: Customizing rates, currency, themes, and \`Ctrl + K\`.\n\nClick any topic chip below or type your question!`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        provider: aiSettings.provider,
-        model: activeModelName,
+        provider: 'builtin',
+        model: 'App Guide',
       };
       setMessages([initialGreeting]);
     }
-  }, [isAiModalOpen, user?.name, messages.length, aiSettings.provider, aiSettings.geminiModel, aiSettings.openaiModel, clients.length, projects.length, tasks]);
+  }, [isAiModalOpen, user?.name, messages.length]);
 
-  // Focus input when modal opens
+  // Focus textarea when modal opens on App Guide tab
   useEffect(() => {
-    if (isAiModalOpen && !isSettingsOpen) {
+    if (isAiModalOpen && activeMainTab === 'app-guide') {
       setTimeout(() => {
         textareaRef.current?.focus();
         scrollToBottom();
       }, 100);
     }
-  }, [isAiModalOpen, isSettingsOpen]);
+  }, [isAiModalOpen, activeMainTab]);
 
-  // ESC key listener to dismiss modal or settings drawer
+  // ESC key listener to dismiss modal
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isAiModalOpen) {
-        if (isSettingsOpen) {
-          setIsSettingsOpen(false);
-        } else {
-          setIsAiModalOpen(false);
-        }
+        setIsAiModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAiModalOpen, isSettingsOpen, setIsAiModalOpen]);
+  }, [isAiModalOpen, setIsAiModalOpen]);
 
   // Scroll to bottom on message change
   useEffect(() => {
@@ -363,171 +103,73 @@ export const AiAssistantModal: React.FC = () => {
 
   if (!isAiModalOpen) return null;
 
-  // Categorized Starter Action Chips
-  const promptCategories = [
-    { id: 'popular', label: '🌟 Top Starters', icon: <Star className="w-3 h-3" /> },
-    { id: 'emails', label: '✉️ Client Emails', icon: <Mail className="w-3 h-3" /> },
-    { id: 'rates', label: '💰 Rates & Invoices', icon: <Coins className="w-3 h-3" /> },
-    { id: 'scope', label: '🛡️ Scope & Boundaries', icon: <ShieldAlert className="w-3 h-3" /> },
-    { id: 'sprints', label: '⚡ Daily Priorities', icon: <ListChecks className="w-3 h-3" /> },
+  // App Guide Starter Questions by Category
+  const guideCategories = [
+    { id: 'all', label: '⭐ All Features', icon: <Compass className="w-3 h-3" /> },
+    { id: 'clients', label: '👥 Clients', icon: <Users className="w-3 h-3" /> },
+    { id: 'projects', label: '🚀 Projects', icon: <Briefcase className="w-3 h-3" /> },
+    { id: 'time', label: '⏱️ Time Tracker', icon: <Clock className="w-3 h-3" /> },
+    { id: 'invoices', label: '💵 Invoices', icon: <FileText className="w-3 h-3" /> },
+    { id: 'tasks', label: '📌 Kanban Tasks', icon: <Kanban className="w-3 h-3" /> },
+    { id: 'settings', label: '⚙️ Settings & Keys', icon: <Settings className="w-3 h-3" /> },
   ] as const;
 
-  const promptsByCategory: Record<typeof activeCategory, { label: string; prompt: string }[]> = {
-    popular: [
-      {
-        label: '💰 Rate Increase Notice (+15%)',
-        prompt: 'How do I politely inform an existing client that my hourly rates are increasing by 15%?',
-      },
-      {
-        label: '📧 Friendly Overdue Invoice Check-in',
-        prompt: 'Draft a polite level 1 follow-up email for an invoice that is 3 days overdue with re-attached invoice.',
-      },
-      {
-        label: '🛡️ Out-of-Scope Feature Pushback',
-        prompt: 'A client requested 3 additional unplanned features. How should I propose an add-on budget or task swap?',
-      },
-      {
-        label: '📊 Today\'s 3-Priority Battle Plan',
-        prompt: 'Summarize my current clients and urgent tasks, and give me a 3-priority focus plan for today.',
-      },
-      {
-        label: '🚫 Politely Decline Low Budget Request',
-        prompt: 'How do I politely decline a project inquiry because their budget is far below my minimum engagement?',
-      },
+  const guidePrompts: Record<typeof guideCategory, { label: string; prompt: string }[]> = {
+    all: [
+      { label: '👥 How do I add a new client?', prompt: 'How do I add a new client in Me Plus?' },
+      { label: '🚀 How do I create a project?', prompt: 'How do I create and manage a new project?' },
+      { label: '⏱️ How does the live stopwatch work?', prompt: 'How do I track billable hours with the live stopwatch?' },
+      { label: '💵 How do I create an invoice?', prompt: 'How do I create and export an invoice for a client?' },
+      { label: '📌 How do I move tasks on Kanban?', prompt: 'How do I move tasks on the Kanban board?' },
+      { label: '⌨️ What keyboard shortcuts exist?', prompt: 'What keyboard shortcuts are available in Me Plus?' },
     ],
-    emails: [
-      {
-        label: '📧 Friendly Invoice Reminder (Level 1)',
-        prompt: 'Draft a polite level 1 reminder email for an overdue invoice with a clear payment check-in.',
-      },
-      {
-        label: '🚨 Past Due Pause Work Notice (Level 3)',
-        prompt: 'Draft a firm 14-day past due invoice notice stating active development is paused until payment clears.',
-      },
-      {
-        label: '⏰ Milestone Delivery Extension',
-        prompt: 'Draft a proactive email notifying a client of a 2-day delivery extension with revised milestone timeline.',
-      },
-      {
-        label: '🎯 High-Converting Client Pitch',
-        prompt: 'Write a high-converting short proposal pitch to win a new web design & development project.',
-      },
-      {
-        label: '⭐ 5-Star Testimonial & Referral Request',
-        prompt: 'Draft an email asking a satisfied client for a short 3-question testimonial and LinkedIn recommendation.',
-      },
+    clients: [
+      { label: '➕ Adding a Client', prompt: 'How do I add a new client to my workspace?' },
+      { label: '💲 Setting Client Hourly Rates', prompt: 'Can I set different hourly rates for different clients?' },
+      { label: '📁 Client Status (Active vs Lead)', prompt: 'What do the client status badges (Active, Lead, Archived) mean?' },
     ],
-    rates: [
-      {
-        label: '📈 30-Day Rate Adjustment Letter',
-        prompt: 'Draft a professional 30-day notice letter for existing clients honoring current milestone commitments.',
-      },
-      {
-        label: '💵 Transition to Value-Based Pricing',
-        prompt: 'Explain how I should transition from hourly billing to value-based project pricing for new clients.',
-      },
-      {
-        label: '🛑 50% Upfront Deposit Agreement',
-        prompt: 'How do I explain my requirement for a 50% upfront deposit to a new client without sounding pushy?',
-      },
-      {
-        label: '⚡ Weekend / 25% Rush Fee Policy',
-        prompt: 'How do I communicate a 25% rush fee when a client needs a deliverable completed over the weekend?',
-      },
+    projects: [
+      { label: '➕ Creating a Project', prompt: 'How do I create a new project and link it to a client?' },
+      { label: '📊 Project Progress Bar', prompt: 'How is the project progress percentage calculated?' },
+      { label: '📅 Managing Deadlines', prompt: 'Where can I see upcoming project deadlines?' },
     ],
-    scope: [
-      {
-        label: '🛡️ Scope Creep Add-On Estimate',
-        prompt: 'Draft an email offering two choices for unplanned work: an add-on scope quote or a task swap.',
-      },
-      {
-        label: '🤝 De-escalate Revision Fatigue',
-        prompt: 'A client is frustrated with recent revisions. How do I de-escalate and organize a single consolidated punch-list?',
-      },
-      {
-        label: '🚫 Decline Project (Fully Booked)',
-        prompt: 'Draft a polite email turning down a project inquiry because my schedule is fully committed through next month.',
-      },
-      {
-        label: '🔄 Limiting Endless Revision Rounds',
-        prompt: 'How do I politely tell a client that they have reached their 2-revision limit without burning the relationship?',
-      },
+    time: [
+      { label: '⏱️ Using the Live Stopwatch', prompt: 'How do I start and stop the live time tracker?' },
+      { label: '✍️ Logging Past / Manual Hours', prompt: 'How do I log manual time entries for work done earlier?' },
+      { label: '📂 Linking Time to Projects', prompt: 'How do I link my tracked hours to a specific project?' },
     ],
-    sprints: [
-      {
-        label: '📊 Workspace Intelligence & Sprint Digest',
-        prompt: 'Review my current workspace clients, pending deadlines, and provide a 3-step action plan for today.',
-      },
-      {
-        label: '⏱️ Time-Boxing & Billable Hours Audit',
-        prompt: 'Give me a practical time-boxing routine to maximize my billable hours and prevent freelance burnout.',
-      },
-      {
-        label: '🚀 Milestone Handover & Sign-Off Checklist',
-        prompt: 'What should be included in a professional final milestone delivery package to guarantee immediate client sign-off?',
-      },
+    invoices: [
+      { label: '🧾 Creating an Invoice', prompt: 'How do I generate an invoice for a client?' },
+      { label: '➕ Adding Line Items & Taxes', prompt: 'How do I add itemized task rows and tax percentages to invoices?' },
+      { label: '✅ Marking Invoices as Paid', prompt: 'How do I change an invoice status from Sent to Paid?' },
+    ],
+    tasks: [
+      { label: '📋 Kanban 4 Columns Explained', prompt: 'How are tasks organized across the 4 Kanban columns?' },
+      { label: '✋ Drag & Drop Tasks', prompt: 'How do I drag and drop tasks between To Do, In Progress, Review, and Done?' },
+      { label: '🏷️ Priority & Client Filters', prompt: 'How do I filter my task board by priority or specific client?' },
+    ],
+    settings: [
+      { label: '💰 Changing Hourly Rate & Currency', prompt: 'Where do I update my base hourly rate and currency symbol?' },
+      { label: '🌙 Dark Mode & Accent Colors', prompt: 'How do I toggle Dark Mode or change accent colors?' },
+      { label: '⌨️ Command Palette (Ctrl + K)', prompt: 'How does the Ctrl + K Command Palette work?' },
+      { label: '🔐 Email OTP Password Reset', prompt: 'How does the email OTP password recovery work?' },
     ],
   };
 
-  const handleTestConnection = async () => {
-    if (tempProvider === 'builtin') {
-      setTestResult({
-        success: true,
-        message: 'Built-in Freelance Copilot is ready and requires zero configuration.',
-        latencyMs: 8,
-      });
-      return;
-    }
+  // External AI Prompts for 1-Click Copying
+  const externalGeminiPrompts = [
+    'Review this freelance proposal draft and suggest 3 ways to make it more persuasive.',
+    'Write a polite email asking a client for feedback on a design milestone.',
+    'Help me calculate a fair fixed price estimate for a 4-week freelance web development sprint.',
+    'Generate 5 high-converting headlines for my freelance portfolio website.',
+  ];
 
-    const key = tempProvider === 'gemini' ? tempGeminiKey : tempOpenAiKey;
-    const model = tempProvider === 'gemini' ? tempGeminiModel : tempOpenAiModel;
-
-    if (!key || !key.trim()) {
-      setTestResult({
-        success: false,
-        message: `Please paste your ${tempProvider === 'gemini' ? 'Google Gemini' : 'OpenAI'} API key first.`,
-      });
-      return;
-    }
-
-    setIsTesting(true);
-    setTestResult(null);
-
-    const res = await testAiConnection(tempProvider, key.trim(), model);
-    setIsTesting(false);
-    setTestResult(res);
-  };
-
-  const handleSaveAiSettings = () => {
-    const updated: AiSettings = {
-      provider: tempProvider,
-      geminiApiKey: tempGeminiKey.trim(),
-      geminiModel: tempGeminiModel,
-      openaiApiKey: tempOpenAiKey.trim(),
-      openaiModel: tempOpenAiModel,
-      customInstructions: tempInstructions.trim(),
-    };
-
-    setAiSettings(updated);
-    saveStoredAiSettings(updated);
-    updateUserProfile({ aiSettings: updated });
-
-    setIsSettingsOpen(false);
-    setTestResult(null);
-
-    const providerLabel =
-      updated.provider === 'gemini'
-        ? 'Google Gemini (' + updated.geminiModel + ')'
-        : updated.provider === 'openai'
-        ? 'OpenAI ChatGPT (' + updated.openaiModel + ')'
-        : 'Me Plus Built-in Copilot';
-
-    showToast({
-      title: 'AI Copilot Updated',
-      message: `Active AI set to ${providerLabel}. Ready for action!`,
-      type: 'success',
-    });
-  };
+  const externalChatGptPrompts = [
+    'Draft a professional freelance contract clause regarding revision limits and payment terms.',
+    'Write a firm but polite notice informing a client that active work is paused due to unpaid invoices.',
+    'Summarize these messy client meeting notes into clear, bulleted project deliverables.',
+    'How should I respond to a client who wants an extra discount after agreeing to a quote?',
+  ];
 
   const executeSend = async (queryText: string) => {
     const userMsg: ChatMessage = {
@@ -541,38 +183,10 @@ export const AiAssistantModal: React.FC = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    const workspaceContext = buildWorkspaceContext(user, clients, projects, tasks, invoices);
-    const systemPrompt = buildSystemPrompt(workspaceContext, aiSettings.customInstructions);
-
-    // Prepare history for multi-turn conversations
-    const historyPayload = messages.slice(-8).map(m => ({
-      role: (m.sender === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
-      content: m.text,
-    }));
-
-    const activeProvider = aiSettings.provider;
-    const activeKey =
-      activeProvider === 'gemini'
-        ? aiSettings.geminiApiKey
-        : activeProvider === 'openai'
-        ? aiSettings.openaiApiKey
-        : '';
-    const activeModel =
-      activeProvider === 'gemini'
-        ? aiSettings.geminiModel || 'gemini-1.5-flash'
-        : activeProvider === 'openai'
-        ? aiSettings.openaiModel || 'gpt-4o-mini'
-        : 'Smart Advisor';
-
     try {
-      // 1. Backend /api/ai/chat
+      // 1. Try Backend App Guide endpoint
       const res = await api.sendAiMessage(queryText, {
-        history: historyPayload,
-        provider: activeProvider,
-        apiKey: activeKey,
-        model: activeModel,
-        workspaceContext,
-        customInstructions: aiSettings.customInstructions,
+        provider: 'builtin',
         userId: user?.id,
       });
 
@@ -582,76 +196,18 @@ export const AiAssistantModal: React.FC = () => {
           sender: 'ai',
           text: res.reply,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          provider: (res.provider as AiProvider) || activeProvider,
-          model: res.model || activeModel,
+          provider: 'builtin',
+          model: 'Me Plus Guide',
         };
         setMessages(prev => [...prev, aiMsg]);
         setIsTyping(false);
         return;
       }
     } catch (backendErr) {
-      console.warn('Backend AI chat request error, attempting direct client fallback:', backendErr);
+      console.warn('Backend guide request error, using client-side fallback:', backendErr);
     }
 
-    // 2. Direct client fallback if backend is unreachable
-    try {
-      if (activeProvider === 'gemini' && activeKey) {
-        const directReply = await callGeminiDirect(
-          activeKey,
-          activeModel,
-          systemPrompt,
-          historyPayload,
-          queryText
-        );
-        const aiMsg: ChatMessage = {
-          id: `ai-${Date.now()}`,
-          sender: 'ai',
-          text: directReply,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          provider: 'gemini',
-          model: activeModel,
-        };
-        setMessages(prev => [...prev, aiMsg]);
-        setIsTyping(false);
-        return;
-      }
-
-      if (activeProvider === 'openai' && activeKey) {
-        const directReply = await callOpenAiDirect(
-          activeKey,
-          activeModel,
-          systemPrompt,
-          historyPayload,
-          queryText
-        );
-        const aiMsg: ChatMessage = {
-          id: `ai-${Date.now()}`,
-          sender: 'ai',
-          text: directReply,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          provider: 'openai',
-          model: activeModel,
-        };
-        setMessages(prev => [...prev, aiMsg]);
-        setIsTyping(false);
-        return;
-      }
-    } catch (directErr: any) {
-      console.warn('Direct AI provider call failed:', directErr);
-      const errorMsg: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        sender: 'ai',
-        text: `⚠️ **Could not connect to ${activeProvider === 'gemini' ? 'Google Gemini' : 'OpenAI'}**: ${directErr.message || 'Network error'}\n\n*Here is built-in workspace guidance instead:*\n\n${generateSmartAdvisorFallback(queryText, user, clients, projects, tasks, invoices)}`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        provider: 'builtin',
-        model: 'Fallback Advisor',
-      };
-      setMessages(prev => [...prev, errorMsg]);
-      setIsTyping(false);
-      return;
-    }
-
-    // 3. Built-in Smart Advisor fallback
+    // 2. Client-side App Guide fallback
     setTimeout(() => {
       const fallbackText = generateSmartAdvisorFallback(queryText, user, clients, projects, tasks, invoices);
       const aiMsg: ChatMessage = {
@@ -660,11 +216,11 @@ export const AiAssistantModal: React.FC = () => {
         text: fallbackText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         provider: 'builtin',
-        model: 'Smart Advisor',
+        model: 'Me Plus Guide',
       };
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
-    }, 350);
+    }, 300);
   };
 
   const handleSendMessage = (e?: React.FormEvent) => {
@@ -686,32 +242,32 @@ export const AiAssistantModal: React.FC = () => {
     executeSend(promptText);
   };
 
-  const handleCopy = (text: string, id: string) => {
+  const handleCopyText = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
     showToast({
       title: 'Copied!',
-      message: 'Full response copied to clipboard.',
+      message: 'Guide instructions copied to clipboard.',
       type: 'info',
     });
   };
 
-  const handleCopyDraft = (draftText: string, draftId: string) => {
-    navigator.clipboard.writeText(draftText);
-    setCopiedId(draftId);
-    setTimeout(() => setCopiedId(null), 2000);
+  const handleCopyPromptForExternal = (promptText: string, id: string, toolName: string) => {
+    navigator.clipboard.writeText(promptText);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2500);
     showToast({
-      title: 'Draft Copied!',
-      message: 'Ready-to-send draft copied to clipboard.',
+      title: 'Prompt Copied!',
+      message: `Ready to paste directly into ${toolName}.`,
       type: 'success',
     });
   };
 
   const handleClearChat = () => {
     confirmAction({
-      title: 'Clear AI Conversation?',
-      message: 'Are you sure you want to reset this conversation history? Your active projects and workspace data will not be affected.',
+      title: 'Clear Guide Chat?',
+      message: 'Are you sure you want to clear your help conversation history?',
       confirmText: 'Clear Chat',
       danger: true,
       itemType: 'chat',
@@ -719,42 +275,15 @@ export const AiAssistantModal: React.FC = () => {
         const initialGreeting: ChatMessage = {
           id: `msg-init-${Date.now()}`,
           sender: 'ai',
-          text: `Conversation cleared! 👋 How can I help you right now with your projects, clients, rates, or email drafts?`,
+          text: `Chat cleared! 👋 What feature in Me Plus would you like help with?`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          provider: aiSettings.provider,
+          provider: 'builtin',
+          model: 'App Guide',
         };
         setMessages([initialGreeting]);
       },
     });
   };
-
-  // Provider Pill Label & Icon
-  const getProviderPill = () => {
-    if (aiSettings.provider === 'gemini') {
-      return {
-        label: `Gemini: ${aiSettings.geminiModel || '1.5 Flash'}`,
-        color: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800',
-        icon: <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />,
-        statusText: 'Connected to Google AI Studio',
-      };
-    }
-    if (aiSettings.provider === 'openai') {
-      return {
-        label: `ChatGPT: ${aiSettings.openaiModel || '4o-mini'}`,
-        color: 'bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800',
-        icon: <Bot className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />,
-        statusText: 'Connected to OpenAI',
-      };
-    }
-    return {
-      label: 'Built-in Copilot (Free)',
-      color: 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800',
-      icon: <Zap className="w-3 h-3 text-amber-500" />,
-      statusText: 'Live Workspace Intelligence (No API key required)',
-    };
-  };
-
-  const pill = getProviderPill();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
@@ -762,61 +291,35 @@ export const AiAssistantModal: React.FC = () => {
         className="w-full max-w-3xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col h-[90vh] max-h-[850px] overflow-hidden relative"
         onClick={e => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-900/90 flex items-center justify-between">
+        {/* Top Header */}
+        <div className="px-4 py-3 sm:px-6 sm:py-3.5 border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/90 dark:bg-slate-900/90 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-whatsapp-dark via-whatsapp-teal to-whatsapp-light text-white shadow-md shadow-emerald-700/20">
-                <Bot className="w-5 h-5" />
-              </div>
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-whatsapp-light rounded-full border-2 border-white dark:border-slate-900 ring-1 ring-emerald-600 animate-pulse" />
+            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-emerald-600 via-teal-600 to-whatsapp-teal text-white shadow-md shadow-emerald-700/20">
+              <BookOpen className="w-5 h-5" />
             </div>
-
             <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100">
-                  Me Plus AI Copilot
-                </h2>
-
-                {/* Provider Pill Button */}
-                <button
-                  onClick={() => setIsSettingsOpen(prev => !prev)}
-                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border transition-all hover:scale-105 active:scale-95 shadow-xs ${pill.color}`}
-                  title="Click to configure AI Model & API Key"
-                >
-                  {pill.icon}
-                  <span>{pill.label}</span>
-                  <Sliders className="w-3 h-3 ml-0.5 opacity-60" />
-                </button>
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                {pill.statusText}
+              <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>Me Plus Platform Assistant</span>
+              </h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Application Guide &amp; External AI Launchpad
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            <button
-              onClick={() => setIsSettingsOpen(prev => !prev)}
-              className={`p-2 rounded-xl transition-colors ${
-                isSettingsOpen
-                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                  : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-              title="AI Connection Settings"
-            >
-              <Sliders className="w-4 h-4" />
-            </button>
-            <button
-              onClick={handleClearChat}
-              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-              title="Clear Conversation History"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {activeMainTab === 'app-guide' && (
+              <button
+                onClick={handleClearChat}
+                className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                title="Clear Guide Conversation"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={() => setIsAiModalOpen(false)}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               title="Close (Esc)"
             >
               <X className="w-5 h-5" />
@@ -824,484 +327,350 @@ export const AiAssistantModal: React.FC = () => {
           </div>
         </div>
 
-        {/* In-Modal Settings / Provider Connection Drawer */}
-        {isSettingsOpen && (
-          <div className="absolute inset-x-0 top-[73px] bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md z-20 flex flex-col p-5 overflow-y-auto animate-fade-in border-b border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Cpu className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100">
-                  AI Model &amp; Account Connection
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsSettingsOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+        {/* Segmented Control Bar: 1. Me Plus App Guide | 2. ChatGPT & Gemini AI */}
+        <div className="p-2 bg-slate-100 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('app-guide')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              activeMainTab === 'app-guide'
+                ? 'bg-white dark:bg-slate-800 text-emerald-800 dark:text-emerald-300 shadow-sm border border-slate-200/80 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>1. Me Plus App Guide &amp; Help Bot</span>
+          </button>
 
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 mb-4">
-              Choose between the <strong>100% Free Built-in Advisor</strong> (works offline with zero setup) or connect your personal <strong>Google Gemini</strong> or <strong>OpenAI</strong> key for open-ended conversation.
-            </p>
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('external-ai')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              activeMainTab === 'external-ai'
+                ? 'bg-white dark:bg-slate-800 text-cyan-800 dark:text-cyan-300 shadow-sm border border-slate-200/80 dark:border-slate-700'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+            <span>2. ChatGPT &amp; Gemini AI (No API Keys)</span>
+          </button>
+        </div>
 
-            {/* Provider Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-4">
-              {/* Built-in Smart Advisor Card */}
-              <button
-                type="button"
-                onClick={() => {
-                  setTempProvider('builtin');
-                  setTestResult(null);
-                }}
-                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all ${
-                  tempProvider === 'builtin'
-                    ? 'border-amber-500 bg-amber-50/70 dark:bg-amber-950/40 ring-2 ring-amber-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-2">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                      Built-in Advisor
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
-                    No Key Needed
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Instant freelance rules, invoice drafts &amp; workspace intelligence.
-                </p>
-              </button>
-
-              {/* Google Gemini Card */}
-              <button
-                type="button"
-                onClick={() => {
-                  setTempProvider('gemini');
-                  setTestResult(null);
-                }}
-                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all ${
-                  tempProvider === 'gemini'
-                    ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-2">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                      Google Gemini
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200">
-                    Free Tier
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Ultra-fast generative intelligence via free Google AI Studio key.
-                </p>
-              </button>
-
-              {/* OpenAI ChatGPT Card */}
-              <button
-                type="button"
-                onClick={() => {
-                  setTempProvider('openai');
-                  setTestResult(null);
-                }}
-                className={`p-3.5 rounded-2xl border text-left flex flex-col justify-between transition-all ${
-                  tempProvider === 'openai'
-                    ? 'border-cyan-500 bg-cyan-50/70 dark:bg-cyan-950/40 ring-2 ring-cyan-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center justify-between w-full mb-2">
-                  <div className="flex items-center gap-2">
-                    <Bot className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                    <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                      OpenAI ChatGPT
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200">
-                    GPT-4o Mini
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Connect GPT-4o Mini or GPT-4o with your personal API key.
-                </p>
-              </button>
-            </div>
-
-            {/* Provider Configuration Details */}
-            {tempProvider === 'gemini' && (
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3.5 mb-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Google Gemini Model
-                  </label>
-                  <a
-                    href="https://aistudio.google.com/app/apikey"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 hover:underline"
-                  >
-                    <span>Get free Google Gemini API Key</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-
-                <select
-                  value={tempGeminiModel}
-                  onChange={e => setTempGeminiModel(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        {/* SECTION 1: Me Plus App Guide & Help Bot */}
+        {activeMainTab === 'app-guide' && (
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Messages Stream */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/40">
+              {messages.map(msg => (
+                <div
+                  key={msg.id}
+                  className={`flex items-start gap-2.5 sm:gap-3 ${
+                    msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'
+                  }`}
                 >
-                  {AI_MODELS.gemini.map(m => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} — {m.description}
-                    </option>
-                  ))}
-                </select>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                    Gemini API Key
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <Key className="w-3.5 h-3.5" />
+                  {/* Avatar */}
+                  {msg.sender === 'user' ? (
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-xs">
+                      {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                     </div>
-                    <input
-                      type={showApiKey ? 'text' : 'password'}
-                      value={tempGeminiKey}
-                      onChange={e => setTempGeminiKey(e.target.value)}
-                      placeholder="AIzaSy..."
-                      className="w-full pl-9 pr-10 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                    >
-                      {showApiKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tempProvider === 'openai' && (
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3.5 mb-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    OpenAI Model
-                  </label>
-                  <a
-                    href="https://platform.openai.com/api-keys"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-600 hover:text-cyan-700 hover:underline"
-                  >
-                    <span>Get OpenAI API Key</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-
-                <select
-                  value={tempOpenAiModel}
-                  onChange={e => setTempOpenAiModel(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  {AI_MODELS.openai.map(m => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} — {m.description}
-                    </option>
-                  ))}
-                </select>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                    OpenAI API Key
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <Key className="w-3.5 h-3.5" />
-                    </div>
-                    <input
-                      type={showApiKey ? 'text' : 'password'}
-                      value={tempOpenAiKey}
-                      onChange={e => setTempOpenAiKey(e.target.value)}
-                      placeholder="sk-proj-..."
-                      className="w-full pl-9 pr-10 py-2 text-xs rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowApiKey(!showApiKey)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                    >
-                      {showApiKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Custom Instructions (Optional) */}
-            <div className="mb-4">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 block">
-                Custom Instructions / Freelance Persona (Optional)
-              </label>
-              <textarea
-                value={tempInstructions}
-                onChange={e => setTempInstructions(e.target.value)}
-                rows={2}
-                placeholder="e.g., Keep email drafts concise and under 120 words. Always suggest a 20% advance milestone."
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-            </div>
-
-            {/* Test Result Message */}
-            {testResult && (
-              <div
-                className={`p-3 rounded-xl text-xs mb-4 flex items-start gap-2 ${
-                  testResult.success
-                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                    : 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                }`}
-              >
-                {testResult.success ? (
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-500 mt-0.5" />
-                ) : (
-                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
-                )}
-                <div>
-                  <div className="font-semibold">{testResult.message}</div>
-                  {testResult.latencyMs && (
-                    <div className="text-[10px] opacity-75 mt-0.5">
-                      Response latency: {testResult.latencyMs}ms
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Bottom Actions */}
-            <div className="mt-auto pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
-              {tempProvider !== 'builtin' ? (
-                <button
-                  type="button"
-                  onClick={handleTestConnection}
-                  disabled={isTesting}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center gap-1.5 transition-colors disabled:opacity-50"
-                >
-                  {isTesting ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Testing Key...</span>
-                    </>
                   ) : (
-                    <>
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Test Connection</span>
-                    </>
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <Bot className="w-4 h-4" />
+                    </div>
                   )}
-                </button>
-              ) : (
-                <div />
+
+                  {/* Message Bubble */}
+                  <div
+                    className={`max-w-[88%] sm:max-w-[82%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm shadow-sm relative group ${
+                      msg.sender === 'user'
+                        ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal text-white rounded-tr-sm'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/60 rounded-tl-sm'
+                    }`}
+                  >
+                    {/* Content formatted with clean line breaks */}
+                    <div className="leading-relaxed whitespace-pre-wrap font-sans space-y-2">
+                      {msg.text}
+                    </div>
+
+                    {/* Footer Time & Copy Button */}
+                    <div
+                      className={`mt-2.5 pt-2 border-t flex items-center justify-between text-[10px] ${
+                        msg.sender === 'user'
+                          ? 'border-emerald-500/30 text-emerald-100/80'
+                          : 'border-slate-100 dark:border-slate-700/60 text-slate-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>{msg.timestamp}</span>
+                        {msg.sender === 'ai' && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-[9px]">
+                            App Help Bot
+                          </span>
+                        )}
+                      </div>
+
+                      {msg.sender === 'ai' && (
+                        <button
+                          onClick={() => handleCopyText(msg.text, msg.id)}
+                          className="opacity-0 group-hover:opacity-100 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-1 transition-opacity text-[10px] cursor-pointer"
+                          title="Copy instructions"
+                        >
+                          {copiedId === msg.id ? (
+                            <Check className="w-3 h-3 text-emerald-500" />
+                          ) : (
+                            <Copy className="w-3 h-3" />
+                          )}
+                          <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Typing Indicator */}
+              {isTyping && (
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <div className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl rounded-tl-sm p-3.5 shadow-sm flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-whatsapp-teal animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="text-[11px] text-slate-400 ml-1">
+                      Finding app instructions...
+                    </span>
+                  </div>
+                </div>
               )}
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsSettingsOpen(false)}
-                  className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveAiSettings}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-700/20 active:scale-95 transition-all"
-                >
-                  Save &amp; Apply
-                </button>
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Guide Topic Selector & Quick Prompt Chips */}
+            <div className="border-t border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-900/95">
+              {/* Category Filter Tabs */}
+              <div className="px-3 pt-2 pb-1 overflow-x-auto flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/50 no-scrollbar">
+                {guideCategories.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setGuideCategory(cat.id)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                      guideCategory === cat.id
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>{cat.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Quick Prompt Chips */}
+              <div className="px-3 py-2 overflow-x-auto flex items-center gap-2 no-scrollbar">
+                {guidePrompts[guideCategory].map((p, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleQuickPrompt(p.prompt)}
+                    className="px-3 py-1.5 rounded-full text-[11px] font-medium text-slate-700 dark:text-slate-300 bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/70 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 whitespace-nowrap transition-all flex items-center gap-1 shrink-0 shadow-2xs group cursor-pointer"
+                    title={p.prompt}
+                  >
+                    <span>{p.label}</span>
+                    <ChevronRight className="w-3 h-3 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-emerald-600" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Input Bar */}
+            <form
+              onSubmit={handleSendMessage}
+              className="p-3 sm:p-4 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-end gap-2"
+            >
+              <div className="relative flex-1">
+                <textarea
+                  ref={textareaRef}
+                  rows={1}
+                  value={inputMessage}
+                  onChange={e => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask how to do anything in Me Plus (Enter to send, Shift+Enter for newline)..."
+                  className="w-full pl-3.5 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner resize-none min-h-[44px] max-h-[100px] leading-relaxed"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!inputMessage.trim() || isTyping}
+                className={`p-3 rounded-2xl transition-all shadow-md flex items-center justify-center shrink-0 cursor-pointer ${
+                  inputMessage.trim() && !isTyping
+                    ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white active:scale-95 shadow-emerald-700/25'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                }`}
+                title="Send Question"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* SECTION 2: External AI Portals (ChatGPT & Gemini) - NO API KEYS NEEDED */}
+        {activeMainTab === 'external-ai' && (
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-50/50 dark:bg-slate-950/40">
+            {/* Banner Notice */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 dark:from-cyan-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border border-cyan-200/80 dark:border-cyan-800/60 shadow-xs">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-xl bg-cyan-600 text-white shrink-0 shadow-sm mt-0.5">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100">
+                    Direct Web Access — No Developer API Keys Required!
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                    You do not need to register developer keys or configure technical settings. Simply click below to open the official <strong>Google Gemini</strong> or <strong>ChatGPT</strong> web app in your browser, sign in with your regular Google account or email, and chat freely!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Two Main Cards: Google Gemini & OpenAI ChatGPT */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+              {/* Google Gemini Card */}
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:border-emerald-400/80 transition-all">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                        G
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
+                          Google Gemini
+                        </h4>
+                        <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400">
+                          gemini.google.com
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                      Free with Google
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+                    Google’s smart conversational AI. Log in with any standard Gmail or Google account to research ideas, draft communications, and review content.
+                  </p>
+
+                  {/* Launch Button */}
+                  <a
+                    href="https://gemini.google.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all active:scale-98"
+                  >
+                    <span>Open Google Gemini</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </a>
+
+                  {/* Copyable Prompts for Gemini */}
+                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                      <Copy className="w-3 h-3 text-blue-500" />
+                      <span>Click to copy a starter prompt:</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {externalGeminiPrompts.map((p, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleCopyPromptForExternal(p, `gemini-${idx}`, 'Google Gemini')}
+                          className="w-full text-left p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300 transition-colors flex items-center justify-between group cursor-pointer"
+                        >
+                          <span className="truncate pr-2">{p}</span>
+                          <span className="shrink-0 text-[10px] font-semibold text-blue-600 dark:text-blue-400 opacity-80 group-hover:opacity-100">
+                            {copiedId === `gemini-${idx}` ? 'Copied!' : 'Copy'}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* OpenAI ChatGPT Card */}
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:border-teal-400/80 transition-all">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-cyan-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                        AI
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
+                          OpenAI ChatGPT
+                        </h4>
+                        <span className="text-[10px] font-semibold text-teal-700 dark:text-teal-400">
+                          chatgpt.com
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300">
+                      Free with Any Email
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+                    OpenAI’s conversational model. Sign up or log in with any email, Microsoft, or Google account to draft contracts, write proposals, and brainstorm.
+                  </p>
+
+                  {/* Launch Button */}
+                  <a
+                    href="https://chatgpt.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-teal-600/20 transition-all active:scale-98"
+                  >
+                    <span>Open OpenAI ChatGPT</span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </a>
+
+                  {/* Copyable Prompts for ChatGPT */}
+                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                      <Copy className="w-3 h-3 text-teal-500" />
+                      <span>Click to copy a starter prompt:</span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {externalChatGptPrompts.map((p, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleCopyPromptForExternal(p, `chatgpt-${idx}`, 'ChatGPT')}
+                          className="w-full text-left p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 hover:bg-teal-50 dark:hover:bg-teal-950/40 border border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300 transition-colors flex items-center justify-between group cursor-pointer"
+                        >
+                          <span className="truncate pr-2">{p}</span>
+                          <span className="shrink-0 text-[10px] font-semibold text-teal-600 dark:text-teal-400 opacity-80 group-hover:opacity-100">
+                            {copiedId === `chatgpt-${idx}` ? 'Copied!' : 'Copy'}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Helpful How-To Footnote */}
+            <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 text-xs text-slate-600 dark:text-slate-300 flex items-start gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold text-slate-900 dark:text-slate-100">Workflow Tip: </span>
+                Click <strong>"Copy"</strong> on any prompt above, click <strong>"Open Google Gemini"</strong> or <strong>"Open ChatGPT"</strong>, and paste the prompt into their chat box to receive immediate answers without any technical configuration!
               </div>
             </div>
           </div>
         )}
-
-        {/* Chat Message Stream */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/40">
-          {messages.map(msg => (
-            <div
-              key={msg.id}
-              className={`flex items-start gap-2.5 sm:gap-3 ${
-                msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'
-              }`}
-            >
-              {/* Avatar */}
-              {msg.sender === 'user' ? (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm font-bold text-xs">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-              ) : (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <Bot className="w-4 h-4" />
-                </div>
-              )}
-
-              {/* Message Bubble */}
-              <div
-                className={`max-w-[88%] sm:max-w-[82%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm shadow-sm relative group ${
-                  msg.sender === 'user'
-                    ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal text-white rounded-tr-sm'
-                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/60 rounded-tl-sm'
-                }`}
-              >
-                {/* Content formatted with clean line breaks & markdown highlights */}
-                {msg.sender === 'ai' ? (
-                  <FormattedAiMessage
-                    text={msg.text}
-                    onCopyDraft={handleCopyDraft}
-                    copiedId={copiedId}
-                    messageId={msg.id}
-                  />
-                ) : (
-                  <div className="leading-relaxed whitespace-pre-wrap font-sans">
-                    {msg.text}
-                  </div>
-                )}
-
-                {/* Footer Time, Model Tag & Copy Button */}
-                <div
-                  className={`mt-2.5 pt-2 border-t flex items-center justify-between text-[10px] ${
-                    msg.sender === 'user'
-                      ? 'border-emerald-500/30 text-emerald-100/80'
-                      : 'border-slate-100 dark:border-slate-700/60 text-slate-400'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span>{msg.timestamp}</span>
-                    {msg.sender === 'ai' && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 font-mono text-[9px]">
-                        {msg.model || (msg.provider === 'gemini' ? 'Gemini' : msg.provider === 'openai' ? 'ChatGPT' : 'Smart Advisor')}
-                      </span>
-                    )}
-                  </div>
-
-                  {msg.sender === 'ai' && (
-                    <button
-                      onClick={() => handleCopy(msg.text, msg.id)}
-                      className="opacity-0 group-hover:opacity-100 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-1 transition-opacity text-[10px]"
-                      title="Copy full text"
-                    >
-                      {copiedId === msg.id ? (
-                        <Check className="w-3 h-3 text-emerald-500" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
-                      <span>{copiedId === msg.id ? 'Copied' : 'Copy Full Response'}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Typing Indicator */}
-          {isTyping && (
-            <div className="flex items-start gap-2.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                <Bot className="w-4 h-4" />
-              </div>
-              <div className="bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl rounded-tl-sm p-3.5 shadow-sm flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 rounded-full bg-whatsapp-teal animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-bounce" style={{ animationDelay: '300ms' }} />
-                <span className="text-[11px] text-slate-400 ml-1">
-                  {aiSettings.provider === 'gemini' ? 'Gemini is drafting...' : aiSettings.provider === 'openai' ? 'ChatGPT is thinking...' : 'Analyzing live workspace & synthesizing...'}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Categorized Quick Action Selector */}
-        <div className="border-t border-slate-200/60 dark:border-slate-800/60 bg-white/95 dark:bg-slate-900/95">
-          {/* Category Tabs */}
-          <div className="px-3 pt-2 pb-1 overflow-x-auto flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/50 no-scrollbar">
-            {promptCategories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 whitespace-nowrap transition-all shrink-0 ${
-                  activeCategory === cat.id
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <span>{cat.label}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Quick Suggestion Chips for Active Category */}
-          <div className="px-3 py-2 overflow-x-auto flex items-center gap-2 no-scrollbar">
-            {promptsByCategory[activeCategory].map((p, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleQuickPrompt(p.prompt)}
-                className="px-3 py-1.5 rounded-full text-[11px] font-medium text-slate-700 dark:text-slate-300 bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/70 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 whitespace-nowrap transition-all flex items-center gap-1 shrink-0 shadow-2xs group"
-                title={p.prompt}
-              >
-                <span>{p.label}</span>
-                <ChevronRight className="w-3 h-3 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-emerald-600" />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat Input Bar */}
-        <form
-          onSubmit={handleSendMessage}
-          className="p-3 sm:p-4 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 flex items-end gap-2"
-        >
-          <div className="relative flex-1">
-            <textarea
-              ref={textareaRef}
-              rows={1}
-              value={inputMessage}
-              onChange={e => setInputMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={
-                aiSettings.provider === 'gemini'
-                  ? 'Ask Gemini anything (Enter to send, Shift+Enter for new line)...'
-                  : aiSettings.provider === 'openai'
-                  ? 'Ask ChatGPT anything (Enter to send, Shift+Enter for new line)...'
-                  : 'Ask anything or request email drafts (Enter to send, Shift+Enter for new line)...'
-              }
-              className="w-full pl-3.5 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner resize-none min-h-[44px] max-h-[100px] leading-relaxed"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={!inputMessage.trim() || isTyping}
-            className={`p-3 rounded-2xl transition-all shadow-md flex items-center justify-center shrink-0 ${
-              inputMessage.trim() && !isTyping
-                ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white active:scale-95 shadow-emerald-700/25'
-                : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-            }`}
-            title="Send Message"
-          >
-            <Send className="w-4 h-4" />
-          </button>
-        </form>
       </div>
     </div>
   );

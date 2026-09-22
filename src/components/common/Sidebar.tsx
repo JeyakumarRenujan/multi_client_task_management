@@ -241,15 +241,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                     <div className={`text-xs font-bold flex items-center gap-1 ${
                       isDark || sidebarTheme === 'dark' ? 'text-white' : 'text-slate-900'
                     }`}>
-                      AI Copilot
+                      App Guide &amp; AI
                       <span className="text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded-full font-bold">
-                        Smart
+                        Help
                       </span>
                     </div>
                     <div className={`text-[10px] ${
                       isDark || sidebarTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'
                     }`}>
-                      Chat with AI Advisor
+                      App Help &amp; External AI
                     </div>
                   </div>
                 </div>

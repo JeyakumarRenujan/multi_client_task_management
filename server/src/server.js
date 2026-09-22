@@ -669,12 +669,12 @@ app.delete('/api/notifications', async (req, res) => {
   res.json({ success: true });
 });
 
-// --- AI Helpers ---
+// --- AI Helpers (Me Plus App Guide & Platform Assistant) ---
 async function generateSmartFallback(message, req) {
   const q = (message || '').trim().toLowerCase();
   const userId = getReqUserId(req);
 
-  // Fetch live workspace context from database
+  // Fetch live workspace metrics for context
   const user = (await findUserById(userId)) || {};
   const projects = (await getProjects(userId)) || [];
   const clients = (await getClients(userId)) || [];
@@ -682,250 +682,188 @@ async function generateSmartFallback(message, req) {
   const invoices = (await getInvoices(userId)) || [];
 
   const userName = user.name || 'Freelancer';
-  const userTitle = user.title || 'Independent Professional';
-  const currentRate = user.hourlyRate || 65;
   const currency = user.currency || '$';
+  const hourlyRate = user.hourlyRate || 65;
 
-  const pendingTasks = tasks.filter(t => t.status !== 'done');
-  const urgentTasks = pendingTasks.filter(t => t.priority === 'urgent' || t.priority === 'high');
-  const unpaidInvoices = invoices.filter(i => i.status === 'sent' || i.status === 'overdue');
-  const totalUnpaid = unpaidInvoices.reduce((sum, i) => sum + (Number(i.total) || 0), 0);
+  // 1. Clients Management Guide
+  if (/\b(client|clients|customer|contact|add\s*client|create\s*client|new\s*client)\b/i.test(q)) {
+    return `### 👥 How to Manage Clients in Me Plus
 
-  // Try to find if user mentioned a specific client (exact, partial, or first word like 'apex')
-  const matchedClient = clients.find(c => {
-    const cName = (c.name || '').toLowerCase().trim();
-    const cComp = (c.company || '').toLowerCase().trim();
-    const firstWordName = cName.split(/\s+/)[0];
-    const firstWordComp = cComp.split(/\s+/)[0];
-    return (
-      (cName && q.includes(cName)) ||
-      (cComp && q.includes(cComp)) ||
-      (firstWordName && firstWordName.length >= 3 && q.includes(firstWordName)) ||
-      (firstWordComp && firstWordComp.length >= 3 && q.includes(firstWordComp))
-    );
-  });
-  const clientPlaceholder = matchedClient ? (matchedClient.company || matchedClient.name) : '[Client Name]';
+You currently have **${clients.length} registered client(s)** in your workspace.
 
-  // 1. Decline / Reject / Turn Down Request or Low Budget
-  if (/\b(decline|turn\s*down|reject|say\s*no|not\s*interested|cannot\s*take|can't\s*take|low\s*budget|fire\s*client|end\s*contract|terminate)\b/i.test(q)) {
-    return `### 🛡️ How to Politely Decline a Project or Low-Budget Request
+#### 📌 Step-by-Step: Adding a New Client
+1. Click **"Clients"** in the left sidebar (or press \`Ctrl + K\` and type *"New Client"*).
+2. Click the green **"+ New Client"** button in the top right.
+3. Fill in the client profile:
+   • **Client Name & Company**: (e.g. *Apex Robotics & IoT*)
+   • **Email & Phone**: Contact details for milestone correspondence and invoicing.
+   • **Hourly Rate**: You can set a client-specific hourly rate (default: ${currency}${hourlyRate}/hr).
+   • **Status**: Mark as \`Active\`, \`Lead\`, or \`Archived\`.
+4. Click **"Save Client"**.
 
-When turning down an inquiry, protect your time while remaining professional and leaving the door open for future high-budget opportunities.
-
----
-
-#### 📧 Template A: Fully Booked / Schedule Capacity
-**Subject:** *Thank you for considering me — Project inquiry*
-
-> *"Hi ${clientPlaceholder},\n>\n> Thank you so much for reaching out! Your project sounds very exciting, and I appreciate you considering me.\n>\n> Currently, my production schedule is fully committed through next month to ensure my ongoing deliverables receive my undivided focus. Because of this, I won't be able to take this on with the turnaround you deserve.\n>\n> If your timeline has flexibility for next quarter, I’d love to revisit this. Alternatively, I would be happy to introduce you to another trusted peer in my network who may have immediate availability.\n>\n> Wishing you great success with the launch!\n>\n> Best regards,\n> ${userName}*\n> *${userTitle}*"
-
----
-
-#### 📧 Template B: Budget Below Your Minimum Engagement
-**Subject:** *Re: Project scope & budget discussion*
-
-> *"Hi ${clientPlaceholder},\n>\n> Thank you for sharing the project brief and target budget.\n>\n> To deliver the high level of quality, testing, and dedicated support my clients rely on, my minimum project engagement begins at ${currency}2,500 (or ${currency}${currentRate}/hr). Given your current budget constraints, we wouldn't be able to cover the full scope outlined.\n>\n> If you'd like, we can explore narrowing the scope to a streamlined Phase 1 MVP that fits within your budget. Otherwise, I completely understand if you need to find an alternative partner.\n>\n> Let me know how you'd like to proceed!\n>\n> Warm regards,\n> ${userName}*"
-
----
-💡 **Freelance Strategy Tip:** Never apologize for your rates. Position your pricing around business outcome, reliability, and peace of mind.`;
+💡 **Pro-Tip:** Once a client is created, you can link projects, assign tasks, and track billable time directly to their account!`;
   }
 
-  // 2. Overdue Invoices & Payment Chasing
-  if (/\b(overdue|unpaid|late\s*pay|invoice|chase\s*payment|remind\s*payment|not\s*paid|payment\s*delay|pending\s*payment)\b/i.test(q)) {
-    let workspaceInvoiceNote = '';
-    if (unpaidInvoices.length > 0) {
-      workspaceInvoiceNote = `\n> 📌 **Workspace Alert:** You currently have **${unpaidInvoices.length} unpaid invoice(s)** totaling **${currency}${totalUnpaid.toLocaleString()}**.\n`;
-    }
+  // 2. Projects & Milestones Guide
+  if (/\b(project|projects|milestone|deadline|add\s*project|create\s*project|new\s*project)\b/i.test(q)) {
+    return `### 🚀 How to Manage Projects & Milestones
 
-    return `### 💰 Overdue Invoice Follow-Up System
-${workspaceInvoiceNote}
-Late payments disrupt your cash flow. Follow this progressive 3-tier escalation strategy:
+You currently have **${projects.length} project(s)** in progress.
 
----
+#### 📌 Step-by-Step: Creating a Project
+1. Navigate to **"Projects"** from the left navigation bar.
+2. Click the **"+ New Project"** button.
+3. Configure your project deliverables:
+   • **Project Title**: Give it a clear name (e.g. *Website Redesign & Mobile MVP*).
+   • **Select Client**: Link it to an existing client from your dropdown.
+   • **Category & Budget**: Assign a project category and fixed or hourly budget.
+   • **Target Deadline**: Select your milestone completion date.
+4. Click **"Create Project"**.
 
-#### 📧 Level 1: Friendly Reminder (1–3 Days Past Due)
-**Subject:** *Friendly Reminder: Invoice for ${clientPlaceholder}*
-
-> *"Hi ${clientPlaceholder},\n>\n> I hope you're having a productive week!\n>\n> Just a quick note to remind you that invoice **#INV-2026-01** (${currency}${unpaidInvoices[0]?.total || '1,250'}) was due on **${unpaidInvoices[0]?.dueDate || 'recently'}**.\n>\n> I’ve re-attached a copy for your convenience. Please let me know if your finance team needs any additional details or purchase order references to process this.\n>\n> Thank you!\n>\n> Best regards,\n> ${userName}*"
-
----
-
-#### 📧 Level 2: Direct Check-in (7 Days Past Due)
-**Subject:** *Follow-up: Past due invoice #INV-2026-01*
-
-> *"Hi ${clientPlaceholder},\n>\n> I’m following up on my note from last week regarding invoice **#INV-2026-01** for ${currency}${unpaidInvoices[0]?.total || '1,250'}, which is now 7 days overdue.\n>\n> Could you please check with your accounts payable department on the scheduled disbursement date? If there are any discrepancies with the deliverables or invoice details, let me know so we can resolve them right away.\n>\n> Appreciate your prompt response!\n>\n> Best,\n> ${userName}*"
-
----
-
-#### 📧 Level 3: Work Pause Notice (14+ Days Past Due)
-**Subject:** *Urgent: Outstanding payment & project milestone status*
-
-> *"Hi ${clientPlaceholder},\n>\n> As our agreed invoice **#INV-2026-01** is now two weeks past due without receipt, our company policy requires us to temporarily pause active work on upcoming milestones until outstanding balances are cleared.\n>\n> Once payment is confirmed, I will immediately resume active development and get our next sprint back on track. You can process payment via the bank details on the invoice.\n>\n> Thank you for your cooperation in getting this settled today.\n>\n> Sincerely,\n> ${userName}*"
-
----
-💡 **Golden Rule:** Never deliver final production assets or transfer full copyright until the final invoice is paid in full.`;
+💡 **Progress Bar Tip:** Your project progress percentage updates dynamically as you move associated tasks into the **"Done"** column on your task board!`;
   }
 
-  // 3. Scope Creep & Extra Requests
-  if (/\b(scope|creep|out\s*of\s*scope|extra\s*feature|extra\s*work|unplanned|additional\s*task|change\s*request|add-on)\b/i.test(q)) {
-    return `### 🛡️ Managing Scope Creep with High Professionalism
+  // 3. Time Tracker & Live Stopwatch Guide
+  if (/\b(time|timer|stopwatch|track\s*time|tracking|log\s*hours|billable|manual\s*entry|hours)\b/i.test(q)) {
+    return `### ⏱️ How to Track Time & Billable Hours in Me Plus
 
-The Golden Rule of freelance scope management: **Never say a flat "No" — say "Yes, and here is how we can budget and schedule it."**
+Me Plus includes both a **Live Real-time Stopwatch** and a **Manual Entry Log**.
 
----
+#### 📌 Using the Live Stopwatch:
+1. Click **"Time Tracker"** in the sidebar.
+2. Select the **Client** and **Project** you are working on.
+3. Type a brief note (e.g., *"Sprint 2 UI wireframes"*).
+4. Click the green **"Start"** button to start the live timer.
+5. When taking a break or finishing, click **"Stop"** — the time entry is automatically saved to your database and ready for invoicing!
 
-#### 📧 Scope Add-On & Change Order Email
-**Subject:** *Feature request & add-on estimate for ${clientPlaceholder}*
+#### 📌 Adding Past / Manual Hours:
+1. In the **Time Tracker** screen, click **"+ Manual Log"**.
+2. Select the date, start time, end time, and project.
+3. Click **"Save Entry"**.
 
-> *"Hi ${clientPlaceholder},\n>\n> That is a great feature idea! It would definitely add significant value to the end-user experience.\n>\n> Because this feature falls outside the original scope agreed in our milestone roadmap, I have put together two quick options so we can accommodate it cleanly:\n>\n> **Option 1: Add as an Add-On Scope**\n> • Estimated effort: ~6–10 hours\n> • Add-on investment: ${currency}${(currentRate * 8).toLocaleString()} (based on standard rate of ${currency}${currentRate}/hr)\n> • Timeline impact: Adds 3 business days to the final launch date.\n>\n> **Option 2: Task Swap (No extra cost)**\n> • We can replace an existing lower-priority feature from this sprint with this new one, keeping our original budget and launch date unchanged.\n>\n> Let me know which direction aligns best with your goals, and I'll update our project board accordingly!\n>\n> Best regards,\n> ${userName}*"
-
----
-💡 **Contract Safeguard:** Always confirm scope changes in writing before beginning development. You can log extra hours in the Me Plus **Time Tracker** with a dedicated tag: \`[Add-on Scope]\`.`;
+💡 **Did you know?** The live timer keeps running accurately in the background even if you switch tabs or navigate across other pages.`;
   }
 
-  // 4. Rate Increase & Pricing Strategy
-  if (/\b(rate\s*increase|raise\s*rates?|pricing|price|how\s*much\s*to\s*charge|hourly\s*rate|increase\s*rates?|charging\s*more|charge\s*higher|value\s*pricing)\b/i.test(q)) {
-    const newRate15 = Math.round(currentRate * 1.15);
-    const newRate25 = Math.round(currentRate * 1.25);
+  // 4. Invoices & Billing Guide
+  if (/\b(invoice|invoices|bill|billing|tax|download\s*invoice|pdf|create\s*invoice|unpaid)\b/i.test(q)) {
+    const unpaid = invoices.filter(i => i.status === 'sent' || i.status === 'overdue');
+    return `### 💵 How to Create & Export Invoices in Me Plus
 
-    return `### 💡 Freelance Pricing Strategy & Rate Increase Notice
+You have **${invoices.length} total invoice(s)** (${unpaid.length} currently unpaid).
 
-Your current base rate in Me Plus is **${currency}${currentRate}/hr**.
-• **+15% Adjustment:** ${currency}${newRate15}/hr (Standard annual cost-of-living & skillset bump)
-• **+25% Adjustment:** ${currency}${newRate25}/hr (For high-demand specialists with full pipelines)
+#### 📌 Step-by-Step: Creating an Invoice
+1. Go to **"Invoices"** in the sidebar.
+2. Click the green **"+ Create Invoice"** button.
+3. Select your **Client** — their email and address will auto-populate.
+4. Add line items:
+   • Click **"+ Add Item"**
+   • Enter the task/milestone description, quantity/hours, and rate per hour.
+5. Set the **Issue Date**, **Payment Due Date**, and optional **Tax Rate** (e.g. 5% or 10%).
+6. Choose the initial status (\`Draft\`, \`Sent\`, or \`Paid\`).
+7. Click **"Generate Invoice"**.
 
----
-
-#### 📧 Rate Increase Letter for Existing Clients (30-Day Notice)
-**Subject:** *Update on our partnership & upcoming 2026 rates*
-
-> *"Hi ${clientPlaceholder},\n>\n> I want to take a moment to thank you for our continued collaboration on our recent milestones. Working with your team has been a true pleasure!\n>\n> As part of my annual business review and investments in advanced tools, tooling infrastructure, and expanded capabilities, my standard hourly rate will adjust from **${currency}${currentRate}/hr** to **${currency}${newRate15}/hr**, effective **30 days from today**.\n>\n> **Grandfathering Courtesy for Our Ongoing Work:**\n> Because I deeply value our long-standing relationship, all existing milestone commitments and any sprint hours booked before the end of this month will be honored at our current **${currency}${currentRate}/hr** rate.\n>\n> Thank you again for your partnership, and I look forward to continuing to deliver outstanding results for your team!\n>\n> Warm regards,\n> ${userName}*\n> *${userTitle}*"
-
----
-💡 **Psychology Tip:** Existing clients rarely leave over a 10–20% rate increase when given 30 days notice and reminded of the consistency and trust you deliver.`;
+💡 **Exporting & Sharing:** Click on any invoice in your list to view the branded preview, download it, or change its status to \`Paid\` when your client transfers funds!`;
   }
 
-  // 5. Client Conflict / Feedback / Revisions
-  if (/\b(unhappy|angry|complaint|dissatisfied|conflict|argument|dispute|too\s*many\s*revision|revision\s*limit|client\s*is\s*mad|refund|chargeback)\b/i.test(q)) {
-    return `### 🤝 De-Escalating Client Tension & Revision Fatigue
+  // 5. Tasks & Kanban Board Guide
+  if (/\b(task|tasks|kanban|board|drag|drop|todo|in\s*progress|review|done|priority)\b/i.test(q)) {
+    return `### 📌 How to Organize Tasks on the Kanban Board
 
-When client feedback gets tense or revisions exceed expectations, use the **Acknowledge ➔ Align ➔ Action** framework to regain leadership of the project.
+You currently have **${tasks.filter(t => t.status !== 'done').length} pending task(s)** across your workspace.
 
----
+#### 📌 Using the 4 Kanban Columns:
+• **To Do**: Backlog and upcoming task items.
+• **In Progress**: Tasks actively being worked on right now.
+• **Review**: Work delivered to the client awaiting feedback.
+• **Done**: Approved and finished tasks.
 
-#### 📧 De-Escalation & Revision Alignment Email
-**Subject:** *Aligning on next steps for ${clientPlaceholder}*
+#### 📌 How to Move Tasks:
+• **Drag & Drop**: Simply click and hold any task card, then drag it across columns.
+• **Quick Edit**: Click on any card to update its title, description, priority (\`Low\`, \`Medium\`, \`High\`, \`Urgent\`), and due date.
 
-> *"Hi ${clientPlaceholder},\n>\n> Thank you for sharing your candid thoughts. I completely understand your desire to get this milestone exactly right, and I share that goal with you 100%.\n>\n> To make sure we don't spin wheels or introduce conflicting changes, let’s consolidate all feedback into one prioritized punch-list. Here is how I propose we resolve this efficiently:\n>\n> 1. **Consolidated Review:** Please review the draft with your key stakeholders and compile one bulleted list of essential adjustments.\n> 2. **Focused Revision Sprint:** I will execute these items in one dedicated revision block within 48 hours.\n> 3. **Live 15-Min Walkthrough:** Once updated, we will jump on a brief screen share to confirm everything is approved before locking the milestone.\n>\n> Let me know if that structured approach works for you, and I’ll get started right away!\n>\n> Best regards,\n> ${userName}*"
-
----
-💡 **Professional Boundary:** If the client requests changes that contradict previously approved wireframes, gently reference the sign-off date and position the changes as an iteration phase.`;
+💡 **Filter Chips:** Use the filter buttons at the top of the Tasks page to filter your board by specific Client or Priority with a single click!`;
   }
 
-  // 6. Delays & Deadline Extensions
-  if (/\b(delay|behind\s*schedule|missed\s*deadline|late\s*deliver|emergency|sick|extension|cannot\s*finish\s*on\s*time)\b/i.test(q)) {
-    return `### ⏰ Communicating Project Delays Like a Pro
+  // 6. Settings, Profile, Currency & Theme Guide
+  if (/\b(setting|settings|profile|rate|hourly\s*rate|currency|theme|dark\s*mode|light\s*mode|color|avatar)\b/i.test(q)) {
+    return `### ⚙️ How to Customize Your Settings & Profile
 
-The cardinal rule: **Never notify a client of a delay on the day of the deadline.** Notify them 48+ hours in advance, explain the reason briefly, and offer a concrete revised delivery date.
+You can personalize your freelance workspace anytime in the **Settings** view:
 
----
+#### 📌 Profile & Rates:
+1. Click **"Settings"** at the bottom of the left sidebar.
+2. In the **Profile** section, you can update:
+   • **Your Name & Professional Title** (e.g., *Senior Graphic & UI Designer*)
+   • **Base Hourly Rate**: Your default rate (currently ${currency}${hourlyRate}/hr).
+   • **Currency Symbol**: Choose between \`$\`, \`€\`, \`£\`, \`₹\`, or any custom currency.
 
-#### 📧 Proactive Milestone Extension Notice
-**Subject:** *Progress update & revised delivery schedule for ${clientPlaceholder}*
+#### 📌 Appearance & Dark Mode:
+• Toggle between **Light Mode** and **Dark Mode** at the top right of the screen or in Settings.
+• Choose from custom accent colors (Emerald, Ocean Blue, Violet, Amber) using the palette icon in the top navbar.
 
-> *"Hi ${clientPlaceholder},\n>\n> I wanted to provide a proactive status update on our current milestone deliverables.\n>\n> While the core components are progressing well, [brief reason: e.g., resolving complex edge-case testing / unexpected technical hurdles] has taken more dedicated attention than initially estimated.\n>\n> Rather than rushing a compromised version to meet our original deadline, I want to ensure the deliverables meet the highest standard of reliability. I am adjusting our delivery date by **[2 business days]** to **[New Date, e.g. Thursday at 4 PM EST]**.\n>\n> In the meantime, I have staged a live progress preview here for your review: **[Link/Attachment]**.\n>\n> Thank you for your understanding and partnership!\n>\n> Best regards,\n> ${userName}*"
-
----
-💡 **Trust Factor:** Clients respect honesty and early notice. Sharing partial work proves you have made substantial progress and are not simply stalling.`;
+#### 📌 Idle Screensaver:
+• Me Plus includes a Zen screensaver that gently dims your display when you step away from your desk. Configure timeout minutes under Settings ➔ Inactivity.`;
   }
 
-  // 7. Proposals, Pitches & Cold Inquiries
-  if (/\b(pitch|proposal|cold\s*email|outreach|win\s*client|rfp|introductory\s*email|new\s*client|portfolio\s*intro)\b/i.test(q)) {
-    return `### 🎯 High-Converting Freelance Pitch & Proposal
+  // 7. Keyboard Shortcuts & Quick Navigation
+  if (/\b(shortcut|shortcuts|hotkey|command|palette|ctrl\s*\+\s*k|cmd\s*\+\s*k|keyboard|esc)\b/i.test(q)) {
+    return `### ⌨️ Me Plus Keyboard Shortcuts & Pro Navigation
 
-Clients hire freelancers who show they understand the client's business problem, not freelancers who simply list their resume skills.
+Boost your daily speed with these built-in keyboard shortcuts:
 
----
+• \`Ctrl + K\` (or \`Cmd + K\` on Mac): **Command Palette**
+  Open the universal quick switcher to jump directly to any client, project, or task, or trigger instant actions like *"New Task"* or *"Start Timer"*.
 
-#### 📧 3-Part High-Converting Pitch Template
-**Subject:** *Quick idea regarding ${clientPlaceholder}'s digital experience*
+• \`Esc\`: **Close Any Window / Modal**
+  Instantly dismiss any open popup, drawer, or modal without clicking the close icon.
 
-> *"Hi [First Name],\n>\n> I came across [Company Name]'s recent launch and was really impressed by [Specific Feature / Campaign].\n>\n> As an independent ${userTitle}, I specialize in helping fast-moving companies build high-converting, reliable digital products without the overhead of a bloated agency.\n>\n> I noticed a quick opportunity to optimize your [e.g. mobile onboarding flow / page load speed / dashboard analytics], which could noticeably boost your user retention.\n>\n> I recently delivered a similar project for a client that increased completion rates by 28%.\n>\n> Are you open to a brief 10-minute exploratory chat next Tuesday at 2 PM to see if partnering makes sense for your upcoming roadmap?\n>\n> Best regards,\n> ${userName}*\n> *Portfolio: [Your Portfolio Link]*"
+• \`Enter\` / \`Shift + Enter\`: **Chat Bot Navigation**
+  Press \`Enter\` to send questions to this App Guide, or \`Shift + Enter\` for a clean new line.
 
----
-💡 **Closing Tip:** Keep outreach under 150 words. Ask for an easy, low-friction micro-commitment (a 10-minute chat) rather than asking them to buy immediately.`;
+💡 **Try it now:** Press \`Ctrl + K\` on your keyboard to test the Command Palette!`;
   }
 
-  // 8. Testimonials, Reviews & Case Studies
-  if (/\b(testimonial|review|case\s*study|referral|recommendation|linkedin\s*review|google\s*review)\b/i.test(q)) {
-    return `### ⭐ Asking for 5-Star Testimonials & Referrals
+  // 8. Password Reset & OTP Email Verification
+  if (/\b(password|reset\s*password|forgot\s*password|otp|email\s*otp|login|security)\b/i.test(q)) {
+    return `### 🔐 Password Reset & Real Email OTP Verification
 
-The best time to ask for a testimonial is **within 48 hours of delivering a successful milestone** when client satisfaction is at its peak.
+Me Plus includes an authentic security system for account recovery:
 
----
-
-#### 📧 The 3-Question Testimonial Request
-**Subject:** *Thank you! + Quick 2-minute favor for ${clientPlaceholder}*
-
-> *"Hi ${clientPlaceholder},\n>\n> It has been an absolute pleasure collaborating on this milestone and seeing the positive feedback on launch!\n>\n> As an independent professional, genuine client feedback is the lifeblood of my business. Would you be willing to share 2–3 sentences about your experience working together?\n>\n> To make it effortless, here are 3 quick prompts you can answer in bullet points:\n> 1. *What was the primary challenge you faced before we started?*\n> 2. *How did our collaboration and communication help resolve it?*\n> 3. *What specific result or improvement did you appreciate the most?*\n>\n> Feel free to reply directly to this email or leave a quick recommendation on my LinkedIn profile: [Link].\n>\n> Thank you so much for your support!\n>\n> Warmly,\n> ${userName}*"
-
----
-💡 **Power Move:** If they are busy, offer: *"If you're pressed for time, I can draft a brief 2-sentence quote based on our results for you to approve with one click!"*`;
+1. On the login screen, click **"Forgot Password?"**.
+2. Type your registered account email.
+3. Click **"Send Verification Code"** — our backend sends a real 6-digit OTP security code directly to your email inbox via Gmail SMTP.
+4. Open your email, copy the 6-digit code, and enter it into the verification screen.
+5. Set your new password and log in immediately!`;
   }
 
-  // 9. Workspace Status, Daily Priorities & Sprints
-  if (/\b(workspace\s*status|status\s*summary|daily\s*priority|priorities|what\s*should\s*i\s*work\s*on|overview\s*of\s*my\s*work|my\s*digest|today\s*plan|sprint\s*plan|backlog|workload)\b/i.test(q)) {
-    const clientList = clients.length > 0 ? clients.map(c => `• **${c.name}** (${c.company || 'Client'}) — Status: \`${c.status || 'Active'}\``).slice(0, 5).join('\n') : '• *No clients registered yet.*';
-    const projectList = projects.length > 0 ? projects.map(p => `• **${p.title}** — ${p.progress || 0}% complete (Due: ${p.deadline || 'No deadline'})`).slice(0, 5).join('\n') : '• *No projects registered yet.*';
-    const taskList = pendingTasks.length > 0 ? pendingTasks.slice(0, 5).map(t => `• [${t.priority.toUpperCase()}] **${t.title}** (Status: \`${t.status}\`, Due: ${t.dueDate || 'Today'})`).join('\n') : '• *All tasks are completed! Awesome job.*';
+  // 9. External AI (ChatGPT & Gemini) Info
+  if (/\b(chatgpt|gemini|external\s*ai|ai|gpt|openai|google\s*ai)\b/i.test(q)) {
+    return `### 🤖 Using External AI (ChatGPT & Google Gemini)
 
-    return `### 📊 Live Workspace Intelligence & Daily Battle Plan
+You don't need any complex developer API keys or setup to use ChatGPT or Google Gemini with Me Plus!
 
-**FREELANCER PROFILE:**
-• **Professional:** ${userName} (${userTitle})
-• **Base Rate:** ${currency}${currentRate}/hr
-• **Total Pipeline:** ${clients.length} Clients | ${projects.length} Projects | ${pendingTasks.length} Pending Tasks
-
----
-
-#### 📋 Active Clients (${clients.length})
-${clientList}
-
-#### 🚀 Key Projects in Flight (${projects.length})
-${projectList}
-
-#### ⚡ Top Priority Tasks (${pendingTasks.length} remaining)
-${taskList}
-
----
-
-### 🎯 Recommended 3-Step Focus for Today:
-1. **Tackle Urgent Tasks First:** Complete the high-priority deliverables above before opening new inbox threads.
-2. **Log Billable Hours:** Track your focused sprints using the Me Plus **Live Stopwatch** to ensure no billable minutes slip through the cracks.
-3. **Proactive Client Touchpoint:** Send a 2-minute status check-in to your most active client to maintain strong engagement and confidence.`;
+#### 📌 How to Access Them:
+1. Look at the top of this window and click the **"🤖 External AI (ChatGPT & Gemini)"** tab.
+2. Click **"Launch Google Gemini"** or **"Launch ChatGPT"**.
+3. It opens directly in your browser. Simply sign in with your regular Google/Gmail account or email.
+4. You can use our 1-click **"Copy Prompt"** chips to copy proven freelance prompts and paste them right into ChatGPT or Gemini!`;
   }
 
-  // 10. General Freelance Business Synthesis
-  const sampleClient = clients[0]?.name || clients[0]?.company || 'your active client';
-  const sampleProject = projects[0]?.title || 'your current project';
+  // 10. General Platform Guide
+  return `### 📘 Welcome to the Me Plus Platform Guide!
 
-  return `### 💡 Me Plus AI Freelance Advisor
+I am here to help you get the absolute most out of the **Me Plus Multi-Client Freelance Platform**.
 
-Regarding: **"${message}"**
+Here is what you can ask me:
+• 👥 *"How do I add a new client?"*
+• 🚀 *"How do I create and manage projects?"*
+• ⏱️ *"How does the live stopwatch time tracker work?"*
+• 💵 *"How do I create, customize, and export invoices?"*
+• 📌 *"How do I move tasks on the Kanban board?"*
+• ⚙️ *"Where do I change my hourly rate, currency, or theme?"*
+• ⌨️ *"What keyboard shortcuts can I use?"*
 
-Here is strategic guidance tailored to your freelance practice:
-
-1. **Clear Milestones & Alignment:**
-   Ensure deliverables for ${sampleProject} have unambiguous acceptance criteria. This prevents misunderstandings and guarantees faster milestone approvals.
-
-2. **Accurate Time & Value Capture:**
-   At your baseline rate of **${currency}${currentRate}/hr**, every hour of unplanned revisions costs real revenue. Log sprint intervals in the **Time Tracking** tab to capture billable work precisely.
-
-3. **Proactive Client Communication:**
-   Reach out to ${sampleClient} with quick 48-hour progress notes. Frequent short updates eliminate client anxiety and build long-term retention.
-
----
-*Tip: To have an open-ended interactive conversation on any topic, connect your Google Gemini (Free) or OpenAI API key in AI Settings!*`;
+👉 **Looking for ChatGPT or Google Gemini?** Click the **"🤖 External AI"** tab at the top of this window to open them directly in your browser!`;
 }
 
 // --- AI Test Connection Endpoint ---

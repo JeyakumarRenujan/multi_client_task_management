@@ -284,14 +284,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* AI Copilot Button */}
+        {/* App Guide & AI Button */}
         <button
           onClick={() => setIsAiModalOpen(true)}
-          title="Me Plus AI Assistant"
+          title="Me Plus App Guide & External AI"
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
         >
           <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
-          <span className="hidden sm:inline">AI Copilot</span>
+          <span className="hidden sm:inline">App Guide &amp; AI</span>
         </button>
 
         {/* Quick Accent Color Palette Switcher */}
