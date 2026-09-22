@@ -1572,21 +1572,38 @@
     }
   ],
   "user": {
-    "id": "usr_renujanrenu03_gmail_com",
-    "name": "Renu Jan",
-    "email": "renujanrenu03@gmail.com",
+    "_id": "6aaa5befff1dc40101863db6",
+    "id": "usr_alex_rivera_freelancepro_io",
+    "name": "Alex Rivera",
+    "email": "alex.rivera@freelancepro.io",
     "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256",
-    "title": "Photographer & Videographer",
+    "title": "Senior Graphic & UI Designer",
     "hourlyRate": 65,
     "currency": "$",
-    "bio": "Freelancer specializing in Photographer & Videographer.",
+    "bio": "Specialized in building modern web interfaces, digital branding, and UI systems.",
     "notificationSettings": {
       "email": true,
       "sms": true,
       "browser": true,
       "sound": true,
       "deadlineReminderHours": 24
-    }
+    },
+    "idleSettings": {
+      "enabled": true,
+      "timeoutMinutes": 5,
+      "style": "starfield"
+    },
+    "aiSettings": {
+      "provider": "builtin",
+      "geminiApiKey": "",
+      "geminiModel": "gemini-1.5-flash",
+      "openaiApiKey": "",
+      "openaiModel": "gpt-4o-mini",
+      "customInstructions": ""
+    },
+    "__v": 0,
+    "createdAt": "2026-09-16T09:05:51.110Z",
+    "updatedAt": "2026-09-22T04:13:17.339Z"
   },
   "clients": [
     {

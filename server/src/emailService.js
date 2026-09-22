@@ -28,7 +28,18 @@ export function getEmailTransporter() {
   const port = Number(process.env.SMTP_PORT) || 587;
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
   const user = process.env.SMTP_USER.trim();
-  const pass = process.env.SMTP_PASS.trim();
+  // Strip any spaces if the user copied Google's formatted App Password (e.g. 'abcd efgh ijkl mnop')
+  const pass = process.env.SMTP_PASS.trim().replace(/\s+/g, '');
+
+  if (host === 'smtp.gmail.com') {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user,
+        pass,
+      },
+    });
+  }
 
   return nodemailer.createTransport({
     host,
@@ -38,7 +49,6 @@ export function getEmailTransporter() {
       user,
       pass,
     },
-    // Optional TLS configuration for flexibility
     tls: {
       rejectUnauthorized: process.env.SMTP_TLS_REJECT_UNAUTHORIZED !== 'false',
     },
