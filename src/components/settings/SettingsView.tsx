@@ -25,6 +25,8 @@ import {
   Loader2,
   CheckCircle2,
   Zap,
+  RotateCcw,
+  GraduationCap,
 } from 'lucide-react';
 import { AiProvider, AiSettings } from '../../types';
 import {
@@ -39,6 +41,7 @@ export const SettingsView: React.FC = () => {
     user,
     updateUserProfile,
     showToast,
+    resetDemoData,
   } = useApp();
 
   const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme, accentColor, setAccentColor } = useTheme();
@@ -1179,6 +1182,74 @@ export const SettingsView: React.FC = () => {
               className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
             />
           </label>
+        </div>
+      </div>
+
+      {/* University Presentation & Demo Data */}
+      <div className="p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-700/20">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                HCI University Presentation &amp; Demo Data
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/50">
+                  Viva Ready
+                </span>
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Instantly restore realistic, cohesive sample data across Clients, Projects, Kanban, Time Logs, and Invoices.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/40 text-xs text-slate-700 dark:text-slate-300 space-y-2">
+          <div className="font-semibold text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
+            <span>✨ Included in Presentation Preset:</span>
+          </div>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+            <li className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span><strong>5 Clients</strong> (Nova Studio, FinTech Pulse, EduVerse, Apex IoT, BioHealth)</span>
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span><strong>5 Projects</strong> with realistic budgets, timelines &amp; progress</span>
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span><strong>8 Tasks</strong> distributed across all 4 Kanban board columns</span>
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span><strong>6 Time Logs</strong> (~17.5h) with billable rates &amp; CSV export</span>
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span><strong>4 Invoices</strong> demonstrating Paid ($3.5k), Sent ($6.5k), Overdue ($2.2k) &amp; Draft ($2.8k)</span>
+            </li>
+            <li className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+              <span><strong>5 Notifications</strong> with deadline warnings and payment alerts</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            Use this button during your presentation to quickly clean up and return to the showcase baseline.
+          </p>
+          <button
+            type="button"
+            onClick={resetDemoData}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs text-white bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] transition shadow-md shadow-indigo-600/20"
+          >
+            <RotateCcw className="w-4 h-4" />
+            <span>Reset Demo Presentation Data</span>
+          </button>
         </div>
       </div>
     </div>

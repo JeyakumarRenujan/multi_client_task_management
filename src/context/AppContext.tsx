@@ -51,6 +51,7 @@ interface AppContextType {
   resendOtp: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }>;
   resetPassword: (email: string, newPassword: string, otp?: string, resetToken?: string) => Promise<{ success: boolean; error?: string; message?: string }>;
   loginDemoUser: () => void;
+  resetDemoData: () => void;
   logout: () => void;
   updateUserProfile: (profile: Partial<UserProfile>) => void;
 
@@ -1226,14 +1227,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   };
 
-  const loginDemoUser = () => {
+  const resetDemoData = () => {
+    try {
+      localStorage.removeItem(`${STORAGE_KEYS.CLIENTS_PREFIX}usr-1`);
+      localStorage.removeItem(`${STORAGE_KEYS.PROJECTS_PREFIX}usr-1`);
+      localStorage.removeItem(`${STORAGE_KEYS.TASKS_PREFIX}usr-1`);
+      localStorage.removeItem(`${STORAGE_KEYS.TIME_PREFIX}usr-1`);
+      localStorage.removeItem(`${STORAGE_KEYS.INVOICES_PREFIX}usr-1`);
+      localStorage.removeItem(`${STORAGE_KEYS.NOTIFS_PREFIX}usr-1`);
+      localStorage.removeItem(`${STORAGE_KEYS.CLIENTS_PREFIX}usr-demo`);
+      localStorage.removeItem(`${STORAGE_KEYS.PROJECTS_PREFIX}usr-demo`);
+      localStorage.removeItem(`${STORAGE_KEYS.TASKS_PREFIX}usr-demo`);
+      localStorage.removeItem(`${STORAGE_KEYS.TIME_PREFIX}usr-demo`);
+      localStorage.removeItem(`${STORAGE_KEYS.INVOICES_PREFIX}usr-demo`);
+      localStorage.removeItem(`${STORAGE_KEYS.NOTIFS_PREFIX}usr-demo`);
+    } catch (e) {
+      console.warn('Error clearing cached demo keys', e);
+    }
+
     setUser(initialUser);
-    api.login(initialUser.email, 'password123').catch(() => {});
+    setClients(initialClients);
+    setProjects(initialProjects);
+    setTasks(initialTasks);
+    setTimeEntries(initialTimeEntries);
+    setInvoices(initialInvoices);
+    setNotifications(initialNotifications);
+
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(initialUser));
+    localStorage.setItem(`${STORAGE_KEYS.CLIENTS_PREFIX}usr-1`, JSON.stringify(initialClients));
+    localStorage.setItem(`${STORAGE_KEYS.PROJECTS_PREFIX}usr-1`, JSON.stringify(initialProjects));
+    localStorage.setItem(`${STORAGE_KEYS.TASKS_PREFIX}usr-1`, JSON.stringify(initialTasks));
+    localStorage.setItem(`${STORAGE_KEYS.TIME_PREFIX}usr-1`, JSON.stringify(initialTimeEntries));
+    localStorage.setItem(`${STORAGE_KEYS.INVOICES_PREFIX}usr-1`, JSON.stringify(initialInvoices));
+    localStorage.setItem(`${STORAGE_KEYS.NOTIFS_PREFIX}usr-1`, JSON.stringify(initialNotifications));
+
     showToast({
-      title: 'Demo Mode Activated',
-      message: 'Logged in as Alex Rivera with sample projects & clients.',
-      type: 'info',
+      title: 'Demo Data Refreshed! 🚀',
+      message: 'Restored fresh sample clients, projects, tasks, invoices & time logs for presentation.',
+      type: 'success',
     });
+  };
+
+  const loginDemoUser = () => {
+    resetDemoData();
+    api.login(initialUser.email, 'password123').catch(() => {});
   };
 
   const logout = () => {
@@ -1972,6 +2009,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         confirmAction,
         closeConfirmModal,
         resetAllDataToDemo,
+        resetDemoData,
         exportDataAsJson,
         importDataFromJson,
       }}
