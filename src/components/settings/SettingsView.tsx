@@ -921,8 +921,8 @@ export const SettingsView: React.FC = () => {
                   Direct Web Access
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
-                Log in with your standard Google account to brainstorm, review proposals, and analyze project scopes directly in Google's official interface.
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                Research ideas, review proposals, and draft client communications.
               </p>
             </div>
             <a
@@ -953,8 +953,8 @@ export const SettingsView: React.FC = () => {
                   Direct Web Access
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
-                Open OpenAI ChatGPT in a new tab. Ideal for drafting client contracts, revision policies, email communication, and rate negotiations.
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 leading-relaxed">
+                Draft freelance contracts, write proposals, and negotiate terms.
               </p>
             </div>
             <a

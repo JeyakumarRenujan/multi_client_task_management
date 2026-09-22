@@ -305,7 +305,7 @@ export const AiAssistantModal: React.FC = () => {
                 </span>
               </h2>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Application Guide &amp; Direct AI Launchpad
+                Application Guide &amp; AI Tools
               </p>
             </div>
           </div>
@@ -330,7 +330,7 @@ export const AiAssistantModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Segmented Control Bar: 1. Me Plus App Guide | 2. ChatGPT & Gemini AI */}
+        {/* Segmented Control Bar: 1. App Guide | 2. ChatGPT & Gemini */}
         <div className="p-2 bg-slate-100 dark:bg-slate-950/80 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center gap-2">
           <button
             type="button"
@@ -342,8 +342,7 @@ export const AiAssistantModal: React.FC = () => {
             }`}
           >
             <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="hidden sm:inline">1. Me Plus App Guide &amp; Help Bot</span>
-            <span className="sm:hidden">App Guide</span>
+            <span>1. App Guide &amp; Help</span>
           </button>
 
           <button
@@ -356,8 +355,7 @@ export const AiAssistantModal: React.FC = () => {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
-            <span className="hidden sm:inline">2. ChatGPT &amp; Gemini AI (No API Keys)</span>
-            <span className="sm:hidden">External AI</span>
+            <span>2. ChatGPT &amp; Gemini</span>
           </button>
         </div>
 
@@ -521,34 +519,23 @@ export const AiAssistantModal: React.FC = () => {
           </div>
         )}
 
-        {/* SECTION 2: External AI Portals (ChatGPT & Gemini) - NO API KEYS NEEDED */}
+        {/* SECTION 2: External AI Portals (ChatGPT & Gemini) */}
         {activeMainTab === 'external-ai' && (
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-50/50 dark:bg-slate-950/40">
-            {/* Banner Notice */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-cyan-50 via-teal-50 to-emerald-50 dark:from-cyan-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border border-cyan-200/80 dark:border-cyan-800/60 shadow-xs">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-xl bg-cyan-600 text-white shrink-0 shadow-sm mt-0.5">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100">
-                    Direct Web Access — No Developer API Keys Required!
-                  </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                    You do not need to register developer keys or configure technical settings. Simply click below to open the official <strong>Google Gemini</strong> or <strong>ChatGPT</strong> web app in your browser, sign in with your regular Google account or email, and chat freely!
-                  </p>
-                </div>
-              </div>
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/40">
+            {/* Simple Top Note */}
+            <div className="px-3.5 py-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <span className="font-medium">Direct web access — launch Gemini or ChatGPT with your regular account.</span>
             </div>
 
             {/* Two Main Cards: Google Gemini & OpenAI ChatGPT */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Google Gemini Card */}
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:border-emerald-400/80 transition-all">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:border-emerald-400/80 transition-all">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                         G
                       </div>
                       <div>
@@ -565,8 +552,8 @@ export const AiAssistantModal: React.FC = () => {
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
-                    Google’s smart conversational AI. Log in with any standard Gmail or Google account to research ideas, draft communications, and review content.
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                    Research ideas, review proposals, and draft client communications.
                   </p>
 
                   {/* Launch Button */}
@@ -574,17 +561,17 @@ export const AiAssistantModal: React.FC = () => {
                     href="https://gemini.google.com"
                     target="_blank"
                     rel="noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all active:scale-98"
+                    className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-98"
                   >
                     <span>Open Google Gemini</span>
-                    <ArrowUpRight className="w-4 h-4" />
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </a>
 
                   {/* Copyable Prompts for Gemini */}
-                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                  <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
                       <Copy className="w-3 h-3 text-blue-500" />
-                      <span>Click to copy a starter prompt:</span>
+                      <span>Quick starter prompts:</span>
                     </div>
                     <div className="space-y-1.5">
                       {externalGeminiPrompts.map((p, idx) => (
@@ -605,11 +592,11 @@ export const AiAssistantModal: React.FC = () => {
               </div>
 
               {/* OpenAI ChatGPT Card */}
-              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:border-teal-400/80 transition-all">
+              <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:border-teal-400/80 transition-all">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-cyan-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-600 via-emerald-600 to-cyan-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                         AI
                       </div>
                       <div>
@@ -626,8 +613,8 @@ export const AiAssistantModal: React.FC = () => {
                     </span>
                   </div>
 
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
-                    OpenAI’s conversational model. Sign up or log in with any email, Microsoft, or Google account to draft contracts, write proposals, and brainstorm.
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                    Draft freelance contracts, write proposals, and negotiate terms.
                   </p>
 
                   {/* Launch Button */}
@@ -635,17 +622,17 @@ export const AiAssistantModal: React.FC = () => {
                     href="https://chatgpt.com"
                     target="_blank"
                     rel="noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-teal-600/20 transition-all active:scale-98"
+                    className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-98"
                   >
                     <span>Open OpenAI ChatGPT</span>
-                    <ArrowUpRight className="w-4 h-4" />
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </a>
 
                   {/* Copyable Prompts for ChatGPT */}
-                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                  <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
                       <Copy className="w-3 h-3 text-teal-500" />
-                      <span>Click to copy a starter prompt:</span>
+                      <span>Quick starter prompts:</span>
                     </div>
                     <div className="space-y-1.5">
                       {externalChatGptPrompts.map((p, idx) => (
@@ -663,15 +650,6 @@ export const AiAssistantModal: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Helpful How-To Footnote */}
-            <div className="p-4 rounded-2xl bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 text-xs text-slate-600 dark:text-slate-300 flex items-start gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-slate-900 dark:text-slate-100">Workflow Tip: </span>
-                Click <strong>"Copy"</strong> on any prompt above, click <strong>"Open Google Gemini"</strong> or <strong>"Open ChatGPT"</strong>, and paste the prompt into their chat box to receive immediate answers without any technical configuration!
               </div>
             </div>
           </div>
