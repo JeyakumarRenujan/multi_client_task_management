@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { AlertTriangle, Trash2, X, AlertCircle } from 'lucide-react';
+import { AlertTriangle, Trash2, X, AlertCircle, LogOut, Check } from 'lucide-react';
 
 export const ConfirmModal: React.FC = () => {
   const { confirmModal, closeConfirmModal } = useApp();
@@ -35,6 +35,7 @@ export const ConfirmModal: React.FC = () => {
     }
   };
 
+  const isLogout = confirmModal.itemType === 'logout';
   const isDanger = confirmModal.danger !== false;
 
   return (
@@ -52,7 +53,9 @@ export const ConfirmModal: React.FC = () => {
         {/* Top Accent Strip */}
         <div
           className={`h-1.5 w-full ${
-            isDanger
+            isLogout
+              ? 'bg-gradient-to-r from-amber-500 via-rose-500 to-rose-600'
+              : isDanger
               ? 'bg-gradient-to-r from-rose-500 via-rose-600 to-red-600'
               : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-whatsapp-teal'
           }`}
@@ -74,12 +77,20 @@ export const ConfirmModal: React.FC = () => {
             {/* Warning Icon Badge */}
             <div
               className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${
-                isDanger
+                isLogout
+                  ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60'
+                  : isDanger
                   ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/60'
                   : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/60'
               }`}
             >
-              {isDanger ? <AlertTriangle className="w-5 h-5" /> : <Trash2 className="w-5 h-5" />}
+              {isLogout ? (
+                <LogOut className="w-5 h-5" />
+              ) : isDanger ? (
+                <AlertTriangle className="w-5 h-5" />
+              ) : (
+                <Trash2 className="w-5 h-5" />
+              )}
             </div>
 
             {/* Title & Category Indicator */}
@@ -92,10 +103,14 @@ export const ConfirmModal: React.FC = () => {
               </h3>
               <p
                 className={`text-[11px] font-semibold mt-0.5 ${
-                  isDanger ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+                  isLogout
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : isDanger
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : 'text-emerald-600 dark:text-emerald-400'
                 }`}
               >
-                {isDanger ? 'Irreversible Action' : 'Confirmation Required'}
+                {isLogout ? 'Account Session' : isDanger ? 'Irreversible Action' : 'Confirmation Required'}
               </p>
             </div>
           </div>
@@ -132,13 +147,19 @@ export const ConfirmModal: React.FC = () => {
               onClick={handleConfirm}
               autoFocus
               className={`px-5 py-2 sm:py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold shadow-md active:scale-95 transition-all cursor-pointer flex items-center gap-1.5 ${
-                isDanger
+                isDanger || isLogout
                   ? 'bg-gradient-to-r from-rose-600 via-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-rose-600/25'
                   : 'bg-gradient-to-r from-emerald-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-emerald-600/25'
               }`}
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>{confirmModal.confirmText || 'Delete'}</span>
+              {isLogout ? (
+                <LogOut className="w-3.5 h-3.5" />
+              ) : isDanger ? (
+                <Trash2 className="w-3.5 h-3.5" />
+              ) : (
+                <Check className="w-3.5 h-3.5" />
+              )}
+              <span>{confirmModal.confirmText || (isLogout ? 'Sign Out' : 'Delete')}</span>
             </button>
           </div>
         </div>

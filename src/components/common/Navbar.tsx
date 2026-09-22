@@ -38,6 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     user,
     isAuthenticated,
     logout,
+    confirmAction,
     activeTimer,
     pauseTimer,
     resumeTimer,
@@ -403,9 +404,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
 
                 <button
+                  type="button"
                   onClick={() => {
-                    logout();
                     setIsUserMenuOpen(false);
+                    confirmAction({
+                      title: 'Sign Out of Me Plus?',
+                      message: 'Are you sure you want to log out? Any running timers will be stopped and your current workspace changes are safely saved.',
+                      confirmText: 'Yes, Sign Out',
+                      cancelText: 'Stay Logged In',
+                      danger: true,
+                      itemType: 'logout',
+                      onConfirm: () => {
+                        logout();
+                      },
+                    });
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors text-left cursor-pointer"
                 >

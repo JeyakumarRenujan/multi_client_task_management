@@ -197,7 +197,7 @@ export interface ConfirmationModalState {
   confirmText?: string;
   cancelText?: string;
   danger?: boolean;
-  itemType?: 'client' | 'project' | 'task' | 'invoice' | 'time' | 'chat' | 'general';
+  itemType?: 'client' | 'project' | 'task' | 'invoice' | 'time' | 'chat' | 'general' | 'logout';
   onConfirm: () => void | Promise<void>;
   onCancel?: () => void;
 }
