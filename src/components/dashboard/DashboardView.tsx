@@ -48,7 +48,7 @@ const THEME_ACCENTS: Record<AccentColor, ThemeAccentConfig> = {
     cursorClass: 'bg-pink-400',
     cursorShadow: '0 0 8px rgba(244, 114, 182, 0.9)',
     accentText: 'text-pink-300',
-    modalBtnGradient: 'from-pink-600 via-fuchsia-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 shadow-pink-700/20',
+    modalBtnGradient: 'from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 shadow-pink-700/20',
   },
   blue: {
     beamConic:
