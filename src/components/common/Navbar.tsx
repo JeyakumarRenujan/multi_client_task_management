@@ -349,13 +349,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative ml-0.5 sm:ml-1" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              title={user.name}
-              className="flex items-center p-0.5 rounded-xl transition-all cursor-pointer group"
+              className="flex items-center gap-2 p-0.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <img
                 src={user.avatar}
                 alt={user.name}
-                className="w-8.5 h-8.5 rounded-xl object-cover ring-2 ring-emerald-500/40 group-hover:ring-emerald-500 transition-all"
+                className="w-8 h-8 rounded-xl object-cover ring-2 ring-emerald-500/40"
               />
             </button>
 
