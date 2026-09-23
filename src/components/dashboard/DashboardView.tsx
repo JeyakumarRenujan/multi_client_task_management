@@ -13,6 +13,8 @@ import {
   ArrowRight,
   Zap,
   Flame,
+  Check,
+  X,
 } from 'lucide-react';
 
 const DAILY_SPARKS = [
@@ -61,8 +63,10 @@ export const DashboardView: React.FC = () => {
 
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
-  // Daily Streak Calculation & Persistence
-  const [streakDays, setStreakDays] = useState<number>(5);
+  // Daily Streak Calculation & Persistence with 7-Day History
+  const [streakDays, setStreakDays] = useState<number>(2);
+  const [streakHistory, setStreakHistory] = useState<string[]>([]);
+  const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
   const [sparkIndex, setSparkIndex] = useState<number>(() => {
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 0);
@@ -72,35 +76,74 @@ export const DashboardView: React.FC = () => {
     return Math.abs(dayOfYear) % DAILY_SPARKS.length;
   });
   const [isSparkAnimating, setIsSparkAnimating] = useState(false);
-  const [showStreakCheer, setShowStreakCheer] = useState(false);
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('meplus_daily_streak');
       const today = new Date().toISOString().slice(0, 10);
+      const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      const stored = localStorage.getItem('meplus_daily_streak_v2');
+
       if (stored) {
-        const parsed = JSON.parse(stored);
+        const parsed: { count: number; lastDate: string; history?: string[] } = JSON.parse(stored);
+        let history = Array.isArray(parsed.history) ? parsed.history : [];
+
         if (parsed.lastDate === today) {
-          setStreakDays(parsed.count || 5);
+          if (!history.includes(today)) history.push(today);
+          setStreakDays(parsed.count || 2);
+          setStreakHistory(history);
+        } else if (parsed.lastDate === yesterday) {
+          const newCount = (parsed.count || 1) + 1;
+          if (!history.includes(today)) history.push(today);
+          setStreakDays(newCount);
+          setStreakHistory(history);
+          localStorage.setItem('meplus_daily_streak_v2', JSON.stringify({ count: newCount, lastDate: today, history }));
         } else {
-          const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-          if (parsed.lastDate === yesterday) {
-            const newCount = (parsed.count || 5) + 1;
-            setStreakDays(newCount);
-            localStorage.setItem('meplus_daily_streak', JSON.stringify({ count: newCount, lastDate: today }));
-          } else {
-            setStreakDays(parsed.count || 5);
-            localStorage.setItem('meplus_daily_streak', JSON.stringify({ count: parsed.count || 5, lastDate: today }));
-          }
+          const newHistory = [today];
+          setStreakDays(1);
+          setStreakHistory(newHistory);
+          localStorage.setItem('meplus_daily_streak_v2', JSON.stringify({ count: 1, lastDate: today, history: newHistory }));
         }
       } else {
-        localStorage.setItem('meplus_daily_streak', JSON.stringify({ count: 5, lastDate: today }));
-        setStreakDays(5);
+        // Initial setup with 2-day streak (matches user's reference screenshot)
+        const initialHistory = [yesterday, today];
+        localStorage.setItem('meplus_daily_streak_v2', JSON.stringify({ count: 2, lastDate: today, history: initialHistory }));
+        setStreakDays(2);
+        setStreakHistory(initialHistory);
       }
     } catch {
-      // fallback
+      setStreakDays(2);
     }
   }, []);
+
+  const getWeekDates = () => {
+    const now = new Date();
+    const day = now.getDay(); // 0 is Sunday, 1 is Monday...
+    const diffToMonday = (day + 6) % 7;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
+
+    const dayLabels = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+    const todayStr = now.toISOString().slice(0, 10);
+
+    return dayLabels.map((label, idx) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + idx);
+      const dateStr = d.toISOString().slice(0, 10);
+      const isToday = dateStr === todayStr;
+      const isPast = d < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const isFuture = d > now && !isToday;
+      const isActive = streakHistory.includes(dateStr);
+
+      return {
+        label,
+        dateStr,
+        isToday,
+        isPast,
+        isFuture,
+        isActive,
+      };
+    });
+  };
 
   const handleNextSpark = () => {
     setIsSparkAnimating(true);
@@ -174,27 +217,23 @@ export const DashboardView: React.FC = () => {
 
           {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Delightful) */}
           <div className="relative group w-full md:w-auto md:min-w-[310px] md:max-w-[380px] rounded-2xl bg-slate-950/30 hover:bg-slate-950/40 backdrop-blur-md border border-emerald-400/25 p-3 sm:p-3.5 transition-all shadow-lg shadow-black/15 shrink-0">
-            {/* Top Bar: Flame Streak & Next Quote Shuffle */}
+            {/* Top Bar: Flame Streak Pill (matches reference image) & Next Quote Shuffle */}
             <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
               <button
                 type="button"
-                onClick={() => {
-                  setShowStreakCheer(true);
-                  setTimeout(() => setShowStreakCheer(false), 2400);
-                }}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/35 text-amber-200 text-xs font-bold transition-all cursor-pointer group/streak"
-                title="Your consecutive active workdays! Click for a cheer."
+                onClick={() => setIsStreakModalOpen(true)}
+                className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50 transition-all cursor-pointer group/streak active:scale-95"
+                title="View your 7-day streak details"
               >
-                <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
-                <span>{streakDays}-Day Streak</span>
-                <span className="text-[10px] text-amber-300/80 font-semibold hidden sm:inline">• High Momentum</span>
+                <Flame className="w-4.5 h-4.5 text-amber-500 fill-amber-500 group-hover:scale-110 transition-transform" />
+                <span className="font-black text-sm text-slate-900 dark:text-slate-100">{streakDays}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleNextSpark}
                 title="Discover Next Daily Spark"
-                className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-[11px] font-semibold transition-all cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
                 <span>New Spark</span>
@@ -211,23 +250,108 @@ export const DashboardView: React.FC = () => {
                 <span className="text-[9px] text-emerald-300/60 uppercase tracking-wider">Daily Inspiration</span>
               </div>
             </div>
-
-            {/* Streak Cheer Popup */}
-            {showStreakCheer && (
-              <div className="absolute inset-0 z-20 bg-emerald-950/95 backdrop-blur-md rounded-2xl flex items-center justify-center p-3 text-center border border-amber-400/40 animate-fade-in">
-                <div className="space-y-0.5">
-                  <p className="text-xs font-black text-amber-300 flex items-center justify-center gap-1.5">
-                    <Flame className="w-4 h-4 fill-amber-400" /> You're on fire! {streakDays} days strong!
-                  </p>
-                  <p className="text-[11px] text-emerald-100">
-                    Keep your freelance momentum flowing today!
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* 7-Day Streak Pop-up Modal (matching reference screenshot) */}
+      {isStreakModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setIsStreakModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-100 dark:border-slate-800 text-center animate-scale-in"
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-label="Daily Streak Details"
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setIsStreakModalOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Large 3D-styled Flame Illustration */}
+            <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28 mb-3 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500/20 via-orange-500/20 to-rose-500/10 blur-xl animate-pulse" />
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100/70 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-slate-800 border border-amber-300/40 dark:border-amber-500/30 flex items-center justify-center shadow-lg shadow-orange-500/10">
+                <Flame className="w-12 h-12 sm:w-14 sm:h-14 text-orange-500 fill-orange-500 drop-shadow-md animate-bounce-subtle" />
+              </div>
+            </div>
+
+            {/* Streak Heading */}
+            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+              {streakDays} day streak
+            </h3>
+
+            {/* 7-Day Week Row with Connected Active Days */}
+            <div className="relative flex items-center justify-between gap-1 my-6 px-1">
+              {getWeekDates().map((day, idx, arr) => {
+                const nextDay = arr[idx + 1];
+                const hasConnector = day.isActive && nextDay && nextDay.isActive;
+
+                return (
+                  <div key={day.label} className="relative flex flex-col items-center flex-1">
+                    {/* Orange Connector Bar between consecutive active days */}
+                    {hasConnector && (
+                      <span className="absolute top-[28px] left-[50%] w-full h-1.5 bg-amber-500 z-0 pointer-events-none" />
+                    )}
+
+                    {/* Day Name */}
+                    <span
+                      className={`text-xs font-bold mb-2 transition-colors ${
+                        day.isActive
+                          ? 'text-amber-500'
+                          : day.isToday
+                          ? 'text-indigo-600 dark:text-indigo-400'
+                          : 'text-slate-400 dark:text-slate-500'
+                      }`}
+                    >
+                      {day.label}
+                    </span>
+
+                    {/* Day Circle */}
+                    <div
+                      className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                        day.isActive
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : day.isToday
+                          ? 'bg-indigo-100 dark:bg-indigo-950/60 border-2 border-indigo-400 text-indigo-600 dark:text-indigo-300'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600'
+                      }`}
+                    >
+                      {day.isActive ? (
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      ) : (
+                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Motivation Subtitle */}
+            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 leading-relaxed px-2">
+              Complete a task or log time to extend your streak!
+            </p>
+
+            {/* Keep Going Action Button */}
+            <button
+              type="button"
+              onClick={() => setIsStreakModalOpen(false)}
+              className="w-full mt-6 py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
+            >
+              Keep It Going
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* KPI Stats Grid */}
       <StatCards />
