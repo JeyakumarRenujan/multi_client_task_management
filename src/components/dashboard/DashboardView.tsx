@@ -58,7 +58,7 @@ const THEME_ACCENTS: Record<AccentColor, ThemeAccentConfig> = {
     cursorClass: 'bg-blue-400',
     cursorShadow: '0 0 8px rgba(96, 165, 250, 0.9)',
     accentText: 'text-blue-300',
-    modalBtnGradient: 'from-blue-600 via-sky-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-700/20',
+    modalBtnGradient: 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-700/20',
   },
   purple: {
     beamConic:
@@ -68,7 +68,7 @@ const THEME_ACCENTS: Record<AccentColor, ThemeAccentConfig> = {
     cursorClass: 'bg-purple-400',
     cursorShadow: '0 0 8px rgba(192, 132, 252, 0.9)',
     accentText: 'text-purple-300',
-    modalBtnGradient: 'from-purple-600 via-fuchsia-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-purple-700/20',
+    modalBtnGradient: 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-purple-700/20',
   },
   amber: {
     beamConic:
@@ -78,7 +78,7 @@ const THEME_ACCENTS: Record<AccentColor, ThemeAccentConfig> = {
     cursorClass: 'bg-amber-400',
     cursorShadow: '0 0 8px rgba(251, 191, 36, 0.9)',
     accentText: 'text-amber-300',
-    modalBtnGradient: 'from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-amber-700/20',
+    modalBtnGradient: 'from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-amber-700/20',
   },
 };
 
