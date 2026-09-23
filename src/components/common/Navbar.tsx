@@ -283,7 +283,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="space-y-1">
                 {[
                   { id: 'emerald' as const, name: 'Emerald Green', bg: 'bg-[#10b981]' },
-                  { id: 'rose' as const, name: 'Rose Pink', bg: 'bg-[#f43f5e]' },
+                  { id: 'rose' as const, name: 'Rose Pink', bg: 'bg-[#ec4899]' },
                   { id: 'blue' as const, name: 'Ocean Blue', bg: 'bg-[#3b82f6]' },
                   { id: 'purple' as const, name: 'Royal Purple', bg: 'bg-[#8b5cf6]' },
                   { id: 'amber' as const, name: 'Sunset Amber', bg: 'bg-[#f59e0b]' },

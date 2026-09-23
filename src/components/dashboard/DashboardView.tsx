@@ -42,13 +42,13 @@ const THEME_ACCENTS: Record<AccentColor, ThemeAccentConfig> = {
   },
   rose: {
     beamConic:
-      'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(244, 63, 94, 0.25) 300deg, #f43f5e 325deg, #fb7185 345deg, #fda4af 355deg, #ffffff 360deg)',
-    borderGlitchClass: 'border-rose-400/50',
-    borderGlitchStyle: { borderColor: 'rgba(251, 113, 133, 0.5)' },
-    cursorClass: 'bg-rose-400',
-    cursorShadow: '0 0 8px rgba(251, 113, 133, 0.9)',
-    accentText: 'text-rose-300',
-    modalBtnGradient: 'from-rose-600 via-pink-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 shadow-rose-700/20',
+      'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(236, 72, 153, 0.25) 300deg, #ec4899 325deg, #f472b6 345deg, #f9a8d4 355deg, #ffffff 360deg)',
+    borderGlitchClass: 'border-pink-400/50',
+    borderGlitchStyle: { borderColor: 'rgba(244, 114, 182, 0.5)' },
+    cursorClass: 'bg-pink-400',
+    cursorShadow: '0 0 8px rgba(244, 114, 182, 0.9)',
+    accentText: 'text-pink-300',
+    modalBtnGradient: 'from-pink-600 via-fuchsia-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 shadow-pink-700/20',
   },
   blue: {
     beamConic:

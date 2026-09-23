@@ -42,19 +42,19 @@
     --color-brand-dark: 7 94 84;
   }
 
-  /* Vibrant Rose / Pink Accent */
+  /* Vibrant Rose Pink Accent (Unmistakable Pink, distinct from Red Danger/Delete buttons) */
   :root[data-accent-color="rose"] {
-    --color-primary-50: 255 241 242;
-    --color-primary-100: 255 228 230;
-    --color-primary-200: 254 205 211;
-    --color-primary-300: 253 164 175;
-    --color-primary-400: 251 113 133;
-    --color-primary-500: 244 63 94;
-    --color-primary-600: 225 29 72;
-    --color-primary-700: 190 18 60;
-    --color-primary-800: 159 18 57;
-    --color-primary-900: 136 19 55;
-    --color-primary-950: 76 5 25;
+    --color-primary-50: 253 242 248;
+    --color-primary-100: 252 231 243;
+    --color-primary-200: 251 207 232;
+    --color-primary-300: 249 168 212;
+    --color-primary-400: 244 114 182;
+    --color-primary-500: 236 72 153;
+    --color-primary-600: 219 39 119;
+    --color-primary-700: 190 24 93;
+    --color-primary-800: 157 23 77;
+    --color-primary-900: 131 24 67;
+    --color-primary-950: 80 7 36;
 
     --color-secondary-50: 253 244 255;
     --color-secondary-100: 250 232 255;
@@ -68,9 +68,9 @@
     --color-secondary-900: 112 26 117;
     --color-secondary-950: 74 4 78;
 
-    --color-brand-light: 251 113 133;
-    --color-brand-main: 225 29 72;
-    --color-brand-dark: 159 18 57;
+    --color-brand-light: 244 114 182;
+    --color-brand-main: 219 39 119;
+    --color-brand-dark: 157 23 77;
   }
 
   /* Ocean Blue Accent */

@@ -31,11 +31,11 @@ const getIdleThemeStyles = (color: string) => {
   switch (color) {
     case 'rose':
       return {
-        activeCard: 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 ring-2 ring-rose-500/20 shadow-xs',
-        icon: 'text-rose-600 dark:text-rose-400',
-        badge: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
-        previewBtn: 'bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800',
-        toggle: 'bg-rose-600',
+        activeCard: 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/40 text-pink-800 dark:text-pink-300 ring-2 ring-pink-500/20 shadow-xs',
+        icon: 'text-pink-600 dark:text-pink-400',
+        badge: 'bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300',
+        previewBtn: 'bg-pink-50 dark:bg-pink-950/60 hover:bg-pink-100 dark:hover:bg-pink-900/60 text-pink-800 dark:text-pink-300 border border-pink-200 dark:border-pink-800',
+        toggle: 'bg-pink-600',
       };
     case 'blue':
       return {
@@ -609,7 +609,7 @@ export const SettingsView: React.FC = () => {
                 id: 'rose' as const,
                 name: 'Rose Pink',
                 desc: 'Vibrant & Creative',
-                previewBg: 'bg-[#f43f5e]',
+                previewBg: 'bg-[#ec4899]',
               },
               {
                 id: 'blue' as const,
