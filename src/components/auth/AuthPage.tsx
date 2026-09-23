@@ -612,7 +612,7 @@ export const AuthPage: React.FC = () => {
                         {forgotStep === 'email'
                           ? 'Reset Password'
                           : forgotStep === 'otp'
-                          ? 'Verify Email OTP'
+                          ? 'Verify Email Code'
                           : forgotStep === 'reset'
                           ? 'Set New Password'
                           : 'Password Reset Successful'}
@@ -632,16 +632,16 @@ export const AuthPage: React.FC = () => {
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
                   {mode === 'forgot'
                     ? forgotStep === 'email'
-                      ? 'Enter your registered email address to receive a verification code'
+                      ? 'Enter your registered email to receive a reset code'
                       : forgotStep === 'otp'
-                      ? `Enter the 6-digit verification code sent to ${email}`
+                      ? 'Enter the 6-digit code sent to your email.'
                       : forgotStep === 'reset'
-                      ? 'Create and confirm your new secure password below'
+                      ? 'Create and confirm your new password below.'
                       : 'Your password has been changed. You can now log in.'
                     : mode === 'login'
                     ? 'Enter your email and password to continue'
                     : registerStep === 'otp'
-                    ? 'Enter the 6-digit verification code to activate your workspace.'
+                    ? 'Enter the 6-digit code to activate your workspace.'
                     : 'Fill in your details to create your freelancer account'}
                 </p>
               </div>
@@ -654,8 +654,8 @@ export const AuthPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Success Alert Box (hidden on OTP step to avoid duplicate banners) */}
-              {successMessage && registerStep !== 'otp' && (
+              {/* Success Alert Box (hidden on OTP steps to avoid duplicate banners) */}
+              {successMessage && registerStep !== 'otp' && forgotStep !== 'otp' && (
                 <div className="mb-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs space-y-0.5">
                   <div className="font-bold flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -968,10 +968,10 @@ export const AuthPage: React.FC = () => {
                   </div>
 
                   {/* Resend OTP Bar */}
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                    <span>Valid for 10 mins</span>
                     {registerResendCooldown > 0 ? (
-                      <span className="text-slate-400 font-medium">
+                      <span>
                         Resend in <strong className="font-mono text-emerald-600 dark:text-emerald-400">{registerResendCooldown}s</strong>
                       </span>
                     ) : (
@@ -1040,12 +1040,12 @@ export const AuthPage: React.FC = () => {
 
                   {/* Step 2: Verify 6-Digit OTP */}
                   {forgotStep === 'otp' && (
-                    <form onSubmit={handleForgotStep2OtpSubmit} className="space-y-3">
+                    <form onSubmit={handleForgotStep2OtpSubmit} className="space-y-3.5">
                       {/* Sent-to banner with Change option */}
-                      <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span className="truncate">Sent to: <strong>{email}</strong></span>
+                      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                        <div className="flex items-center gap-2 truncate">
+                          <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span className="truncate">Sent code to <strong className="text-slate-900 dark:text-slate-100">{email}</strong></span>
                         </div>
                         <button
                           type="button"
@@ -1054,24 +1054,28 @@ export const AuthPage: React.FC = () => {
                             setOtp('');
                             setError('');
                           }}
-                          className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
+                          className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
                         >
-                          Change
+                          Change Email
                         </button>
                       </div>
 
-                      {/* Production Email Dispatched Banner */}
-                      <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-slate-800 dark:text-slate-200 text-xs">
-                        <div className="flex items-start gap-2.5">
-                          <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                          <div>
-                            <div className="font-bold text-emerald-950 dark:text-emerald-300">Verification Email Dispatched</div>
-                            <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-                              We've sent your 6-digit security code to <strong>{email}</strong>. Please check your inbox (and spam/junk folder) and enter it below.
-                            </p>
+                      {/* Demo Preview Banner (Only if dev fallback) */}
+                      {otpPreview && (
+                        <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-900 dark:text-amber-200 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <Inbox className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                            <span>Demo/Dev Code: <strong className="font-mono text-sm tracking-wider text-amber-700 dark:text-amber-300">{otpPreview}</strong></span>
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => setOtp(otpPreview)}
+                            className="text-[10px] font-bold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer flex items-center gap-0.5"
+                          >
+                            <Copy className="w-3 h-3" /> Auto-fill
+                          </button>
                         </div>
-                      </div>
+                      )}
 
                       {/* OTP Input Field */}
                       <div>
@@ -1097,10 +1101,10 @@ export const AuthPage: React.FC = () => {
                       </div>
 
                       {/* Resend OTP Bar */}
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                        <span>Valid for 10 mins</span>
                         {resendCooldown > 0 ? (
-                          <span className="text-slate-400 font-medium">
+                          <span>
                             Resend in <strong className="font-mono text-emerald-600 dark:text-emerald-400">{resendCooldown}s</strong>
                           </span>
                         ) : (

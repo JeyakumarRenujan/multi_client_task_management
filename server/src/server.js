@@ -34,6 +34,7 @@ import {
   saveOtp,
   getOtp,
   verifyOtp,
+  deleteOtp,
   resetPasswordWithToken,
 } from './database.js';
 
@@ -237,6 +238,9 @@ app.post('/api/auth/register', async (req, res) => {
     timestamp: 'Just now',
     read: false,
   });
+
+  // Clean up OTP session after successful account registration
+  await deleteOtp(normalizedEmail);
 
   const { password: _, ...safeUser } = newUser;
   activeSessionUser = safeUser;

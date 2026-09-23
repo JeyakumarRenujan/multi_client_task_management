@@ -450,7 +450,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
 
         {/* Success notification */}
-        {successMessage && registerStep !== 'otp' && (
+        {successMessage && registerStep !== 'otp' && forgotStep !== 'otp' && (
           <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs space-y-1">
             <div className="font-bold flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -747,10 +747,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>
+            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+              <span>Valid for 10 mins</span>
               {registerResendCooldown > 0 ? (
-                <span className="text-slate-400 font-medium">
+                <span>
                   Resend in <strong className="font-mono text-emerald-600 dark:text-emerald-400">{registerResendCooldown}s</strong>
                 </span>
               ) : (
@@ -814,11 +814,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
             {/* Step 2: Verify OTP */}
             {forgotStep === 'otp' && (
-              <form onSubmit={handleForgotStep2OtpSubmit} className="space-y-3">
-                <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 truncate">
-                    <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="truncate">Sent to: <strong>{email}</strong></span>
+              <form onSubmit={handleForgotStep2OtpSubmit} className="space-y-3.5">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <div className="flex items-center gap-2 truncate">
+                    <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span className="truncate">Sent code to <strong className="text-slate-900 dark:text-slate-100">{email}</strong></span>
                   </div>
                   <button
                     type="button"
@@ -827,23 +827,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       setOtp('');
                       setError('');
                     }}
-                    className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
+                    className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
                   >
-                    Change
+                    Change Email
                   </button>
-                </div>
-
-                {/* Production Email Dispatched Banner */}
-                <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-slate-800 dark:text-slate-200 text-xs">
-                  <div className="flex items-start gap-2.5">
-                    <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                    <div>
-                      <div className="font-bold text-emerald-950 dark:text-emerald-300">Verification Email Dispatched</div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-                        We've sent your 6-digit security code to <strong>{email}</strong>. Please check your inbox (and spam/junk folder) and enter it below.
-                      </p>
-                    </div>
-                  </div>
                 </div>
 
                 {/* OTP Input Field */}
@@ -870,16 +857,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Resend OTP Bar */}
-                <div className="flex items-center justify-between pt-1 text-[11px]">
-                  <span className="text-slate-500 dark:text-slate-400">Didn't receive code?</span>
-                  <button
-                    type="button"
-                    disabled={resendCooldown > 0 || isResending}
-                    onClick={handleResendOtp}
-                    className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
-                  >
-                    {isResending ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Code'}
-                  </button>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <span>Valid for 10 mins</span>
+                  {resendCooldown > 0 ? (
+                    <span>
+                      Resend in <strong className="font-mono text-emerald-600 dark:text-emerald-400">{resendCooldown}s</strong>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={resendCooldown > 0 || isResending}
+                      onClick={handleResendOtp}
+                      className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline disabled:opacity-50 disabled:no-underline cursor-pointer"
+                    >
+                      {isResending ? 'Sending...' : 'Resend Code'}
+                    </button>
+                  )}
                 </div>
 
                 {/* Submit OTP */}

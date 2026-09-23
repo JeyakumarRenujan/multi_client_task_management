@@ -552,6 +552,39 @@ const memoryOtpStore = new Map();
 export async function saveOtp(email, otp, expiresInMinutes = 10) {
   const normalizedEmail = (email || '').trim().toLowerCase();
   const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+  const now = Date.now();
+
+  let existingValidOtps = [];
+  if (isMongoActive()) {
+    try {
+      const existing = await OtpModel.findOne({ email: normalizedEmail }).lean();
+      if (existing) {
+        if (Array.isArray(existing.validOtps)) {
+          existingValidOtps = existing.validOtps.filter(
+            item => item && item.expiresAt && new Date(item.expiresAt).getTime() > now
+          );
+        } else if (existing.otp && existing.expiresAt && new Date(existing.expiresAt).getTime() > now) {
+          existingValidOtps = [{ otp: existing.otp, expiresAt: new Date(existing.expiresAt) }];
+        }
+      }
+    } catch (e) {
+      console.warn('MongoDB OTP read before save warning:', e.message);
+    }
+  }
+
+  const memExisting = memoryOtpStore.get(normalizedEmail);
+  if (memExisting && Array.isArray(memExisting.validOtps)) {
+    const memValid = memExisting.validOtps.filter(item => item.expiresAt > now);
+    if (memValid.length > existingValidOtps.length) {
+      existingValidOtps = memValid.map(m => ({ otp: m.otp, expiresAt: new Date(m.expiresAt) }));
+    }
+  }
+
+  // Prepend newest OTP and keep at most 5 valid unexpired OTPs within their active lifespan
+  const validOtps = [
+    { otp: otp.trim(), expiresAt },
+    ...existingValidOtps.filter(item => item.otp !== otp.trim()),
+  ].slice(0, 5);
 
   if (isMongoActive()) {
     try {
@@ -559,6 +592,7 @@ export async function saveOtp(email, otp, expiresInMinutes = 10) {
         { email: normalizedEmail },
         {
           otp: otp.trim(),
+          validOtps,
           expiresAt,
           attempts: 0,
           verified: false,
@@ -574,6 +608,7 @@ export async function saveOtp(email, otp, expiresInMinutes = 10) {
 
   memoryOtpStore.set(normalizedEmail, {
     otp: otp.trim(),
+    validOtps: validOtps.map(v => ({ otp: v.otp, expiresAt: new Date(v.expiresAt).getTime() })),
     expiresAt: expiresAt.getTime(),
     attempts: 0,
     verified: false,
@@ -601,6 +636,14 @@ export async function getOtp(email) {
   return memoryOtpStore.get(normalizedEmail) || null;
 }
 
+export async function deleteOtp(email) {
+  const normalizedEmail = (email || '').trim().toLowerCase();
+  if (isMongoActive()) {
+    await OtpModel.deleteOne({ email: normalizedEmail }).catch(() => {});
+  }
+  memoryOtpStore.delete(normalizedEmail);
+}
+
 export async function verifyOtp(email, inputOtp) {
   const normalizedEmail = (email || '').trim().toLowerCase();
   const cleanedOtp = (inputOtp || '').toString().trim();
@@ -623,11 +666,12 @@ export async function verifyOtp(email, inputOtp) {
     };
   }
 
+  const now = Date.now();
   const recordExpires = record
     ? new Date(record.expiresAt).getTime()
     : memRecord.expiresAt;
 
-  if (Date.now() > recordExpires) {
+  if (now > recordExpires) {
     if (isMongoActive()) await OtpModel.deleteOne({ email: normalizedEmail }).catch(() => {});
     memoryOtpStore.delete(normalizedEmail);
     return {
@@ -647,8 +691,13 @@ export async function verifyOtp(email, inputOtp) {
     };
   }
 
-  const expectedOtp = record ? record.otp : memRecord.otp;
-  if (expectedOtp !== cleanedOtp) {
+  // Check against primary OTP or any unexpired OTP in validOtps list
+  const matchesPrimary = (record && record.otp === cleanedOtp) || (memRecord && memRecord.otp === cleanedOtp);
+  const matchesValidOtps =
+    (record && Array.isArray(record.validOtps) && record.validOtps.some(v => v.otp === cleanedOtp && new Date(v.expiresAt).getTime() > now)) ||
+    (memRecord && Array.isArray(memRecord.validOtps) && memRecord.validOtps.some(v => v.otp === cleanedOtp && v.expiresAt > now));
+
+  if (!matchesPrimary && !matchesValidOtps) {
     const newAttempts = currentAttempts + 1;
     if (record) {
       record.attempts = newAttempts;
@@ -687,6 +736,8 @@ export async function verifyOtp(email, inputOtp) {
 
 export async function resetPasswordWithToken(email, resetToken, newPassword, otp) {
   const normalizedEmail = (email || '').trim().toLowerCase();
+  const cleanedOtp = (otp || '').toString().trim();
+  const now = Date.now();
 
   let record = null;
   if (isMongoActive()) {
@@ -698,15 +749,24 @@ export async function resetPasswordWithToken(email, resetToken, newPassword, otp
   }
   const memRecord = memoryOtpStore.get(normalizedEmail);
 
+  const otpMatches = (rec) => {
+    if (!cleanedOtp) return false;
+    if (rec.otp === cleanedOtp) return true;
+    if (Array.isArray(rec.validOtps)) {
+      return rec.validOtps.some(v => v.otp === cleanedOtp && new Date(v.expiresAt).getTime() > now);
+    }
+    return false;
+  };
+
   const isVerified =
     (record &&
       (record.verified === true ||
         (resetToken && record.resetToken === resetToken) ||
-        (otp && record.otp === otp.toString().trim()))) ||
+        otpMatches(record))) ||
     (memRecord &&
       (memRecord.verified === true ||
         (resetToken && memRecord.resetToken === resetToken) ||
-        (otp && memRecord.otp === otp.toString().trim())));
+        otpMatches(memRecord)));
 
   if (!isVerified) {
     return {
