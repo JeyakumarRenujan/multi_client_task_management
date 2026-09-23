@@ -262,48 +262,63 @@ export const DashboardView: React.FC = () => {
             </p>
           </div>
 
-          {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Fixed Size & Typewriter Effect in Time Loop) */}
-          <div className="relative group w-full md:w-[430px] h-[164px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-4 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0">
-            {/* Top Bar: Flame Streak Pill (matches reference image) & Next Quote Shuffle */}
-            <div className="flex items-center justify-between gap-2 h-7 shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsStreakModalOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50 transition-all cursor-pointer group/streak active:scale-95"
-                title="View your 7-day streak details"
-              >
-                <Flame className="w-4.5 h-4.5 text-amber-500 fill-amber-500 group-hover:scale-110 transition-transform" />
-                <span className="font-black text-sm text-slate-900 dark:text-slate-100">{streakDays}</span>
-              </button>
+          {/* Daily Streak & Daily Spark Quotes Widget with Running Glitch Border in Loop */}
+          <div className="relative group w-full md:w-[430px] h-[166px] rounded-2xl p-[2px] overflow-hidden shadow-2xl shrink-0">
+            {/* 1. Running Neon Beam along the Border in a continuous loop */}
+            <div
+              className="absolute inset-[-150%] animate-border-beam pointer-events-none opacity-90 blur-[0.5px]"
+              style={{
+                background:
+                  'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(16, 185, 129, 0.25) 300deg, #10b981 325deg, #34d399 345deg, #6ee7b7 355deg, #ffffff 360deg)',
+              }}
+            />
 
-              <button
-                type="button"
-                onClick={handleNextSpark}
-                title="Discover Next Daily Spark"
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer group/spark active:scale-95"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-300 group-hover/spark:rotate-12 transition-transform" />
-                <span>New Spark</span>
-              </button>
-            </div>
+            {/* 2. Cyber Glitch & Electric Spark Flicker Aura along the border perimeter */}
+            <div className="absolute inset-0 rounded-2xl border-2 border-emerald-400/40 pointer-events-none animate-border-glitch z-0" />
 
-            {/* Quote Content with Typewriter Animation, Classic Monospace/Typewriter Font & Increased Size */}
-            <div className="h-[68px] flex items-center overflow-hidden my-auto">
-              <p
-                style={{ fontFamily: "'Courier Prime', 'JetBrains Mono', monospace" }}
-                className="text-base sm:text-[17px] md:text-lg font-typewriter font-bold text-emerald-100 tracking-tight leading-snug line-clamp-2 select-text"
-              >
-                <span className="text-emerald-400 not-italic font-serif text-lg mr-0.5 select-none opacity-90">“</span>
-                {displayedQuote}
-                <span className="text-emerald-400 not-italic font-serif text-lg ml-0.5 select-none opacity-90">”</span>
-                <span className="inline-block w-2.5 h-4.5 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
-              </p>
-            </div>
+            {/* 3. Inner Card Content & Glassmorphism */}
+            <div className="relative z-10 w-full h-full rounded-[14px] bg-slate-950/85 hover:bg-slate-950/90 backdrop-blur-xl p-4 flex flex-col justify-between transition-colors shadow-black/30">
+              {/* Top Bar: Flame Streak Pill (matches reference image) & Next Quote Shuffle */}
+              <div className="flex items-center justify-between gap-2 h-7 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsStreakModalOpen(true)}
+                  className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/50 dark:border-slate-700/50 transition-all cursor-pointer group/streak active:scale-95"
+                  title="View your 7-day streak details"
+                >
+                  <Flame className="w-4.5 h-4.5 text-amber-500 fill-amber-500 group-hover:scale-110 transition-transform" />
+                  <span className="font-black text-sm text-slate-900 dark:text-slate-100">{streakDays}</span>
+                </button>
 
-            {/* Footer: Author & Category Badge */}
-            <div className="flex items-center justify-between h-4 shrink-0 text-[11px] text-emerald-300/80 font-semibold border-t border-white/10 pt-1">
-              <span className="truncate max-w-[250px] tracking-wide font-medium">— {DAILY_SPARKS[sparkIndex].author}</span>
-              <span className="text-[9px] text-emerald-300/60 uppercase tracking-widest shrink-0 font-bold">Daily Inspiration</span>
+                <button
+                  type="button"
+                  onClick={handleNextSpark}
+                  title="Discover Next Daily Spark"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer group/spark active:scale-95"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-300 group-hover/spark:rotate-12 transition-transform" />
+                  <span>New Spark</span>
+                </button>
+              </div>
+
+              {/* Quote Content with Typewriter Animation & Elegant Serif / Editorial Quote Font */}
+              <div className="h-[68px] flex items-center overflow-hidden my-auto">
+                <p
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                  className="text-[17px] sm:text-[18px] md:text-[19px] font-serif italic font-semibold text-white tracking-wide leading-snug line-clamp-2 select-text drop-shadow-sm"
+                >
+                  <span className="text-emerald-400 not-italic font-serif text-xl mr-1 select-none opacity-90">“</span>
+                  {displayedQuote}
+                  <span className="text-emerald-400 not-italic font-serif text-xl ml-1 select-none opacity-90">”</span>
+                  <span className="inline-block w-2.5 h-4.5 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+                </p>
+              </div>
+
+              {/* Footer: Author & Category Badge */}
+              <div className="flex items-center justify-between h-4 shrink-0 text-[11px] text-emerald-300/80 font-semibold border-t border-white/10 pt-1">
+                <span className="truncate max-w-[250px] tracking-wide font-medium">— {DAILY_SPARKS[sparkIndex].author}</span>
+                <span className="text-[9px] text-emerald-300/60 uppercase tracking-widest shrink-0 font-bold">Daily Inspiration</span>
+              </div>
             </div>
           </div>
         </div>

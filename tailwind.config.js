@@ -80,6 +80,9 @@ export default {
         }
       },
       fontFamily: {
+        serif: ["'Playfair Display'", 'Georgia', 'serif'],
+        quote: ["'Playfair Display'", 'Georgia', 'serif'],
+        outfit: ["'Outfit'", 'sans-serif'],
         typewriter: ["'Courier Prime'", "'JetBrains Mono'", 'monospace'],
         mono: ["'JetBrains Mono'", 'monospace'],
       },
