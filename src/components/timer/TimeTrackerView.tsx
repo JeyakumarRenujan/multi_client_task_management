@@ -288,7 +288,7 @@ export const TimeTrackerView: React.FC = () => {
       </div>
 
       {/* Time Entries Table */}
-      <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+      <div className="rounded-2xl sm:rounded-3xl border border-primary-400/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <div className="p-3.5 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
             Time Entries History ({timeEntries.length})

@@ -253,7 +253,7 @@ export const InvoiceListView: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+        <div className="rounded-2xl sm:rounded-3xl border border-primary-400/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
           {/* Mobile Invoice Card View (< md) */}
           <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
             {filteredInvoices.map(inv => {

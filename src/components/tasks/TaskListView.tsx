@@ -32,7 +32,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
+    <div className="rounded-2xl sm:rounded-3xl border border-primary-400/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
       {/* Mobile Card List View (< md) */}
       <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
         {filteredTasks.length === 0 ? (

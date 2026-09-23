@@ -177,7 +177,7 @@ export const ClientListView: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm">
+        <div className="overflow-x-auto rounded-2xl border border-primary-400/70 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
               <tr>
