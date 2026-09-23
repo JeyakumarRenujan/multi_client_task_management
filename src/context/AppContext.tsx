@@ -42,6 +42,8 @@ interface AppContextType {
   setActiveTab: (tab: string) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  highlightedClientId: string | null;
+  setHighlightedClientId: (id: string | null) => void;
 
   // Auth & User
   user: UserProfile | null;
@@ -421,6 +423,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Navigation State
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [highlightedClientId, setHighlightedClientId] = useState<string | null>(null);
 
   // Registered Users Directory
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredAccount[]>(() => {
@@ -2353,6 +2356,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveTab,
         searchQuery,
         setSearchQuery,
+        highlightedClientId,
+        setHighlightedClientId,
         user,
         isAuthenticated: !!user,
         login,

@@ -23,6 +23,7 @@ export const CommandPalette: React.FC = () => {
     tasks,
     invoices,
     setActiveTab,
+    setHighlightedClientId,
     setIsClientModalOpen,
     setIsProjectModalOpen,
     setIsTaskModalOpen,
@@ -272,7 +273,11 @@ export const CommandPalette: React.FC = () => {
               {filteredClients.slice(0, 3).map(c => (
                 <div
                   key={c.id}
-                  onClick={() => handleSelectTab('clients')}
+                  onClick={() => {
+                    setHighlightedClientId(c.id);
+                    setActiveTab('clients');
+                    setIsCommandPaletteOpen(false);
+                  }}
                   className="flex items-center justify-between p-2.5 hover:bg-emerald-50/60 dark:hover:bg-slate-800/70 rounded-xl cursor-pointer transition-colors group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -313,11 +318,7 @@ export const CommandPalette: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span>Navigation: <kbd className="font-mono font-bold bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↑</kbd> <kbd className="font-mono font-bold bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↓</kbd></span>
-            <span>Select: <kbd className="font-mono font-bold bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↵</kbd></span>
-          </div>
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-end">
           <span className="font-semibold">Me Plus Omnibar</span>
         </div>
       </div>

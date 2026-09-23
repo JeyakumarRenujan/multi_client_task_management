@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Client, ClientStatus } from '../../types';
 import { ClientCard } from './ClientCard';
@@ -11,6 +11,8 @@ import {
   List,
   Edit2,
   Trash2,
+  Eye,
+  Sparkles,
 } from 'lucide-react';
 
 export const ClientListView: React.FC = () => {
@@ -21,12 +23,33 @@ export const ClientListView: React.FC = () => {
     deleteClient,
     confirmAction,
     projects,
+    highlightedClientId,
+    setHighlightedClientId,
   } = useApp();
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | ClientStatus>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [inspectedClient, setInspectedClient] = useState<Client | null>(null);
+
+  // Auto-focus and point to client if navigated from search
+  useEffect(() => {
+    if (highlightedClientId) {
+      const target = clients.find(c => c.id === highlightedClientId);
+      if (target) {
+        setStatusFilter('all');
+        setSearch(target.name);
+
+        const timer = setTimeout(() => {
+          const el = document.getElementById(`client-card-${highlightedClientId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [highlightedClientId, clients]);
 
   const filteredClients = clients.filter(client => {
     const matchesSearch =
@@ -71,6 +94,44 @@ export const ClientListView: React.FC = () => {
         </button>
       </div>
 
+      {/* Pointed Client Active Banner */}
+      {highlightedClientId && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-emerald-900 dark:text-emerald-200 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
+            </span>
+            <span>
+              Pointing to matched client: <strong className="text-emerald-700 dark:text-emerald-300 font-black">{clients.find(c => c.id === highlightedClientId)?.name}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                const target = clients.find(c => c.id === highlightedClientId);
+                if (target) setInspectedClient(target);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Open Details</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setHighlightedClientId(null);
+                setSearch('');
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Show All Clients
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filter and Search Bar */}
       <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Search */}
@@ -79,7 +140,12 @@ export const ClientListView: React.FC = () => {
             type="text"
             placeholder="Search clients by name or email..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => {
+              setSearch(e.target.value);
+              if (highlightedClientId && e.target.value !== clients.find(c => c.id === highlightedClientId)?.name) {
+                setHighlightedClientId(null);
+              }
+            }}
             className="w-full pl-3.5 pr-9 py-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-xs"
           />
           <Search className="w-4 h-4 text-slate-400 absolute right-3 top-2.5 pointer-events-none" />
@@ -156,6 +222,7 @@ export const ClientListView: React.FC = () => {
           ) : (
             <button
               onClick={() => {
+                setHighlightedClientId(null);
                 setSearch('');
                 setStatusFilter('all');
               }}
@@ -171,6 +238,7 @@ export const ClientListView: React.FC = () => {
             <ClientCard
               key={client.id}
               client={client}
+              isHighlighted={highlightedClientId === client.id}
               onView={c => setInspectedClient(c)}
               onEdit={handleEdit}
             />
@@ -196,8 +264,13 @@ export const ClientListView: React.FC = () => {
                 return (
                   <tr
                     key={client.id}
+                    id={`client-card-${client.id}`}
                     onClick={() => setInspectedClient(client)}
-                    className="hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                    className={`hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors ${
+                      highlightedClientId === client.id
+                        ? 'bg-emerald-50/90 dark:bg-emerald-950/80 ring-2 ring-emerald-500 font-bold'
+                        : ''
+                    }`}
                   >
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">

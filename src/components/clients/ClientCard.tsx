@@ -7,15 +7,17 @@ import {
   Edit2,
   Trash2,
   Eye,
+  Sparkles,
 } from 'lucide-react';
 
 interface ClientCardProps {
   client: Client;
   onView: (client: Client) => void;
   onEdit: (client: Client) => void;
+  isHighlighted?: boolean;
 }
 
-export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit }) => {
+export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit, isHighlighted }) => {
   const { projects, tasks, deleteClient, confirmAction } = useApp();
 
   const clientProjects = projects.filter(p => p.clientId === client.id && p.status !== 'archived');
@@ -36,10 +38,22 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit }
 
   return (
     <div
+      id={`client-card-${client.id}`}
       onClick={() => onView(client)}
-      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-emerald-600 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+      className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-emerald-600 transition-all duration-300 flex flex-col justify-between cursor-pointer group relative ${
+        isHighlighted
+          ? 'border-emerald-500 dark:border-emerald-500 ring-4 ring-emerald-500/50 dark:ring-emerald-400/50 shadow-2xl scale-[1.02] bg-emerald-50/20 dark:bg-emerald-950/20'
+          : 'border-primary-400/70 dark:border-slate-800/80'
+      }`}
     >
       <div>
+        {/* Pointed Client Indicator Badge */}
+        {isHighlighted && (
+          <div className="mb-3 -mt-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-black shadow-md animate-bounce self-start">
+            <Sparkles className="w-3.5 h-3.5 fill-white" />
+            <span>Pointed Client &bull; Matched Search</span>
+          </div>
+        )}
         {/* Top Header */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-3 min-w-0">
