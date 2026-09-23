@@ -139,14 +139,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Global Search Omni Bar Trigger (Ctrl+K) */}
         <button
           onClick={() => setIsCommandPaletteOpen(true)}
-          className="hidden md:flex items-center gap-2.5 px-3 py-1.5 ml-4 text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/60 transition-all group cursor-pointer"
+          className="hidden md:flex items-center justify-between w-56 lg:w-72 xl:w-80 px-3.5 py-2 ml-3 lg:ml-4 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/70 hover:border-emerald-500/40 transition-all group cursor-pointer shadow-2xs"
         >
-          <span>Search or jump to...</span>
-          <div className="flex items-center gap-1.5 ml-1">
-            <kbd className="text-[10px] font-mono bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-500 border border-slate-200 dark:border-slate-700">
+          <span className="truncate">Search or jump to...</span>
+          <div className="flex items-center gap-1.5 ml-2 shrink-0">
+            <kbd className="opacity-0 group-hover:opacity-100 text-[10px] font-mono font-semibold bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 shadow-2xs transition-opacity duration-200 pointer-events-none">
               Ctrl K
             </kbd>
-            <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 transition-colors" />
+            <Search className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
           </div>
         </button>
       </div>
