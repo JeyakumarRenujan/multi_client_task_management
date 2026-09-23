@@ -133,7 +133,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                 isToday
                   ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-500/60 dark:border-emerald-500/40 ring-1 ring-emerald-500/30'
                   : cell.isCurrentMonth
-                  ? 'bg-white dark:bg-slate-900 border-primary-400/50 dark:border-slate-800/80 hover:border-primary-500 dark:hover:border-emerald-700'
+                  ? 'bg-white dark:bg-slate-900 border-slate-200/70 dark:border-slate-800/80 hover:border-emerald-300 dark:hover:border-emerald-700'
                   : 'bg-slate-50/40 dark:bg-slate-950/30 border-slate-100 dark:border-slate-900/60 opacity-40'
               }`}
             >

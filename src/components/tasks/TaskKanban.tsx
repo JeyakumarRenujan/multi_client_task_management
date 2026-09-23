@@ -142,7 +142,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                       draggable
                       onDragStart={e => handleDragStart(e, task.id)}
                       onClick={() => onEditTask(task)}
-                      className={`p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-primary-400/70 dark:border-slate-700/60 shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-emerald-600 transition-all cursor-grab active:cursor-grabbing group ${
+                      className={`p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all cursor-grab active:cursor-grabbing group ${
                         draggedTaskId === task.id ? 'opacity-50' : ''
                       }`}
                     >
