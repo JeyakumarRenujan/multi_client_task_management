@@ -367,6 +367,39 @@ export function isDemoSeedEntity(item: any): boolean {
   return false;
 }
 
+function cleanupOrphanedStorage(activeUserId?: string) {
+  try {
+    const allowedUserIds = new Set(['usr-1', 'usr-demo']);
+    if (activeUserId) allowedUserIds.add(activeUserId);
+
+    const prefixes = [
+      STORAGE_KEYS.CLIENTS_PREFIX,
+      STORAGE_KEYS.PROJECTS_PREFIX,
+      STORAGE_KEYS.TASKS_PREFIX,
+      STORAGE_KEYS.TIME_PREFIX,
+      STORAGE_KEYS.INVOICES_PREFIX,
+      STORAGE_KEYS.NOTIFS_PREFIX,
+    ];
+
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      for (const prefix of prefixes) {
+        if (key.startsWith(prefix)) {
+          const keyUserId = key.slice(prefix.length);
+          if (keyUserId && !allowedUserIds.has(keyUserId)) {
+            keysToRemove.push(key);
+          }
+        }
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+  } catch {
+    // ignore
+  }
+}
+
 function getSavedUserDataWithMigration<T>(prefix: string, currentUser: UserProfile | null, fallback: T): T {
   if (!currentUser) return fallback;
   const isDemo = isDemoAccount(currentUser);
@@ -378,8 +411,8 @@ function getSavedUserDataWithMigration<T>(prefix: string, currentUser: UserProfi
       const parsed = JSON.parse(directSaved);
       if (Array.isArray(parsed)) {
         if (!isDemo) {
-          // Strictly remove any demo items
-          const cleaned = parsed.filter(item => !isDemoSeedEntity(item));
+          // Strictly retain only this specific user's non-demo items
+          const cleaned = parsed.filter(item => !isDemoSeedEntity(item) && (!item.userId || item.userId === currentUser.id));
           if (cleaned.length !== parsed.length) {
             localStorage.setItem(directKey, JSON.stringify(cleaned));
           }
@@ -389,37 +422,7 @@ function getSavedUserDataWithMigration<T>(prefix: string, currentUser: UserProfi
       }
       if (parsed) return parsed as T;
     } catch {
-      // continue to legacy check
-    }
-  }
-
-  // Scan localStorage for any legacy key belonging to this NON-DEMO user
-  if (!isDemo) {
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (
-          key &&
-          key.startsWith(prefix) &&
-          key !== directKey &&
-          !key.endsWith('usr-1') &&
-          !key.endsWith('usr-demo')
-        ) {
-          const val = localStorage.getItem(key);
-          if (val) {
-            const parsed = JSON.parse(val);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              const cleaned = parsed.filter(item => !isDemoSeedEntity(item));
-              if (cleaned.length > 0) {
-                localStorage.setItem(directKey, JSON.stringify(cleaned));
-                return cleaned as T;
-              }
-            }
-          }
-        }
-      }
-    } catch {
-      // ignore
+      return fallback;
     }
   }
 
@@ -453,12 +456,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const u = safeGetStorage<UserProfile | null>(STORAGE_KEYS.USER, null);
     if (u && u.email) {
       const norm = u.email.toLowerCase().trim();
-      // If previous unverified non-demo session was cached, purge it
-      if (norm !== 'alex.rivera@gmail.com' && norm !== 'demo@meplus.io') {
+      const isDemo = norm === 'alex.rivera@gmail.com' || norm === 'demo@meplus.io';
+      const isRegistered = registeredUsers.some(r => r.email.toLowerCase() === norm);
+      // If user in localStorage is neither demo nor an active registered user, purge it
+      if (!isDemo && !isRegistered) {
         localStorage.removeItem(STORAGE_KEYS.USER);
+        cleanupOrphanedStorage();
         return null;
       }
       const deterministicId = getDeterministicUserId(u.email);
+      cleanupOrphanedStorage(deterministicId);
       const backupAvatar =
         safeGetStorage<string | null>(`meplus_avatar_${deterministicId}`, null) ||
         safeGetStorage<string | null>(`meplus_avatar_${u.id}`, null) ||
@@ -469,6 +476,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         avatar: backupAvatar || u.avatar || initialUser.avatar,
       };
     }
+    cleanupOrphanedStorage();
     return u;
   });
 
@@ -664,93 +672,81 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ]).then(([apiClients, apiProjects, apiTasks, apiTime, apiInvoices, apiNotifs]) => {
       if (apiClients !== null) {
         setClients(prev => {
-          const map = new Map<string, Client>();
-          prev.filter(c => isDemo || !isDemoSeedEntity(c)).forEach(c => map.set(c.id, { ...c, userId: currentUser.id }));
-          apiClients.filter(c => isDemo || !isDemoSeedEntity(c)).forEach(c => map.set(c.id, { ...c, userId: currentUser.id }));
-          const merged = Array.from(map.values());
-          if (!isDemo) {
-            localStorage.setItem(`${STORAGE_KEYS.CLIENTS_PREFIX}${currentUser.id}`, JSON.stringify(merged));
+          if (isDemo) {
+            const map = new Map<string, Client>();
+            prev.filter(c => isDemoSeedEntity(c) || c.userId === 'usr-1' || c.userId === 'usr-demo').forEach(c => map.set(c.id, c));
+            apiClients.filter(c => isDemoSeedEntity(c) || c.userId === 'usr-1' || c.userId === 'usr-demo').forEach(c => map.set(c.id, c));
+            return Array.from(map.values());
           }
-          // Sync local-only items to backend
-          prev.forEach(item => {
-            if ((isDemo || !isDemoSeedEntity(item)) && !apiClients.some(ac => ac.id === item.id)) {
-              api.createClient({ ...item, userId: currentUser.id }).catch(() => {});
-            }
-          });
-          return merged;
+          const userOnlyApi = apiClients.filter(c => !isDemoSeedEntity(c) && (!c.userId || c.userId === currentUser.id));
+          localStorage.setItem(`${STORAGE_KEYS.CLIENTS_PREFIX}${currentUser.id}`, JSON.stringify(userOnlyApi));
+          return userOnlyApi;
         });
       }
       if (apiProjects !== null) {
         setProjects(prev => {
-          const map = new Map<string, Project>();
-          prev.filter(p => isDemo || !isDemoSeedEntity(p)).forEach(p => map.set(p.id, { ...p, userId: currentUser.id }));
-          apiProjects.filter(p => isDemo || !isDemoSeedEntity(p)).forEach(p => map.set(p.id, { ...p, userId: currentUser.id }));
-          const merged = Array.from(map.values());
-          if (!isDemo) {
-            localStorage.setItem(`${STORAGE_KEYS.PROJECTS_PREFIX}${currentUser.id}`, JSON.stringify(merged));
+          if (isDemo) {
+            const map = new Map<string, Project>();
+            prev.filter(p => isDemoSeedEntity(p) || p.userId === 'usr-1' || p.userId === 'usr-demo').forEach(p => map.set(p.id, p));
+            apiProjects.filter(p => isDemoSeedEntity(p) || p.userId === 'usr-1' || p.userId === 'usr-demo').forEach(p => map.set(p.id, p));
+            return Array.from(map.values());
           }
-          prev.forEach(item => {
-            if ((isDemo || !isDemoSeedEntity(item)) && !apiProjects.some(ap => ap.id === item.id)) {
-              api.createProject({ ...item, userId: currentUser.id }).catch(() => {});
-            }
-          });
-          return merged;
+          const userOnlyApi = apiProjects.filter(p => !isDemoSeedEntity(p) && (!p.userId || p.userId === currentUser.id));
+          localStorage.setItem(`${STORAGE_KEYS.PROJECTS_PREFIX}${currentUser.id}`, JSON.stringify(userOnlyApi));
+          return userOnlyApi;
         });
       }
       if (apiTasks !== null) {
         setTasks(prev => {
-          const map = new Map<string, Task>();
-          prev.filter(t => isDemo || !isDemoSeedEntity(t)).forEach(t => map.set(t.id, { ...t, userId: currentUser.id }));
-          apiTasks.filter(t => isDemo || !isDemoSeedEntity(t)).forEach(t => map.set(t.id, { ...t, userId: currentUser.id }));
-          const merged = Array.from(map.values());
-          if (!isDemo) {
-            localStorage.setItem(`${STORAGE_KEYS.TASKS_PREFIX}${currentUser.id}`, JSON.stringify(merged));
+          if (isDemo) {
+            const map = new Map<string, Task>();
+            prev.filter(t => isDemoSeedEntity(t) || t.userId === 'usr-1' || t.userId === 'usr-demo').forEach(t => map.set(t.id, t));
+            apiTasks.filter(t => isDemoSeedEntity(t) || t.userId === 'usr-1' || t.userId === 'usr-demo').forEach(t => map.set(t.id, t));
+            return Array.from(map.values());
           }
-          prev.forEach(item => {
-            if ((isDemo || !isDemoSeedEntity(item)) && !apiTasks.some(at => at.id === item.id)) {
-              api.createTask({ ...item, userId: currentUser.id }).catch(() => {});
-            }
-          });
-          return merged;
+          const userOnlyApi = apiTasks.filter(t => !isDemoSeedEntity(t) && (!t.userId || t.userId === currentUser.id));
+          localStorage.setItem(`${STORAGE_KEYS.TASKS_PREFIX}${currentUser.id}`, JSON.stringify(userOnlyApi));
+          return userOnlyApi;
         });
       }
       if (apiTime !== null) {
         setTimeEntries(prev => {
-          const map = new Map<string, TimeEntry>();
-          prev.filter(t => isDemo || !isDemoSeedEntity(t)).forEach(t => map.set(t.id, { ...t, userId: currentUser.id }));
-          apiTime.filter(t => isDemo || !isDemoSeedEntity(t)).forEach(t => map.set(t.id, { ...t, userId: currentUser.id }));
-          const merged = Array.from(map.values());
-          if (!isDemo) {
-            localStorage.setItem(`${STORAGE_KEYS.TIME_PREFIX}${currentUser.id}`, JSON.stringify(merged));
+          if (isDemo) {
+            const map = new Map<string, TimeEntry>();
+            prev.forEach(t => map.set(t.id, t));
+            apiTime.forEach(t => map.set(t.id, t));
+            return Array.from(map.values());
           }
-          prev.forEach(item => {
-            if ((isDemo || !isDemoSeedEntity(item)) && !apiTime.some(at => at.id === item.id)) {
-              api.createTimeEntry({ ...item, userId: currentUser.id }).catch(() => {});
-            }
-          });
-          return merged;
+          const userOnlyApi = apiTime.filter(t => !isDemoSeedEntity(t) && (!t.userId || t.userId === currentUser.id));
+          localStorage.setItem(`${STORAGE_KEYS.TIME_PREFIX}${currentUser.id}`, JSON.stringify(userOnlyApi));
+          return userOnlyApi;
         });
       }
       if (apiInvoices !== null) {
         setInvoices(prev => {
-          const map = new Map<string, Invoice>();
-          prev.filter(i => isDemo || !isDemoSeedEntity(i)).forEach(i => map.set(i.id, { ...i, userId: currentUser.id }));
-          apiInvoices.filter(i => isDemo || !isDemoSeedEntity(i)).forEach(i => map.set(i.id, { ...i, userId: currentUser.id }));
-          const merged = Array.from(map.values());
-          if (!isDemo) {
-            localStorage.setItem(`${STORAGE_KEYS.INVOICES_PREFIX}${currentUser.id}`, JSON.stringify(merged));
+          if (isDemo) {
+            const map = new Map<string, Invoice>();
+            prev.forEach(i => map.set(i.id, i));
+            apiInvoices.forEach(i => map.set(i.id, i));
+            return Array.from(map.values());
           }
-          prev.forEach(item => {
-            if ((isDemo || !isDemoSeedEntity(item)) && !apiInvoices.some(ai => ai.id === item.id)) {
-              api.createInvoice({ ...item, userId: currentUser.id }).catch(() => {});
-            }
-          });
-          return merged;
+          const userOnlyApi = apiInvoices.filter(i => !isDemoSeedEntity(i) && (!i.userId || i.userId === currentUser.id));
+          localStorage.setItem(`${STORAGE_KEYS.INVOICES_PREFIX}${currentUser.id}`, JSON.stringify(userOnlyApi));
+          return userOnlyApi;
         });
       }
       if (apiNotifs !== null) {
-        if (apiNotifs.length > 0) setNotifications(apiNotifs);
-        // If API returns empty, keep local notifications — welcome notif only added on real login
+        setNotifications(prev => {
+          if (isDemo) {
+            const map = new Map<string, AppNotification>();
+            prev.forEach(n => map.set(n.id, n));
+            apiNotifs.forEach(n => map.set(n.id, n));
+            return Array.from(map.values());
+          }
+          const userOnlyApi = apiNotifs.filter(n => (!n.userId || n.userId === currentUser.id));
+          localStorage.setItem(`${STORAGE_KEYS.NOTIFS_PREFIX}${currentUser.id}`, JSON.stringify(userOnlyApi));
+          return userOnlyApi;
+        });
       }
     });
   }, []);
@@ -1383,6 +1379,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const res = await api.register(name.trim(), normalizedEmail, password, profession, otp);
       if (res && res.user) {
         sessionStorage.removeItem(`meplus_reg_otp_${normalizedEmail}`);
+        cleanupOrphanedStorage(deterministicId);
+        // Explicitly initialize fresh empty collections for the newly registered account
+        localStorage.setItem(`${STORAGE_KEYS.CLIENTS_PREFIX}${deterministicId}`, JSON.stringify([]));
+        localStorage.setItem(`${STORAGE_KEYS.PROJECTS_PREFIX}${deterministicId}`, JSON.stringify([]));
+        localStorage.setItem(`${STORAGE_KEYS.TASKS_PREFIX}${deterministicId}`, JSON.stringify([]));
+        localStorage.setItem(`${STORAGE_KEYS.TIME_PREFIX}${deterministicId}`, JSON.stringify([]));
+        localStorage.setItem(`${STORAGE_KEYS.INVOICES_PREFIX}${deterministicId}`, JSON.stringify([]));
+        localStorage.setItem(`${STORAGE_KEYS.NOTIFS_PREFIX}${deterministicId}`, JSON.stringify([]));
+        setClients([]);
+        setProjects([]);
+        setTasks([]);
+        setTimeEntries([]);
+        setInvoices([]);
+        setNotifications([]);
+
         const authenticatedUser: UserProfile = {
           ...res.user,
           id: deterministicId,
@@ -1422,6 +1433,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Local client registration fallback (e.g. for static/Vercel environments)
     sessionStorage.removeItem(`meplus_reg_otp_${normalizedEmail}`);
+    cleanupOrphanedStorage(deterministicId);
+    localStorage.setItem(`${STORAGE_KEYS.CLIENTS_PREFIX}${deterministicId}`, JSON.stringify([]));
+    localStorage.setItem(`${STORAGE_KEYS.PROJECTS_PREFIX}${deterministicId}`, JSON.stringify([]));
+    localStorage.setItem(`${STORAGE_KEYS.TASKS_PREFIX}${deterministicId}`, JSON.stringify([]));
+    localStorage.setItem(`${STORAGE_KEYS.TIME_PREFIX}${deterministicId}`, JSON.stringify([]));
+    localStorage.setItem(`${STORAGE_KEYS.INVOICES_PREFIX}${deterministicId}`, JSON.stringify([]));
+    localStorage.setItem(`${STORAGE_KEYS.NOTIFS_PREFIX}${deterministicId}`, JSON.stringify([]));
+    setClients([]);
+    setProjects([]);
+    setTasks([]);
+    setTimeEntries([]);
+    setInvoices([]);
+    setNotifications([]);
+
     const newUserAccount: RegisteredAccount = {
       id: deterministicId,
       name: name.trim(),
