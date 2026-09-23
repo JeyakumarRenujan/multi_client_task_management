@@ -133,10 +133,10 @@ export const DashboardView: React.FC = () => {
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+                <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                   Quick Actions
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Instant productivity shortcuts
                 </p>
               </div>
@@ -145,35 +145,35 @@ export const DashboardView: React.FC = () => {
             <div className="space-y-2">
               <button
                 onClick={() => setIsTimeLogModalOpen(true)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200/60 dark:border-slate-700/60 transition-all text-left group text-xs font-semibold cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200/60 dark:border-slate-700/60 transition-all text-left group text-sm font-semibold cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  <Clock className="w-4 h-4 text-purple-600" />
+                  <Clock className="w-4.5 h-4.5 text-purple-600" />
                   <span>Log Work Hours</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
               <button
                 onClick={() => setIsClientModalOpen(true)}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200/60 dark:border-slate-700/60 transition-all text-left group text-xs font-semibold cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200/60 dark:border-slate-700/60 transition-all text-left group text-sm font-semibold cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  <Layers className="w-4 h-4 text-blue-600" />
+                  <Layers className="w-4.5 h-4.5 text-blue-600" />
                   <span>Add Client Profile</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </button>
 
               <button
                 onClick={() => setActiveTab('invoices')}
-                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200/60 dark:border-slate-700/60 transition-all text-left group text-xs font-semibold cursor-pointer"
+                className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-200 hover:text-emerald-800 dark:hover:text-emerald-300 border border-slate-200/60 dark:border-slate-700/60 transition-all text-left group text-sm font-semibold cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
-                  <Plus className="w-4 h-4 text-amber-600" />
+                  <Plus className="w-4.5 h-4.5 text-amber-600" />
                   <span>Create Client Invoice</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>

@@ -291,7 +291,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {/* Header */}
         <div className="mb-6 flex flex-col items-center text-center">
           <Logo size="lg" />
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
             Multi-Client Freelancer Task Workspace
           </p>
         </div>
@@ -299,15 +299,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {/* 1-Click Demo Evaluation Banner */}
         {mode !== 'forgot' && (
           <div className="mb-5 p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between shadow-2xs">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-xl bg-emerald-600 text-white">
                 <Zap className="w-3.5 h-3.5" />
               </div>
               <div className="text-left">
-                <div className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   Quick Demo Login
                 </div>
-                <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                <div className="text-xs text-slate-500 dark:text-slate-400">
                   Sample clients &amp; projects
                 </div>
               </div>
@@ -315,7 +315,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
             <button
               onClick={handleDemoLogin}
-              className="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1.5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
             >
               <span>1-Click Login</span>
               <ArrowRight className="w-3 h-3" />
@@ -325,11 +325,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         {/* Tab switch */}
         {mode !== 'forgot' ? (
-          <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1 mb-6 border border-slate-200 dark:border-slate-700">
+          <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1 mb-6 border border-slate-200 dark:border-slate-700 text-sm sm:text-[15px] font-bold">
             <button
               type="button"
               onClick={() => resetAllFormStates('login')}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer ${
                 mode === 'login'
                   ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -340,7 +340,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={() => resetAllFormStates('register')}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer ${
                 mode === 'register'
                   ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -387,7 +387,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         {mode === 'login' && (
           <form onSubmit={handleLoginSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Email Address
               </label>
               <div className="relative">
@@ -406,13 +406,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <button
                   type="button"
                   onClick={() => resetAllFormStates('forgot')}
-                  className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                  className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                 >
                   Forgot Password?
                 </button>
@@ -442,7 +442,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs md:text-sm shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+              className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
             >
               <span>{isLoading ? 'Signing In...' : 'Sign In to Workspace'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -598,7 +598,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs md:text-sm shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+              className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
             >
               <span>{isLoading ? 'Creating Account...' : 'Create Free Account'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -633,7 +633,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs md:text-sm shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                  className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
                 >
                   <span>{isLoading ? 'Verifying Account...' : 'Verify Email & Proceed'}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -715,7 +715,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isLoading || otp.length !== 6}
-                  className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs md:text-sm shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                  className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
                 >
                   <span>{isLoading ? 'Verifying Code...' : 'Verify Code & Continue'}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -806,7 +806,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs md:text-sm shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
+                  className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
                 >
                   <span>{isLoading ? 'Updating Password...' : 'Save New Password & Sign In'}</span>
                   <ArrowRight className="w-4 h-4" />

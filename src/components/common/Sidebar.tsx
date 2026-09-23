@@ -209,7 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
         <div className="p-4 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
           {/* Main Navigation */}
           <div>
-            <div className={`text-[10px] font-extrabold uppercase tracking-wider px-3 mb-2 transition-colors ${getSectionHeaderClass()}`}>
+            <div className={`text-xs font-black uppercase tracking-wider px-3 mb-2.5 transition-colors ${getSectionHeaderClass()}`}>
               Workspace
             </div>
             <nav className="space-y-1">
@@ -220,7 +220,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                   <button
                     key={item.id}
                     onClick={() => handleSelectTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all group ${
                       isActive
                         ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal text-white shadow-md shadow-emerald-700/20'
                         : getInactiveNavClass()
@@ -228,7 +228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                   >
                     <div className="flex items-center gap-3">
                       <Icon
-                        className={`w-4 h-4 transition-transform group-hover:scale-110 ${
+                        className={`w-4.5 h-4.5 transition-transform group-hover:scale-110 ${
                           isActive
                             ? 'text-white'
                             : isDark || sidebarTheme === 'dark'
@@ -241,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
                     {item.badge && (
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                           isActive ? 'bg-white/20 text-white' : item.badgeColor
                         }`}
                       >
@@ -256,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
           {/* Quick AI Section */}
           <div>
-            <div className={`text-[10px] font-extrabold uppercase tracking-wider px-3 mb-2 transition-colors ${getSectionHeaderClass()}`}>
+            <div className={`text-xs font-black uppercase tracking-wider px-3 mb-2.5 transition-colors ${getSectionHeaderClass()}`}>
               Smart Assistant
             </div>
             <div className="space-y-1.5">
@@ -272,22 +272,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className={`text-xs font-bold flex items-center gap-1 ${
+                    <div className={`text-sm font-bold flex items-center gap-1.5 ${
                       isDark || sidebarTheme === 'dark' ? 'text-white' : 'text-slate-900'
                     }`}>
                       App Guide &amp; AI
-                      <span className="text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded-full font-bold">
+                      <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded-full font-bold">
                         Help
                       </span>
                     </div>
-                    <div className={`text-[10px] ${
+                    <div className={`text-xs ${
                       isDark || sidebarTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'
                     }`}>
                       App Help &amp; External AI
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>
@@ -305,7 +305,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
         }`}>
           {/* Real-Time Sidebar Color Customizer */}
           <div className="flex items-center justify-between px-1">
-            <span className={`text-[10px] font-bold uppercase tracking-wider ${getSectionHeaderClass()}`}>
+            <span className={`text-xs font-bold uppercase tracking-wider ${getSectionHeaderClass()}`}>
               Sidebar Style
             </span>
             <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Sidebar style">

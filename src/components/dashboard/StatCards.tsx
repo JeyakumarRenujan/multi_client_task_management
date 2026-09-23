@@ -89,7 +89,7 @@ export const StatCards: React.FC = () => {
             }`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <span className="text-xs sm:text-[13px] font-extrabold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                 {stat.title}
               </span>
               <div
@@ -101,10 +101,10 @@ export const StatCards: React.FC = () => {
 
             <div className="mt-3 sm:mt-4 flex items-baseline justify-between">
               <div>
-                <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                <div className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                   {stat.value}
                 </div>
-                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+                <div className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
                   {stat.subValue}
                 </div>
               </div>

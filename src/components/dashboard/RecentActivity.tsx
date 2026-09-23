@@ -60,10 +60,10 @@ export const RecentActivity: React.FC = () => {
             <Zap className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
               Live Activity Timeline
             </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Recent logs, completions &amp; billings
             </p>
           </div>

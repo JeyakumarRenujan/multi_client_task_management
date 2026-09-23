@@ -329,10 +329,10 @@ export const SettingsView: React.FC = () => {
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in pb-12">
       {/* View Header */}
       <div>
-        <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
           Profile &amp; Settings
         </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Update your profile picture, name, bio, and notification preferences.
         </p>
       </div>

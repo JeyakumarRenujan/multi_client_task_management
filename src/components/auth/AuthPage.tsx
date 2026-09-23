@@ -470,10 +470,10 @@ export const AuthPage: React.FC = () => {
                         <Zap className="w-3.5 h-3.5 fill-white" />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight">
+                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight">
                           Explore Demo Account
                         </div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
                           Try with sample clients
                         </div>
                       </div>
@@ -482,21 +482,21 @@ export const AuthPage: React.FC = () => {
                     <button
                       onClick={loginDemoUser}
                       type="button"
-                      className="px-2.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+                      className="px-3 py-1.5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-xs shadow-emerald-700/20 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
                     >
                       <span>1-Click Login</span>
-                      <ArrowRight className="w-3 h-3" />
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}
 
                 {/* Segmented Tab Switcher: Sign In / Create Account */}
                 {mode !== 'forgot' ? (
-                  <div className="p-1 bg-slate-100 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 rounded-xl grid grid-cols-2 gap-1 mb-3 text-xs font-bold shadow-inner">
+                  <div className="p-1 bg-slate-100 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 rounded-xl grid grid-cols-2 gap-1 mb-3.5 text-sm sm:text-[15px] font-bold shadow-inner">
                     <button
                       type="button"
                       onClick={() => resetAllFormStates('login')}
-                      className={`py-1.5 rounded-lg transition-all cursor-pointer ${
+                      className={`py-2 rounded-lg transition-all cursor-pointer ${
                         mode === 'login'
                           ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
                           : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -507,7 +507,7 @@ export const AuthPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => resetAllFormStates('register')}
-                      className={`py-1.5 rounded-lg transition-all cursor-pointer ${
+                      className={`py-2 rounded-lg transition-all cursor-pointer ${
                         mode === 'register'
                           ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
                           : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -521,7 +521,7 @@ export const AuthPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => resetAllFormStates('login')}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                      className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" />
                       <span>Back to Sign In</span>
@@ -530,12 +530,12 @@ export const AuthPage: React.FC = () => {
                 )}
 
                 {/* Form Title & Subtitle */}
-                <div className="mb-3">
+                <div className="mb-3.5">
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/90 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold mb-1.5">
                     <ShieldCheck className="w-3 h-3 text-emerald-600" />
                     <span>Freelancer Portal</span>
                   </div>
-                  <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                   {mode === 'forgot' ? (
                     <>
                       <KeyRound className="w-4 h-4 text-emerald-600" />
@@ -555,7 +555,7 @@ export const AuthPage: React.FC = () => {
                     'Create Your Workspace'
                   )}
                 </h2>
-                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
                   {mode === 'forgot'
                     ? forgotStep === 'email'
                       ? 'Enter your registered email address to receive a verification code'
@@ -595,7 +595,7 @@ export const AuthPage: React.FC = () => {
               {mode === 'login' && (
                 <form onSubmit={handleLoginSubmit} className="space-y-3">
                   <div>
-                    <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                       Email Address *
                     </label>
                     <div className="relative">
@@ -614,13 +614,13 @@ export const AuthPage: React.FC = () => {
 
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">
                         Password *
                       </label>
                       <button
                         type="button"
                         onClick={() => resetAllFormStates('forgot')}
-                        className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                        className="text-xs sm:text-[13px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                       >
                         Forgot Password?
                       </button>
@@ -650,7 +650,7 @@ export const AuthPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-3 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     <span>{isLoading ? 'Signing In...' : 'Sign In to Workspace'}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -817,7 +817,7 @@ export const AuthPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     <span>{isLoading ? 'Creating Account...' : 'Create Free Account'}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -856,7 +856,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full mt-2.5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                       >
                         <span>{isLoading ? 'Sending Code...' : 'Send Verification Code'}</span>
                         <ArrowRight className="w-4 h-4" />
@@ -946,7 +946,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading || otp.length !== 6}
-                        className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <span>{isLoading ? 'Verifying Code...' : 'Verify Code & Proceed'}</span>
                         <ArrowRight className="w-4 h-4" />
@@ -1037,7 +1037,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full mt-2 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                       >
                         <span>{isLoading ? 'Updating Password...' : 'Save New Password & Continue'}</span>
                         <ArrowRight className="w-4 h-4" />

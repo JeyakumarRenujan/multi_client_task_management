@@ -76,10 +76,10 @@ export const DeadlineRadar: React.FC = () => {
               <Clock className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm">
+              <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">
                 Deadline Radar
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Time-sensitive client deliverables
               </p>
             </div>
@@ -87,7 +87,7 @@ export const DeadlineRadar: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('tasks')}
-            className="text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1"
+            className="text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1"
           >
             <span>View All</span>
             <ArrowRight className="w-3.5 h-3.5" />

@@ -52,7 +52,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit }
             </div>
 
             <div className="min-w-0">
-              <h3 className="font-bold text-sm text-slate-900 dark:text-white truncate">
+              <h3 className="font-bold text-base text-slate-900 dark:text-white truncate">
                 {client.name}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
