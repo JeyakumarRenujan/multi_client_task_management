@@ -31,10 +31,14 @@ export const TasksView: React.FC = () => {
   const [priorityFilter, setPriorityFilter] = useState<'all' | PriorityLevel>('all');
 
   const filteredTasks = tasks.filter(task => {
-    const matchesSearch =
-      task.title.toLowerCase().includes(search.toLowerCase()) ||
-      task.description.toLowerCase().includes(search.toLowerCase()) ||
-      task.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
+    if (!task) return false;
+    const q = (search || '').toLowerCase().trim();
+    const title = (task.title || '').toLowerCase();
+    const desc = (task.description || '').toLowerCase();
+    const tagsMatch =
+      Array.isArray(task.tags) &&
+      task.tags.some(t => typeof t === 'string' && t.toLowerCase().includes(q));
+    const matchesSearch = !q || title.includes(q) || desc.includes(q) || tagsMatch;
 
     const matchesProject = projectFilter === 'all' || task.projectId === projectFilter;
     const matchesClient = clientFilter === 'all' || task.clientId === clientFilter;

@@ -52,9 +52,13 @@ export const ClientListView: React.FC = () => {
   }, [highlightedClientId, clients]);
 
   const filteredClients = clients.filter(client => {
+    if (!client) return false;
+    const q = (search || '').toLowerCase().trim();
+    const name = (client.name || '').toLowerCase();
+    const email = (client.email || '').toLowerCase();
+    const company = (client.company || '').toLowerCase();
     const matchesSearch =
-      client.name.toLowerCase().includes(search.toLowerCase()) ||
-      client.email.toLowerCase().includes(search.toLowerCase());
+      !q || name.includes(q) || email.includes(q) || company.includes(q);
     const matchesStatus = statusFilter === 'all' || client.status === statusFilter;
     return matchesSearch && matchesStatus;
   });

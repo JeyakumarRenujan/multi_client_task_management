@@ -60,27 +60,47 @@ export const CommandPalette: React.FC = () => {
 
   if (!isCommandPaletteOpen) return null;
 
-  const filteredClients = clients.filter(
-    c =>
-      c.name.toLowerCase().includes(query.toLowerCase()) ||
-      c.company.toLowerCase().includes(query.toLowerCase())
-  );
+  const q = (query || '').toLowerCase().trim();
 
-  const filteredProjects = projects.filter(
-    p =>
-      p.title.toLowerCase().includes(query.toLowerCase()) ||
-      p.tags.some(t => t.toLowerCase().includes(query.toLowerCase()))
-  );
+  const filteredClients = clients.filter(c => {
+    if (!c) return false;
+    if (!q) return true;
+    const name = (c.name || '').toLowerCase();
+    const company = (c.company || '').toLowerCase();
+    const email = (c.email || '').toLowerCase();
+    return name.includes(q) || company.includes(q) || email.includes(q);
+  });
 
-  const filteredTasks = tasks.filter(t =>
-    t.title.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredProjects = projects.filter(p => {
+    if (!p) return false;
+    if (!q) return true;
+    const title = (p.title || '').toLowerCase();
+    const desc = (p.description || '').toLowerCase();
+    const tagsMatch =
+      Array.isArray(p.tags) &&
+      p.tags.some(t => typeof t === 'string' && t.toLowerCase().includes(q));
+    return title.includes(q) || desc.includes(q) || tagsMatch;
+  });
 
-  const filteredInvoices = invoices.filter(
-    i =>
-      i.invoiceNumber.toLowerCase().includes(query.toLowerCase()) ||
-      i.clientName.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredTasks = tasks.filter(t => {
+    if (!t) return false;
+    if (!q) return true;
+    const title = (t.title || '').toLowerCase();
+    const desc = (t.description || '').toLowerCase();
+    const tagsMatch =
+      Array.isArray(t.tags) &&
+      t.tags.some(tag => typeof tag === 'string' && tag.toLowerCase().includes(q));
+    return title.includes(q) || desc.includes(q) || tagsMatch;
+  });
+
+  const filteredInvoices = invoices.filter(i => {
+    if (!i) return false;
+    if (!q) return true;
+    const invNum = (i.invoiceNumber || '').toLowerCase();
+    const clientName = (i.clientName || '').toLowerCase();
+    const clientComp = (i.clientCompany || '').toLowerCase();
+    return invNum.includes(q) || clientName.includes(q) || clientComp.includes(q);
+  });
 
   const handleSelectTab = (tab: string) => {
     setActiveTab(tab);
@@ -227,10 +247,10 @@ export const CommandPalette: React.FC = () => {
                   <div className="flex items-center gap-2.5 min-w-0">
                     <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
-                      {task.title}
+                      {task.title || 'Untitled Task'}
                     </span>
                     <span className="text-[11px] uppercase font-extrabold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 tracking-wide">
-                      {task.status}
+                      {task.status || 'todo'}
                     </span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
@@ -254,9 +274,9 @@ export const CommandPalette: React.FC = () => {
                   <div className="flex items-center gap-2.5 min-w-0">
                     <FolderKanban className="w-4 h-4 text-teal-600 shrink-0" />
                     <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
-                      {p.title}
+                      {p.title || 'Untitled Project'}
                     </span>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-400">({p.progress}%)</span>
+                    <span className="text-xs sm:text-sm font-semibold text-slate-400">({p.progress ?? 0}%)</span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
                 </div>
@@ -283,7 +303,13 @@ export const CommandPalette: React.FC = () => {
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Users className="w-4 h-4 text-blue-600 shrink-0" />
                     <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
-                      {c.name} — <span className="text-slate-500 dark:text-slate-400 font-medium">{c.company}</span>
+                      {c.name || 'Unnamed Client'}
+                      {c.company ? (
+                        <>
+                          {' — '}
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">{c.company}</span>
+                        </>
+                      ) : null}
                     </span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
@@ -307,7 +333,7 @@ export const CommandPalette: React.FC = () => {
                   <div className="flex items-center gap-2.5 min-w-0">
                     <FileText className="w-4 h-4 text-amber-600 shrink-0" />
                     <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
-                      {inv.invoiceNumber} — {inv.clientCompany || inv.clientName || 'Client'} (${((inv.total ?? (inv as any).totalAmount) ?? 0).toLocaleString()})
+                      {inv.invoiceNumber || 'INV-000'} — {inv.clientCompany || inv.clientName || 'Client'} (${((inv.total ?? (inv as any).totalAmount) ?? 0).toLocaleString()})
                     </span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
@@ -315,6 +341,23 @@ export const CommandPalette: React.FC = () => {
               ))}
             </div>
           )}
+
+          {/* Empty search state */}
+          {q.length > 0 &&
+            filteredTasks.length === 0 &&
+            filteredProjects.length === 0 &&
+            filteredClients.length === 0 &&
+            filteredInvoices.length === 0 && (
+              <div className="text-center py-10 px-4 text-slate-400 dark:text-slate-500">
+                <Search className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600 opacity-70" />
+                <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+                  No matching results for &ldquo;{query}&rdquo;
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                  Try searching for another client, project, task, or invoice keyword.
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Footer */}

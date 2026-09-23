@@ -43,9 +43,14 @@ export const ProjectListView: React.FC = () => {
   const archivedProjectsCount = projects.filter(p => p.status === 'archived').length;
 
   const filteredProjects = projects.filter(project => {
-    const matchesSearch =
-      project.title.toLowerCase().includes(search.toLowerCase()) ||
-      project.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
+    if (!project) return false;
+    const q = (search || '').toLowerCase().trim();
+    const title = (project.title || '').toLowerCase();
+    const desc = (project.description || '').toLowerCase();
+    const tagsMatch =
+      Array.isArray(project.tags) &&
+      project.tags.some(t => typeof t === 'string' && t.toLowerCase().includes(q));
+    const matchesSearch = !q || title.includes(q) || desc.includes(q) || tagsMatch;
     const matchesStatus =
       statusFilter === 'all'
         ? project.status !== 'archived'
