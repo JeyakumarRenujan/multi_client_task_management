@@ -13,7 +13,6 @@ import {
   Trash2,
   Eye,
   AlertTriangle,
-  Sparkles,
 } from 'lucide-react';
 
 interface ProjectCardProps {
@@ -107,14 +106,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onView, onEdi
       }`}
     >
       <div>
-        {/* Pointed Badge */}
-        {isHighlighted && (
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700/80 text-[11px] font-black text-emerald-800 dark:text-emerald-300 mb-2.5 w-fit shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
-            <span>Pointed Project &bull; Matched Search</span>
-          </div>
-        )}
-
         {/* Card Header */}
         <div className="flex items-start justify-between gap-2 mb-2.5">
           <div className="min-w-0">

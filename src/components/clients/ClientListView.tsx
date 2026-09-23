@@ -32,6 +32,21 @@ export const ClientListView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [inspectedClient, setInspectedClient] = useState<Client | null>(null);
 
+  // Clear highlighted client when navigating away from this view so returning shows all clients
+  useEffect(() => {
+    return () => {
+      setHighlightedClientId(null);
+    };
+  }, [setHighlightedClientId]);
+
+  // Reset search and filter when highlight is cleared
+  useEffect(() => {
+    if (!highlightedClientId) {
+      setSearch('');
+      setStatusFilter('all');
+    }
+  }, [highlightedClientId]);
+
   // Auto-focus and point to client if navigated from search
   useEffect(() => {
     if (highlightedClientId) {

@@ -7,7 +7,6 @@ import {
   Edit2,
   Trash2,
   Eye,
-  Sparkles,
 } from 'lucide-react';
 
 interface ClientCardProps {
@@ -47,13 +46,6 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit, 
       }`}
     >
       <div>
-        {/* Pointed Client Indicator Badge */}
-        {isHighlighted && (
-          <div className="mb-3 -mt-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600 text-white text-xs font-black shadow-md animate-bounce self-start">
-            <Sparkles className="w-3.5 h-3.5 fill-white" />
-            <span>Pointed Client &bull; Matched Search</span>
-          </div>
-        )}
         {/* Top Header */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-3 min-w-0">

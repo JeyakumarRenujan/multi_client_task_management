@@ -9,7 +9,6 @@ import {
   Calendar,
   Clock,
   Tag,
-  Sparkles,
 } from 'lucide-react';
 
 interface TaskListViewProps {
@@ -61,12 +60,6 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                     : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                {isHighlighted && (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700/80 text-[10px] font-black text-emerald-800 dark:text-emerald-300 mb-1 w-fit shadow-xs">
-                    <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
-                    <span>Pointed Task &bull; Matched Search</span>
-                  </div>
-                )}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2.5 min-w-0">
                     <button
@@ -222,12 +215,6 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                   }`}
                 >
                   <td className="py-3.5 px-4 max-w-[240px]">
-                    {isHighlighted && (
-                      <div className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full mb-1 shadow-xs">
-                        <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
-                        <span>Pointed Task &bull; Matched Search</span>
-                      </div>
-                    )}
                     <div className="flex items-center gap-2.5">
                       <button
                         onClick={e => {

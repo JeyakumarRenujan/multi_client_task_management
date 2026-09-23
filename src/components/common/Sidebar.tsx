@@ -33,6 +33,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
     user,
     logout,
     confirmAction,
+    setHighlightedClientId,
+    setHighlightedProjectId,
+    setHighlightedTaskId,
+    setHighlightedInvoiceId,
   } = useApp();
 
   const { actualTheme, sidebarTheme, setSidebarTheme, accentColor } = useTheme();
@@ -159,6 +163,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
   ];
 
   const handleSelectTab = (tabId: string) => {
+    setHighlightedClientId(null);
+    setHighlightedProjectId(null);
+    setHighlightedTaskId(null);
+    setHighlightedInvoiceId(null);
     setActiveTab(tabId);
     onCloseMobile();
   };

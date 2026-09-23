@@ -9,7 +9,6 @@ import {
   Edit2,
   Trash2,
   CheckSquare,
-  Sparkles,
 } from 'lucide-react';
 
 interface TaskKanbanProps {
@@ -153,14 +152,6 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                           : 'bg-white dark:bg-slate-800/90 border-slate-200/80 dark:border-slate-700/60 hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600'
                       } ${draggedTaskId === task.id ? 'opacity-50' : ''}`}
                     >
-                      {/* Pointed Task Badge */}
-                      {isHighlighted && (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700/80 text-[10px] font-black text-emerald-800 dark:text-emerald-300 mb-2 w-fit shadow-xs">
-                          <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
-                          <span>Pointed Task &bull; Matched Search</span>
-                        </div>
-                      )}
-
                       {/* Card Top: Client & Priority */}
                       <div className="flex items-center justify-between gap-1 mb-2">
                         {client ? (

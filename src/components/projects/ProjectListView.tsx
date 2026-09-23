@@ -43,6 +43,22 @@ export const ProjectListView: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [inspectedProject, setInspectedProject] = useState<Project | null>(null);
 
+  // Clear highlighted project when navigating away from this view so returning shows all projects
+  useEffect(() => {
+    return () => {
+      setHighlightedProjectId(null);
+    };
+  }, [setHighlightedProjectId]);
+
+  // Reset search and filter when highlight is cleared
+  useEffect(() => {
+    if (!highlightedProjectId) {
+      setSearch('');
+      setStatusFilter('all');
+      setClientFilter('all');
+    }
+  }, [highlightedProjectId]);
+
   // Auto-focus and point to project if navigated from search
   useEffect(() => {
     if (highlightedProjectId) {

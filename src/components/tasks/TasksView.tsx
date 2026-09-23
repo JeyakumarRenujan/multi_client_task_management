@@ -33,6 +33,23 @@ export const TasksView: React.FC = () => {
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | PriorityLevel>('all');
 
+  // Clear highlighted task when navigating away from this view so returning shows all tasks
+  useEffect(() => {
+    return () => {
+      setHighlightedTaskId(null);
+    };
+  }, [setHighlightedTaskId]);
+
+  // Reset search and filters when highlight is cleared
+  useEffect(() => {
+    if (!highlightedTaskId) {
+      setSearch('');
+      setProjectFilter('all');
+      setClientFilter('all');
+      setPriorityFilter('all');
+    }
+  }, [highlightedTaskId]);
+
   // Auto-focus and point to task if navigated from search
   useEffect(() => {
     if (highlightedTaskId) {

@@ -14,7 +14,6 @@ import {
   Trash2,
   FolderKanban,
   Eye,
-  Sparkles,
 } from 'lucide-react';
 
 export const InvoiceListView: React.FC = () => {
@@ -34,6 +33,21 @@ export const InvoiceListView: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | InvoiceStatus>('all');
+
+  // Clear highlighted invoice when navigating away from this view so returning shows all invoices
+  useEffect(() => {
+    return () => {
+      setHighlightedInvoiceId(null);
+    };
+  }, [setHighlightedInvoiceId]);
+
+  // Reset search and filter when highlight is cleared
+  useEffect(() => {
+    if (!highlightedInvoiceId) {
+      setSearch('');
+      setStatusFilter('all');
+    }
+  }, [highlightedInvoiceId]);
 
   // Auto-focus and point to invoice if navigated from search
   useEffect(() => {
@@ -340,12 +354,6 @@ export const InvoiceListView: React.FC = () => {
                       : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
                   }`}
                 >
-                  {isHighlighted && (
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700/80 text-[10px] font-black text-emerald-800 dark:text-emerald-300 mb-1 w-fit shadow-xs">
-                      <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
-                      <span>Pointed Invoice &bull; Matched Search</span>
-                    </div>
-                  )}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -470,12 +478,6 @@ export const InvoiceListView: React.FC = () => {
                   >
                     {/* Invoice Number */}
                     <td className="py-3.5 px-4 font-mono font-bold text-sm text-slate-900 dark:text-white">
-                      {isHighlighted && (
-                        <div className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full mb-1 shadow-xs">
-                          <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
-                          <span>Pointed Invoice &bull; Matched Search</span>
-                        </div>
-                      )}
                       <div>{inv.invoiceNumber}</div>
                     </td>
 
