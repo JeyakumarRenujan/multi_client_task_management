@@ -92,10 +92,10 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
             {/* Column Header */}
             <div className="flex items-center justify-between px-2 py-1.5 mb-2.5">
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                <h3 className="text-xs sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                   {col.label}
                 </h3>
-                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${col.badgeBg}`}>
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${col.badgeBg}`}>
                   {colTasks.length}
                 </span>
               </div>
@@ -116,7 +116,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
             <div className="flex-1 space-y-2.5 sm:space-y-3">
               {colTasks.length === 0 ? (
                 <div className="h-16 sm:h-32 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center text-center p-2 sm:p-3">
-                  <span className="text-[11px] text-slate-400 font-medium">
+                  <span className="text-xs text-slate-400 font-medium">
                     Drag tasks here
                   </span>
                 </div>
@@ -154,7 +154,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                               className="w-2 h-2 rounded-full shrink-0"
                               style={{ backgroundColor: client.color }}
                             />
-                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[110px]">
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate max-w-[130px]">
                               {client.company}
                             </span>
                           </div>
@@ -163,37 +163,37 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                         )}
 
                         <span
-                          className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${priorityColors}`}
+                          className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded tracking-wide ${priorityColors}`}
                         >
                           {task.priority}
                         </span>
                       </div>
 
                       {/* Title */}
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-snug mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug mb-1.5 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                         {task.title}
                       </h4>
 
                       {/* Project Name */}
                       {project && (
-                        <div className="text-[10px] text-slate-400 truncate mb-2.5">
+                        <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate mb-2.5">
                           {project.title}
                         </div>
                       )}
 
                       {/* Subtasks Progress */}
                       {task.subtasks.length > 0 && (
-                        <div className="mb-2.5 p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-[10px] text-slate-500">
+                        <div className="mb-2.5 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-[11px] text-slate-600 dark:text-slate-400">
                           <div className="flex items-center justify-between font-semibold mb-1">
-                            <span className="flex items-center gap-1">
-                              <CheckSquare className="w-3 h-3 text-emerald-600" />
+                            <span className="flex items-center gap-1.5">
+                              <CheckSquare className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                               Checklist
                             </span>
                             <span>
                               {completedSubtasks}/{task.subtasks.length}
                             </span>
                           </div>
-                          <div className="w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-emerald-600 rounded-full"
                               style={{
@@ -207,9 +207,9 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                       )}
 
                       {/* Footer: Due Date & Quick Timer */}
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 text-[10px] text-slate-500">
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
                         <div
-                          className={`flex items-center gap-1 font-semibold ${
+                          className={`flex items-center gap-1.5 font-semibold ${
                             isOverdue
                               ? 'text-rose-600 dark:text-rose-400 font-bold'
                               : isDueToday
@@ -217,7 +217,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                               : ''
                           }`}
                         >
-                          <Calendar className="w-3 h-3" />
+                          <Calendar className="w-3.5 h-3.5" />
                           <span>{task.dueDate}</span>
                         </div>
 
@@ -234,7 +234,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                             className="p-1 rounded text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60"
                             title="Start tracking time on this task"
                           >
-                            <Play className="w-3 h-3" />
+                            <Play className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"

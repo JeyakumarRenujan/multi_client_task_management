@@ -69,7 +69,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                     </button>
                     <div className="min-w-0">
                       <h4
-                        className={`text-xs font-bold leading-snug truncate ${
+                        className={`text-sm font-bold leading-snug truncate ${
                           task.status === 'done'
                             ? 'line-through text-slate-400'
                             : 'text-slate-900 dark:text-white'
@@ -77,14 +77,14 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                       >
                         {task.title}
                       </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                         {client?.company || 'Client'} &bull; {project?.title || 'Project'}
                       </p>
                     </div>
                   </div>
 
                   <span
-                    className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase shrink-0 ${
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase shrink-0 ${
                       task.priority === 'urgent'
                         ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400'
                         : task.priority === 'high'
@@ -96,7 +96,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80 text-[11px]">
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80 text-xs">
                   <div className="flex items-center gap-2">
                     <span
                       className={`font-semibold ${
@@ -106,7 +106,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                       {task.dueDate}
                     </span>
                     {task.subtasks.length > 0 && (
-                      <span className="text-slate-400">
+                      <span className="text-slate-400 text-xs">
                         ({completedSubtasks}/{task.subtasks.length})
                       </span>
                     )}
@@ -116,7 +116,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                     <select
                       value={task.status}
                       onChange={e => moveTaskStatus(task.id, e.target.value as TaskStatus)}
-                      className="text-[10px] font-bold px-2 py-1 rounded-lg border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 uppercase"
+                      className="text-xs font-bold px-2 py-1 rounded-lg border bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 uppercase"
                     >
                       <option value="todo">To Do</option>
                       <option value="in-progress">In Progress</option>

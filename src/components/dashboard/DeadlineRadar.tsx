@@ -121,17 +121,17 @@ export const DeadlineRadar: React.FC = () => {
                     </button>
 
                     <div className="min-w-0">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                         {task.title}
                       </h4>
-                      <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         {client && (
-                          <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[100px]">
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
                             {client.company}
                           </span>
                         )}
                         <span>&bull;</span>
-                        <span className="truncate max-w-[120px]">
+                        <span className="truncate max-w-[140px]">
                           {project?.title || 'Project'}
                         </span>
                       </div>
@@ -139,7 +139,7 @@ export const DeadlineRadar: React.FC = () => {
                   </div>
 
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 ${urgency.badgeClass}`}
+                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${urgency.badgeClass}`}
                   >
                     {urgency.label}
                   </span>
