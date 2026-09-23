@@ -27,29 +27,16 @@ import { ManualLogModal } from './components/timer/ManualLogModal';
 import { IdleScreensaver } from './components/common/IdleScreensaver';
 
 const MainContent: React.FC = () => {
-  const {
-    activeTab,
-    user,
-    isAuthenticated,
-    setHighlightedClientId,
-    setHighlightedProjectId,
-    setHighlightedTaskId,
-    setHighlightedInvoiceId,
-  } = useApp();
+  const { activeTab, user, isAuthenticated } = useApp();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
-  // On every tab change: scroll to top AND clear any omnibar highlight/filter state
-  // so returning to a page always shows it in its normal unfiltered view.
+  // Scroll to top of main content whenever the active tab changes
   useEffect(() => {
     if (mainRef.current) {
       mainRef.current.scrollTo({ top: 0, behavior: 'instant' });
     }
-    setHighlightedClientId(null);
-    setHighlightedProjectId(null);
-    setHighlightedTaskId(null);
-    setHighlightedInvoiceId(null);
   }, [activeTab]);
 
   // If user is not authenticated, show the dedicated Full Auth Page
