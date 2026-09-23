@@ -43,6 +43,9 @@ export interface UserProfile {
     browser: boolean;
     sound: boolean;
     deadlineReminderHours: number;
+    emailDayBefore?: boolean;
+    emailHoursBefore?: number;
+    emailOverdue?: boolean;
   };
   theme: 'light' | 'dark' | 'system';
   accentColor?: AccentColor;
@@ -111,6 +114,8 @@ export interface Task {
   status: TaskStatus;
   priority: PriorityLevel;
   dueDate: string;
+  dueTime?: string; // Optional HH:mm 24-hr format (e.g. "18:00")
+  reminderStagesSent?: string[]; // e.g. ['24h', 'imminent', 'overdue'] to avoid duplicates
   estimatedHours: number;
   actualHours: number;
   subtasks: SubTask[];

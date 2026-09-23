@@ -146,6 +146,14 @@ export async function findUserById(id) {
   return users.find(u => u.id === id) || null;
 }
 
+export async function getAllUsers() {
+  if (isMongoActive()) {
+    return await UserModel.find({}).lean();
+  }
+  const db = readDb();
+  return db.users || [];
+}
+
 export async function createUser(userData) {
   if (isMongoActive()) {
     const doc = new UserModel(userData);
@@ -337,6 +345,15 @@ export async function getTasks(userId) {
     return items;
   }
   return getCollection('tasks', userId);
+}
+
+export async function getAllIncompleteTasks() {
+  if (isMongoActive()) {
+    return await TaskModel.find({ status: { $ne: 'done' } }).lean();
+  }
+  const db = readDb();
+  const tasks = db.tasks || [];
+  return tasks.filter(t => t.status !== 'done');
 }
 
 export async function createTask(taskData) {

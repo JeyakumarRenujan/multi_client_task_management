@@ -29,6 +29,8 @@ const taskSchema = new mongoose.Schema(
       default: 'medium',
     },
     dueDate: { type: String, default: '' },
+    dueTime: { type: String, default: '' },
+    reminderStagesSent: { type: [String], default: [] },
     estimatedHours: { type: Number, default: 0 },
     actualHours: { type: Number, default: 0 },
     subtasks: [subtaskSchema],

@@ -203,12 +203,15 @@ export const api = {
     toEmail?: string;
     userName?: string;
     alertType?: string;
+    reminderStage?: string;
+    hoursRemaining?: number;
     task?: {
       id?: string;
       title: string;
       projectName?: string;
       clientName?: string;
       dueDate?: string;
+      dueTime?: string;
       priority?: string;
       status?: string;
     };
@@ -223,6 +226,29 @@ export const api = {
         body: JSON.stringify(data),
       }
     ),
+  checkDeadlines: () =>
+    fetchJson<{
+      success: boolean;
+      scannedTasks: number;
+      dispatchedAlerts: Array<{
+        taskId: string;
+        taskTitle: string;
+        stage: string;
+        targetEmail: string;
+        emailSent: boolean;
+        dueDisplay: string;
+      }>;
+      skipped: number;
+    }>('/notifications/check-deadlines', {
+      method: 'POST',
+    }),
+  getSchedulerStatus: () =>
+    fetchJson<{
+      isRunning: boolean;
+      lastScanTime: string | null;
+      stats: { totalScans: number; lastAlertCount: number; totalAlertsDispatched: number };
+      smtpConfigured: boolean;
+    }>('/notifications/scheduler-status'),
 
   // AI Chat & Multi-Provider Connection
   sendAiMessage: (

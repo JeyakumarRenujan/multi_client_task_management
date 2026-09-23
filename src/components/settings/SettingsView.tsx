@@ -81,9 +81,12 @@ export const SettingsView: React.FC = () => {
     resetDemoData,
     setIsAiModalOpen,
     sendUrgentEmailAlert,
+    checkAllDeadlinesNow,
+    lastDeadlineScanTime,
   } = useApp();
 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isScanningDeadlines, setIsScanningDeadlines] = useState(false);
 
   const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme, accentColor, setAccentColor } = useTheme();
 
@@ -95,6 +98,9 @@ export const SettingsView: React.FC = () => {
   const [avatar, setAvatar] = useState(user?.avatar || 'https://api.dicebear.com/7.x/adventurer/svg?seed=Alex&backgroundColor=b6e3f4');
   
   const [emailAlerts, setEmailAlerts] = useState(user?.notificationSettings?.email ?? true);
+  const [emailDayBefore, setEmailDayBefore] = useState(user?.notificationSettings?.emailDayBefore ?? true);
+  const [emailHoursBefore, setEmailHoursBefore] = useState<number>(user?.notificationSettings?.emailHoursBefore ?? 2);
+  const [emailOverdue, setEmailOverdue] = useState(user?.notificationSettings?.emailOverdue ?? true);
   const [smsAlerts, setSmsAlerts] = useState(user?.notificationSettings?.sms ?? true);
   const [browserAlerts, setBrowserAlerts] = useState(user?.notificationSettings?.browser ?? true);
   const [soundAlerts, setSoundAlerts] = useState(user?.notificationSettings?.sound ?? true);
@@ -113,6 +119,9 @@ export const SettingsView: React.FC = () => {
       if (user.avatar) setAvatar(user.avatar);
       if (user.notificationSettings) {
         setEmailAlerts(user.notificationSettings.email ?? true);
+        setEmailDayBefore(user.notificationSettings.emailDayBefore ?? true);
+        setEmailHoursBefore(user.notificationSettings.emailHoursBefore ?? 2);
+        setEmailOverdue(user.notificationSettings.emailOverdue ?? true);
         setSmsAlerts(user.notificationSettings.sms ?? true);
         setBrowserAlerts(user.notificationSettings.browser ?? true);
         setSoundAlerts(user.notificationSettings.sound ?? true);
@@ -205,6 +214,42 @@ export const SettingsView: React.FC = () => {
     });
   };
 
+  const handleToggleDeadlineSetting = (
+    key: 'emailDayBefore' | 'emailHoursBefore' | 'emailOverdue',
+    value: boolean | number
+  ) => {
+    if (key === 'emailDayBefore') setEmailDayBefore(Boolean(value));
+    if (key === 'emailHoursBefore') setEmailHoursBefore(Number(value));
+    if (key === 'emailOverdue') setEmailOverdue(Boolean(value));
+
+    if (user) {
+      updateUserProfile(
+        {
+          notificationSettings: {
+            ...(user.notificationSettings || {
+              email: true,
+              sms: true,
+              browser: true,
+              sound: true,
+              deadlineReminderHours: 24,
+            }),
+            [key]: value,
+          },
+        },
+        { silent: true }
+      );
+    }
+  };
+
+  const handleScanDeadlinesNow = async () => {
+    setIsScanningDeadlines(true);
+    try {
+      await checkAllDeadlinesNow();
+    } finally {
+      setIsScanningDeadlines(false);
+    }
+  };
+
   const handleSendTestUrgentEmail = async () => {
     if (!user?.email) {
       showToast({
@@ -218,7 +263,7 @@ export const SettingsView: React.FC = () => {
     try {
       await sendUrgentEmailAlert(
         undefined,
-        'Test notification: Your Me Plus account is configured to receive real urgent deadline alerts when you are away from the app.'
+        'Test notification: Your Me Plus account is configured to receive real multi-stage deadline alerts (24h before & 1-2h before) when you are away from the app.'
       );
     } finally {
       setIsSendingEmail(false);
@@ -1012,14 +1057,19 @@ export const SettingsView: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+          <div className="p-3.5 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                  Email Notifications for Urgent Tasks &amp; Deadlines
-                </span>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                  When you are away or logged out from the web app, urgent deliverables and deadlines are delivered right to your login email.
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">
+                    Automated Multi-Stage Email Deadlines &amp; Alerts
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+                    Real-World Active
+                  </span>
+                </div>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                  Sends scheduled warning emails in advance (1 day before, and final 1-2 hours before) so you never miss a client milestone.
                 </span>
               </div>
               <input
@@ -1030,32 +1080,152 @@ export const SettingsView: React.FC = () => {
               />
             </div>
 
+            {/* Multi-Stage Configuration (Active when emailAlerts is enabled) */}
+            {emailAlerts && (
+              <div className="pt-3 border-t border-slate-200/60 dark:border-slate-700/60 space-y-3">
+                <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Automated Timing Stages:
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Stage 1: Tomorrow / 24h Before */}
+                  <label className="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 cursor-pointer hover:border-emerald-500/50 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={emailDayBefore}
+                      onChange={e => handleToggleDeadlineSetting('emailDayBefore', e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                    />
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                        📅 24 Hours in Advance (Tomorrow Alert)
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug block mt-0.5">
+                        If a task is due tomorrow, sends an email today so you can prepare deliverables comfortably.
+                      </span>
+                    </div>
+                  </label>
+
+                  {/* Stage 2: Imminent Final Warning Hours Selector */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 flex flex-col justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                        ⏰ Final Deadline Warning
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug block mt-0.5">
+                        Choose how many hours before deadline to receive the high-urgency warning:
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <select
+                        value={emailHoursBefore}
+                        onChange={e => handleToggleDeadlineSetting('emailHoursBefore', Number(e.target.value))}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value={1}>1 Hour Before Due Time</option>
+                        <option value={2}>2 Hours Before Due Time (Recommended)</option>
+                        <option value={3}>3 Hours Before Due Time</option>
+                        <option value={4}>4 Hours Before Due Time</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Stage 3: Overdue Notice */}
+                  <label className="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 cursor-pointer hover:border-emerald-500/50 transition-colors md:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={emailOverdue}
+                      onChange={e => handleToggleDeadlineSetting('emailOverdue', e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+                    />
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                        ⚠️ Overdue Notice (Past Due)
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug block mt-0.5">
+                        Dispatches a notice if a deliverable deadline has elapsed without being marked complete.
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Schedule & Anti-Spam Explanation Card */}
+                <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/60 text-xs text-emerald-900 dark:text-emerald-200 space-y-1.5">
+                  <div className="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+                    <Sparkles className="w-4 h-4" />
+                    <span>How Automated Alerts Work in Me Plus</span>
+                  </div>
+                  <ul className="list-disc pl-4 space-y-1 text-[11px] text-emerald-800/90 dark:text-emerald-300/90">
+                    <li>
+                      <strong>Background Monitor:</strong> Server scans active tasks continuously every 5 minutes (plus client 60-second loop when app is open).
+                    </li>
+                    <li>
+                      <strong>Stage 1 (24 Hours Prior):</strong> Sent today when your task is due tomorrow so you have ample time to prepare.
+                    </li>
+                    <li>
+                      <strong>Stage 2 ({emailHoursBefore}h Prior):</strong> Sent {emailHoursBefore} hours before deadline so you never miss close-of-business or milestone submission.
+                    </li>
+                    <li>
+                      <strong>Anti-Spam Guarantee:</strong> Each stage is tracked in the database and dispatched <em>at most once</em> per task.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Action Bar */}
             <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
                 <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="text-[11px]">
                   Delivering to: <strong className="font-mono text-emerald-700 dark:text-emerald-300">{user?.email || 'your account email'}</strong>
                 </span>
+                {lastDeadlineScanTime && (
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 hidden md:inline">
+                    • Scanned: {lastDeadlineScanTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
               </div>
 
-              <button
-                type="button"
-                onClick={handleSendTestUrgentEmail}
-                disabled={isSendingEmail || !emailAlerts}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-xs transition-colors cursor-pointer"
-              >
-                {isSendingEmail ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Sending Alert...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Send Urgent Alert to My Email</span>
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleScanDeadlinesNow}
+                  disabled={isScanningDeadlines}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 disabled:opacity-50 text-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
+                >
+                  {isScanningDeadlines ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Scanning...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>Scan Deadlines Now</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSendTestUrgentEmail}
+                  disabled={isSendingEmail || !emailAlerts}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-xs transition-colors cursor-pointer"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Sending Alert...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Send Test Alert</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 

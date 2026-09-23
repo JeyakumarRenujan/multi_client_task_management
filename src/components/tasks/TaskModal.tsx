@@ -33,6 +33,7 @@ export const TaskModal: React.FC = () => {
   const [status, setStatus] = useState<TaskStatus>('todo');
   const [priority, setPriority] = useState<PriorityLevel>('medium');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('18:00');
   const [estimatedHours, setEstimatedHours] = useState<number>(3);
   const [subtasks, setSubtasks] = useState<SubTask[]>([]);
   const [subtaskInput, setSubtaskInput] = useState('');
@@ -49,6 +50,7 @@ export const TaskModal: React.FC = () => {
       setStatus(selectedTaskForEdit.status);
       setPriority(selectedTaskForEdit.priority);
       setDueDate(selectedTaskForEdit.dueDate);
+      setDueTime(selectedTaskForEdit.dueTime || '18:00');
       setEstimatedHours(selectedTaskForEdit.estimatedHours);
       setSubtasks(selectedTaskForEdit.subtasks || []);
       setTags(selectedTaskForEdit.tags || []);
@@ -63,6 +65,7 @@ export const TaskModal: React.FC = () => {
       const defaultDue = new Date();
       defaultDue.setDate(defaultDue.getDate() + 3);
       setDueDate(defaultDue.toISOString().split('T')[0]);
+      setDueTime('18:00');
       setEstimatedHours(3);
       setSubtasks([
         { id: `st-init-1`, title: 'Requirement review & draft mockup', completed: false },
@@ -139,6 +142,7 @@ export const TaskModal: React.FC = () => {
         status,
         priority,
         dueDate,
+        dueTime,
         estimatedHours: Number(estimatedHours),
         subtasks,
         tags,
@@ -152,6 +156,7 @@ export const TaskModal: React.FC = () => {
         status,
         priority,
         dueDate,
+        dueTime,
         estimatedHours: Number(estimatedHours),
         subtasks,
         tags,
@@ -255,7 +260,7 @@ export const TaskModal: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Workflow Column
@@ -282,6 +287,18 @@ export const TaskModal: React.FC = () => {
                 onChange={e => setDueDate(e.target.value)}
                 className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs md:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Due Time
+              </label>
+              <input
+                type="time"
+                value={dueTime}
+                onChange={e => setDueTime(e.target.value)}
+                className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs md:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
               />
             </div>
 

@@ -51,6 +51,12 @@ import {
   testSmtpConnection,
 } from './emailService.js';
 
+import {
+  startDeadlineScheduler,
+  scanAndDispatchDeadlines,
+  getSchedulerStatus,
+} from './scheduler.js';
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -613,6 +619,8 @@ app.post('/api/notifications/send-email-alert', async (req, res) => {
       toEmail,
       userName,
       alertType = 'urgent_task',
+      reminderStage,
+      hoursRemaining,
       task,
       urgentCount = 1,
       summary,
@@ -623,10 +631,16 @@ app.post('/api/notifications/send-email-alert', async (req, res) => {
       return res.status(400).json({ error: 'No recipient email found' });
     }
 
+    const resolvedStage =
+      reminderStage ||
+      (alertType.startsWith('deadline_') ? alertType.replace('deadline_', '') : 'urgent_task');
+
     const result = await sendUrgentWorkEmail({
       toEmail: targetEmail,
       userName: userName || user.name || activeSessionUser?.name || 'Freelancer',
       alertType,
+      reminderStage: resolvedStage,
+      hoursRemaining,
       task,
       urgentCount,
       summary,
@@ -642,6 +656,22 @@ app.post('/api/notifications/send-email-alert', async (req, res) => {
     console.error('Failed to send email alert:', err);
     res.status(500).json({ error: err.message || 'Failed to dispatch email alert' });
   }
+});
+
+// Trigger deadline scan across workspace (called by frontend interval or manual button)
+app.post('/api/notifications/check-deadlines', async (req, res) => {
+  try {
+    const results = await scanAndDispatchDeadlines();
+    res.json({ success: true, ...results });
+  } catch (err) {
+    console.error('Failed to run deadline scan:', err);
+    res.status(500).json({ error: err.message || 'Failed to execute deadline scan' });
+  }
+});
+
+// Query live scheduler status & metrics
+app.get('/api/notifications/scheduler-status', (req, res) => {
+  res.json(getSchedulerStatus());
 });
 
 // --- AI Helpers (Me Plus App Guide & Platform Assistant) ---
@@ -1079,9 +1109,11 @@ if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
     console.log(`🚀 Me Plus Backend REST API running at http://localhost:${PORT}`);
     await initDatabase();
     if (isEmailConfigured()) {
-      console.log(`✉️  [Email Service] SMTP is configured (${process.env.SMTP_HOST || 'smtp.gmail.com'}). Real OTP emails will be sent.`);
+      console.log(`✉️  [Email Service] SMTP is configured (${process.env.SMTP_HOST || 'smtp.gmail.com'}). Real OTP and deadline emails will be sent.`);
     } else {
       console.log(`✉️  [Email Service] Simulated/Dev mode. Configure SMTP_USER and SMTP_PASS in .env to send real emails.`);
     }
+    // Start automated background deadline scanner (every 5 minutes)
+    startDeadlineScheduler(5 * 60 * 1000);
   });
 }

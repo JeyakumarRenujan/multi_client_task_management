@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema(
       browser: { type: Boolean, default: true },
       sound: { type: Boolean, default: true },
       deadlineReminderHours: { type: Number, default: 24 },
+      emailDayBefore: { type: Boolean, default: true },
+      emailHoursBefore: { type: Number, default: 2 },
+      emailOverdue: { type: Boolean, default: true },
     },
     idleSettings: {
       enabled: { type: Boolean, default: true },

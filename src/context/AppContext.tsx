@@ -24,6 +24,7 @@ import {
 } from '../data/initialData';
 import { api } from '../services/api';
 import { playNotificationTone } from '../services/soundService';
+import { useDeadlineScheduler, parseTaskDeadline } from '../hooks/useDeadlineScheduler';
 
 export interface ToastMessage {
   id: string;
@@ -107,7 +108,13 @@ interface AppContextType {
   markAllNotificationsAsRead: () => void;
   addNotification: (notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => void;
   clearAllNotifications: () => void;
-  sendUrgentEmailAlert: (task?: Partial<Task>, reason?: string) => Promise<boolean>;
+  sendUrgentEmailAlert: (
+    task?: Partial<Task>,
+    reason?: string,
+    options?: { stage?: '24h' | 'imminent' | 'overdue' | 'urgent_task'; hoursRemaining?: number }
+  ) => Promise<boolean>;
+  checkAllDeadlinesNow: () => Promise<{ scanned: number; alertsDispatched: number }>;
+  lastDeadlineScanTime: Date | null;
 
   // Toast Alerts
   toasts: ToastMessage[];
@@ -900,8 +907,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [user, playAlertChime]);
 
   // Urgent Work Email Dispatcher (Delivers alerts to user's registered login email via SMTP)
+  // Urgent Work & Multi-Stage Deadline Email Dispatcher
   const sendUrgentEmailAlert = useCallback(
-    async (targetTask?: Partial<Task>, reason?: string): Promise<boolean> => {
+    async (
+      targetTask?: Partial<Task>,
+      reason?: string,
+      options?: { stage?: '24h' | 'imminent' | 'overdue' | 'urgent_task'; hoursRemaining?: number }
+    ): Promise<boolean> => {
       const targetEmail = user?.email?.trim();
       if (!targetEmail) {
         showToast({
@@ -921,17 +933,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const project = projects.find(p => p.id === taskToAlert?.projectId);
       const client = clients.find(c => c.id === taskToAlert?.clientId || c.id === project?.clientId);
       const urgentCount = tasks.filter(t => t.priority === 'urgent' && t.status !== 'done').length;
+      const stage = options?.stage || 'urgent_task';
 
       try {
         const res = await api.sendEmailAlert({
           toEmail: targetEmail,
           userName: user?.name || 'Freelancer',
-          alertType: 'urgent_deadline',
+          alertType: `deadline_${stage}`,
+          reminderStage: stage,
+          hoursRemaining: options?.hoursRemaining,
           summary:
             reason ||
             (taskToAlert
-              ? `Urgent deliverable "${taskToAlert.title}" requires immediate attention.`
-              : 'Urgent workspace deadlines and tasks are awaiting your attention.'),
+              ? `Deliverable "${taskToAlert.title}" requires attention: ${stage.toUpperCase()}.`
+              : 'Workspace deadlines and tasks are awaiting your attention.'),
           task: taskToAlert
             ? {
                 id: taskToAlert.id,
@@ -939,6 +954,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 projectName: project?.title || 'Active Project',
                 clientName: client?.name || 'Valued Client',
                 dueDate: taskToAlert.dueDate,
+                dueTime: taskToAlert.dueTime,
                 priority: taskToAlert.priority,
                 status: taskToAlert.status,
               }
@@ -948,8 +964,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
 
         if (res?.success) {
+          const stageBadge =
+            stage === '24h'
+              ? '📅 Tomorrow Alert'
+              : stage === 'imminent'
+              ? '⏰ Final Warning'
+              : stage === 'overdue'
+              ? '⚠️ Overdue Notice'
+              : '🚨 Urgent Alert';
           showToast({
-            title: '📨 Urgent Alert Dispatched',
+            title: `📨 ${stageBadge} Dispatched`,
             message: `Delivery sent to ${res.deliveredTo || targetEmail}. Check your inbox!`,
             type: 'success',
           });
@@ -970,22 +994,124 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 
   const maybeSendUrgentEmail = useCallback(
-    (task: Task, reason?: string) => {
+    (
+      task: Task,
+      reason?: string,
+      stage: '24h' | 'imminent' | 'overdue' | 'urgent_task' = 'urgent_task',
+      hoursRemaining?: number
+    ) => {
       if (!user?.email) return;
       if (user.notificationSettings?.email === false) return;
 
-      const dedupKey = `meplus_last_urgent_email_${user.id || 'usr'}_${task.id}`;
+      const sentStages = new Set(Array.isArray(task.reminderStagesSent) ? task.reminderStagesSent : []);
+      if (stage !== 'urgent_task' && sentStages.has(stage)) {
+        return; // Already sent this stage
+      }
+
+      const dedupKey = `meplus_last_alert_${user.id || 'usr'}_${task.id}_${stage}`;
       const lastSent = Number(localStorage.getItem(dedupKey) || 0);
       const now = Date.now();
-      // 12-hour throttling per specific task to prevent spamming
-      if (now - lastSent < 12 * 60 * 60 * 1000) {
+      // 6-hour throttle for identical task & stage
+      if (now - lastSent < 6 * 60 * 60 * 1000) {
         return;
       }
       localStorage.setItem(dedupKey, String(now));
-      sendUrgentEmailAlert(task, reason).catch(() => {});
+
+      if (stage !== 'urgent_task') {
+        sentStages.add(stage);
+        const updatedStages = Array.from(sentStages);
+        setTasks(prev => prev.map(t => (t.id === task.id ? { ...t, reminderStagesSent: updatedStages } : t)));
+        api.updateTask(task.id, { reminderStagesSent: updatedStages }).catch(() => {});
+      }
+
+      sendUrgentEmailAlert(task, reason, { stage, hoursRemaining }).catch(() => {});
     },
     [user, sendUrgentEmailAlert]
   );
+
+  // Update task reminder stages sent callback for useDeadlineScheduler
+  const handleUpdateTaskSentStages = useCallback((taskId: string, stages: string[]) => {
+    setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, reminderStagesSent: stages } : t)));
+    api.updateTask(taskId, { reminderStagesSent: stages }).catch(() => {});
+  }, []);
+
+  // Handle client-side deadline alert dispatch
+  const handleDispatchDeadlineAlert = useCallback(
+    async (task: Task, stage: '24h' | 'imminent' | 'overdue', hoursLeft?: number) => {
+      const dueDisplay = `${task.dueDate}${task.dueTime ? ` at ${task.dueTime}` : ''}`;
+      let notifTitle = '⏰ Approaching Task Deadline';
+      let notifMessage = `Deliverable "${task.title}" requires attention. Due: ${dueDisplay}`;
+      let notifPriority: 'urgent' | 'high' = 'high';
+
+      if (stage === '24h') {
+        notifTitle = '📅 Deadline Tomorrow!';
+        notifMessage = `Deliverable "${task.title}" is due tomorrow (${dueDisplay}). Finish review today to stay on schedule.`;
+        notifPriority = 'high';
+      } else if (stage === 'imminent') {
+        const hText = hoursLeft ? `${hoursLeft}h` : '1-2h';
+        notifTitle = `🚨 Final Warning: Due in ${hText}!`;
+        notifMessage = `Deliverable "${task.title}" is due in approximately ${hText} (${dueDisplay}). Finalize now!`;
+        notifPriority = 'urgent';
+      } else if (stage === 'overdue') {
+        notifTitle = '⚠️ Overdue Deliverable Notice';
+        notifMessage = `Deadline for "${task.title}" was ${dueDisplay} and is now overdue. Please submit or communicate extension.`;
+        notifPriority = 'urgent';
+      }
+
+      addNotification({
+        title: notifTitle,
+        message: notifMessage,
+        type: 'deadline',
+        priority: notifPriority,
+        relatedId: task.id,
+        relatedType: 'task',
+      });
+
+      if (user?.notificationSettings?.email !== false) {
+        return await sendUrgentEmailAlert(task, notifMessage, { stage, hoursRemaining: hoursLeft });
+      }
+      return true;
+    },
+    [user, addNotification, sendUrgentEmailAlert]
+  );
+
+  // Automated 60-Second Real-Time Deadline Scanner
+  const { lastCheckTime: lastDeadlineScanTime, scanNow: runClientScan } = useDeadlineScheduler({
+    user,
+    tasks,
+    onDispatchAlert: handleDispatchDeadlineAlert,
+    onUpdateTaskSentStages: handleUpdateTaskSentStages,
+  });
+
+  const checkAllDeadlinesNow = useCallback(async () => {
+    try {
+      await runClientScan();
+      const res = await api.checkDeadlines();
+      if (res && res.success) {
+        showToast({
+          title: 'Deadline Scan Complete 🎯',
+          message: `Scanned ${res.scannedTasks} tasks. ${
+            res.dispatchedAlerts?.length > 0
+              ? `Dispatched ${res.dispatchedAlerts.length} alert email(s)!`
+              : 'All active deliverables are on schedule.'
+          }`,
+          type: res.dispatchedAlerts?.length > 0 ? 'warning' : 'success',
+        });
+        return {
+          scanned: res.scannedTasks || 0,
+          alertsDispatched: res.dispatchedAlerts?.length || 0,
+        };
+      }
+    } catch (e: any) {
+      console.warn('Manual deadline scan failed:', e);
+      showToast({
+        title: 'Scan Error',
+        message: 'Could not connect to backend deadline scanner.',
+        type: 'error',
+      });
+    }
+    return { scanned: 0, alertsDispatched: 0 };
+  }, [runClientScan, showToast]);
 
   // User Actions - Strict Authentication with Bidirectional Persistence Sync
   const login = async (email: string, password?: string): Promise<{ success: boolean; error?: string }> => {
@@ -1667,31 +1793,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       undoLabel: 'Undo',
     });
 
-    // Real-Time Deadline Sound & Notification Trigger
-    const todayStr = new Date().toISOString().split('T')[0];
-    const isDueToday = newTask.dueDate === todayStr;
-    const isOverdue = newTask.dueDate < todayStr;
-    const isUrgent = newTask.priority === 'urgent' || newTask.priority === 'high' || isDueToday || isOverdue;
+    // Real-Time Deadline Sound & Notification Trigger with Stage Awareness
+    if (newTask.dueDate) {
+      const targetDeadline = parseTaskDeadline(newTask.dueDate, newTask.dueTime);
+      if (targetDeadline) {
+        const now = new Date();
+        const diffMs = targetDeadline.getTime() - now.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        const hoursThreshold = Math.max(1, Number(user?.notificationSettings?.emailHoursBefore) || 2);
 
-    if (isDueToday || isOverdue || isUrgent) {
-      addNotification({
-        title: isOverdue
-          ? '🚨 Overdue Task Alert!'
-          : isDueToday
-          ? '🚨 Urgent Deadline Today!'
-          : '⏰ High Priority Task Scheduled',
-        message: `Task "${newTask.title}" is ${
-          isOverdue ? 'already past due date' : isDueToday ? 'due today' : `scheduled for ${newTask.dueDate}`
-        }.`,
-        type: 'deadline',
-        priority: isDueToday || isOverdue ? 'urgent' : 'high',
-        relatedId: newTask.id,
-        relatedType: 'task',
-      });
-
-      // Dispatch real email alert to login mail if urgent or deadline today/overdue
-      if (newTask.priority === 'urgent' || isDueToday || isOverdue) {
-        maybeSendUrgentEmail(newTask, `Urgent task "${newTask.title}" was scheduled for ${newTask.dueDate}.`);
+        if (diffHours > hoursThreshold && diffHours <= 26 && diffHours >= 14) {
+          // Tomorrow (Stage 1)
+          addNotification({
+            title: '📅 Deadline Tomorrow!',
+            message: `Task "${newTask.title}" is due tomorrow (${newTask.dueDate}${newTask.dueTime ? ` at ${newTask.dueTime}` : ''}).`,
+            type: 'deadline',
+            priority: 'high',
+            relatedId: newTask.id,
+            relatedType: 'task',
+          });
+          maybeSendUrgentEmail(newTask, `Deliverable "${newTask.title}" is due tomorrow (${newTask.dueDate}).`, '24h', 24);
+        } else if (diffHours > 0 && diffHours <= hoursThreshold) {
+          // Imminent / 1h or 2h warning (Stage 2)
+          const hLeft = Math.max(1, Math.round(diffHours));
+          addNotification({
+            title: `🚨 Final Warning: Due in ${hLeft}h!`,
+            message: `Task "${newTask.title}" is due in approximately ${hLeft} hour${hLeft === 1 ? '' : 's'}.`,
+            type: 'deadline',
+            priority: 'urgent',
+            relatedId: newTask.id,
+            relatedType: 'task',
+          });
+          maybeSendUrgentEmail(newTask, `Urgent: Task "${newTask.title}" is due in ${hLeft} hour${hLeft === 1 ? '' : 's'}!`, 'imminent', hLeft);
+        } else if (diffHours < 0 && diffHours >= -48) {
+          // Overdue (Stage 3)
+          addNotification({
+            title: '🚨 Overdue Task Alert!',
+            message: `Task "${newTask.title}" is already past its due date (${newTask.dueDate}).`,
+            type: 'deadline',
+            priority: 'urgent',
+            relatedId: newTask.id,
+            relatedType: 'task',
+          });
+          maybeSendUrgentEmail(newTask, `Task "${newTask.title}" is past its due date.`, 'overdue');
+        } else if (newTask.priority === 'urgent') {
+          addNotification({
+            title: '⏰ Urgent Priority Task Scheduled',
+            message: `Task "${newTask.title}" is marked as Urgent Priority.`,
+            type: 'deadline',
+            priority: 'urgent',
+            relatedId: newTask.id,
+            relatedType: 'task',
+          });
+          maybeSendUrgentEmail(newTask, `Urgent deliverable "${newTask.title}" was scheduled.`, 'urgent_task');
+        }
       }
     }
 
@@ -1707,30 +1862,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
     api.updateTask(id, updates).catch(() => {});
 
-    if (updates.dueDate || updates.priority) {
-      const todayStr = new Date().toISOString().split('T')[0];
+    if (updates.dueDate || updates.dueTime || updates.priority) {
       const target = tasks.find(t => t.id === id);
       const newDue = updates.dueDate || target?.dueDate;
+      const newTime = updates.dueTime || target?.dueTime;
       const newPriority = updates.priority || target?.priority;
-      const isDueToday = newDue === todayStr;
-      const isUrgent = newPriority === 'urgent' || isDueToday;
 
-      if (isDueToday || isUrgent) {
-        addNotification({
-          title: isDueToday ? '🚨 Deadline Alert: Due Today!' : '🚨 Urgent Priority Task',
-          message: `Task "${target?.title || 'Task'}" deadline is ${isDueToday ? 'due today' : newDue}.`,
-          type: 'deadline',
-          priority: 'urgent',
-          relatedId: id,
-          relatedType: 'task',
-        });
+      if (newDue) {
+        const targetDeadline = parseTaskDeadline(newDue, newTime);
+        if (targetDeadline) {
+          const now = new Date();
+          const diffMs = targetDeadline.getTime() - now.getTime();
+          const diffHours = diffMs / (1000 * 60 * 60);
+          const hoursThreshold = Math.max(1, Number(user?.notificationSettings?.emailHoursBefore) || 2);
+          const updatedObj = { ...target, ...updates } as Task;
 
-        const updatedTaskObj = tasks.find(t => t.id === id);
-        if (updatedTaskObj) {
-          maybeSendUrgentEmail(
-            { ...updatedTaskObj, ...updates },
-            `Task "${updatedTaskObj.title}" has an urgent deadline updated to ${newDue}.`
-          );
+          if (diffHours > hoursThreshold && diffHours <= 26 && diffHours >= 14) {
+            addNotification({
+              title: '📅 Deadline Tomorrow!',
+              message: `Task "${target?.title || 'Task'}" deadline is due tomorrow (${newDue}${newTime ? ` at ${newTime}` : ''}).`,
+              type: 'deadline',
+              priority: 'high',
+              relatedId: id,
+              relatedType: 'task',
+            });
+            maybeSendUrgentEmail(updatedObj, `Task "${updatedObj.title}" deadline set to tomorrow.`, '24h', 24);
+          } else if (diffHours > 0 && diffHours <= hoursThreshold) {
+            const hLeft = Math.max(1, Math.round(diffHours));
+            addNotification({
+              title: `🚨 Final Warning: Due in ${hLeft}h!`,
+              message: `Task "${target?.title || 'Task'}" is due in ${hLeft} hour${hLeft === 1 ? '' : 's'} (${newDue}${newTime ? ` at ${newTime}` : ''}).`,
+              type: 'deadline',
+              priority: 'urgent',
+              relatedId: id,
+              relatedType: 'task',
+            });
+            maybeSendUrgentEmail(updatedObj, `Task "${updatedObj.title}" is due in ${hLeft} hour${hLeft === 1 ? '' : 's'}.`, 'imminent', hLeft);
+          } else if (newPriority === 'urgent' || (diffHours < 0 && diffHours >= -48)) {
+            addNotification({
+              title: diffHours < 0 ? '🚨 Overdue Task Alert!' : '🚨 Urgent Priority Task',
+              message: `Task "${target?.title || 'Task'}" requires immediate attention.`,
+              type: 'deadline',
+              priority: 'urgent',
+              relatedId: id,
+              relatedType: 'task',
+            });
+            maybeSendUrgentEmail(updatedObj, `Task "${updatedObj.title}" updated to urgent deadline: ${newDue}.`);
+          }
         }
       }
     }
@@ -2227,6 +2405,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addNotification,
         clearAllNotifications,
         sendUrgentEmailAlert,
+        checkAllDeadlinesNow,
+        lastDeadlineScanTime,
         toasts,
         showToast,
         dismissToast,

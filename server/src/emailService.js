@@ -312,17 +312,53 @@ function buildUrgentWorkEmailHtml({
   task,
   urgentCount = 1,
   summary,
+  reminderStage = 'urgent_task',
+  hoursRemaining,
   appUrl = 'https://multiclienttaskmanagement.vercel.app/',
 }) {
   const greeting = userName ? `Hello ${userName}` : 'Hello';
-  const taskTitle = task?.title || 'Urgent Deliverable Task';
+  const rawTitle = task?.title || 'Urgent Deliverable Task';
+  const taskTitle = rawTitle;
   const projectName = task?.projectName || task?.projectTitle || 'Client Project';
   const clientName = task?.clientName || 'Assigned Client';
-  const dueDate = task?.dueDate || task?.deadline || 'Today / Approaching Soon';
+  const dueTime = task?.dueTime ? ` at ${task.dueTime}` : '';
+  const dueDate = `${task?.dueDate || 'Approaching Deadline'}${dueTime}`;
   const priority = (task?.priority || 'urgent').toUpperCase();
+
+  let bannerTitle = '🚨 Urgent Work &amp; Approaching Deadline Alert';
+  let bannerStyle = 'background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border: 1px solid #fecdd3; border-left: 5px solid #e11d48;';
+  let bannerTitleColor = '#9f1239';
+  let bannerTextColor = '#881337';
+  let badgeText = `🔥 ${priority} PRIORITY`;
+  let stageDescription = `You have an urgent task requiring your attention. Because you may not currently be active in your workspace, we are alerting you directly via your registered login email.`;
+
+  if (reminderStage === '24h') {
+    bannerTitle = '📅 Tomorrow\'s Deadline Alert (Due in 24 Hours)';
+    bannerStyle = 'background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #a7f3d0; border-left: 5px solid #059669;';
+    bannerTitleColor = '#065f46';
+    bannerTextColor = '#047857';
+    badgeText = '📅 DUE TOMORROW';
+    stageDescription = `This deliverable is scheduled for completion <strong>tomorrow (${dueDate})</strong>. Review your progress today so you can deliver comfortably ahead of deadline without last-minute rush.`;
+  } else if (reminderStage === 'imminent') {
+    const hoursText = hoursRemaining ? `${hoursRemaining} hour${hoursRemaining === 1 ? '' : 's'}` : '1-2 hours';
+    bannerTitle = `⏰ Final Deadline Warning: Due in ${hoursText}!`;
+    bannerStyle = 'background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border: 1px solid #fecdd3; border-left: 5px solid #e11d48;';
+    bannerTitleColor = '#9f1239';
+    bannerTextColor = '#881337';
+    badgeText = `⏰ DUE IN ${hoursText.toUpperCase()}`;
+    stageDescription = `Target milestone deadline is in <strong>${hoursText} (${dueDate})</strong>! Immediate attention recommended to finalize the deliverable or notify the client.`;
+  } else if (reminderStage === 'overdue') {
+    bannerTitle = '⚠️ Overdue Notice: Deliverable Deadline Passed';
+    bannerStyle = 'background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 1px solid #fed7aa; border-left: 5px solid #ea580c;';
+    bannerTitleColor = '#9a3412';
+    bannerTextColor = '#c2410c';
+    badgeText = '⚠️ OVERDUE';
+    stageDescription = `The scheduled deadline for this deliverable (<strong>${dueDate}</strong>) has passed and is still marked incomplete. Please mark it complete or update the project milestone.`;
+  }
+
   const summaryText =
     summary ||
-    `You have ${urgentCount > 1 ? `${urgentCount} urgent deliverables` : 'an urgent task'} requiring your immediate attention.`;
+    `Task "${rawTitle}" requires your attention: ${badgeText}.`;
 
   return `
 <!DOCTYPE html>
@@ -330,7 +366,7 @@ function buildUrgentWorkEmailHtml({
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🚨 Urgent Work & Deadline Alert</title>
+  <title>${bannerTitle}</title>
   <style>
     body {
       margin: 0;
@@ -375,9 +411,7 @@ function buildUrgentWorkEmailHtml({
       padding: 32px;
     }
     .alert-banner {
-      background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
-      border: 1px solid #fecdd3;
-      border-left: 5px solid #e11d48;
+      ${bannerStyle}
       border-radius: 12px;
       padding: 16px 20px;
       margin-bottom: 24px;
@@ -385,7 +419,7 @@ function buildUrgentWorkEmailHtml({
     .alert-banner-title {
       font-size: 14px;
       font-weight: 800;
-      color: #9f1239;
+      color: ${bannerTitleColor};
       margin: 0 0 4px 0;
       display: flex;
       align-items: center;
@@ -393,7 +427,7 @@ function buildUrgentWorkEmailHtml({
     }
     .alert-banner-text {
       font-size: 13px;
-      color: #881337;
+      color: ${bannerTextColor};
       margin: 0;
       line-height: 1.5;
     }
@@ -416,10 +450,10 @@ function buildUrgentWorkEmailHtml({
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
-      padding: 3px 9px;
+      padding: 4px 10px;
       border-radius: 20px;
-      background-color: #ffe4e6;
-      color: #be123c;
+      background-color: #e0f2fe;
+      color: #0369a1;
       margin-bottom: 12px;
     }
     .meta-row {
@@ -474,17 +508,17 @@ function buildUrgentWorkEmailHtml({
       </div>
       <div class="content">
         <div class="alert-banner">
-          <div class="alert-banner-title">🚨 Urgent Work &amp; Approaching Deadline Alert</div>
+          <div class="alert-banner-title">${bannerTitle}</div>
           <p class="alert-banner-text">${summaryText}</p>
         </div>
 
         <p style="font-size: 14px; line-height: 1.6; margin-top: 0;">
           ${greeting},<br>
-          You have an urgent task requiring your attention. Because you may not currently be logged in or active in the workspace, we are notifying you directly via your registered login email.
+          ${stageDescription}
         </p>
 
         <div class="task-card">
-          <span class="badge">🔥 ${priority} Priority</span>
+          <span class="badge">${badgeText}</span>
           <div class="task-title">${taskTitle}</div>
 
           <div class="meta-row">
@@ -528,6 +562,8 @@ function buildUrgentWorkEmailHtml({
  * @param {string} options.toEmail
  * @param {string} [options.userName]
  * @param {string} [options.alertType]
+ * @param {string} [options.reminderStage] - '24h' | 'imminent' | 'overdue' | 'urgent_task'
+ * @param {number} [options.hoursRemaining]
  * @param {Object} [options.task]
  * @param {number} [options.urgentCount]
  * @param {string} [options.summary]
@@ -537,6 +573,8 @@ export async function sendUrgentWorkEmail({
   toEmail,
   userName,
   alertType = 'urgent_task',
+  reminderStage = 'urgent_task',
+  hoursRemaining,
   task,
   urgentCount = 1,
   summary,
@@ -550,7 +588,18 @@ export async function sendUrgentWorkEmail({
   const user = (process.env.SMTP_USER || DEFAULT_SMTP_USER).trim();
   const fromAddress = process.env.SMTP_FROM?.trim() || `"Me Plus Workspace" <${user}>`;
   const taskTitle = task?.title ? `"${task.title}"` : 'Urgent Deliverable';
-  const subject = `🚨 Urgent Work Alert: ${taskTitle} requires attention`;
+  const dueTime = task?.dueTime ? ` at ${task.dueTime}` : '';
+  const dueDisplay = `${task?.dueDate || 'Approaching Deadline'}${dueTime}`;
+
+  let subject = `🚨 Urgent Work Alert: ${taskTitle} requires attention`;
+  if (reminderStage === '24h') {
+    subject = `📅 Deadline Tomorrow: ${taskTitle} is due in 24 hours`;
+  } else if (reminderStage === 'imminent') {
+    const hoursText = hoursRemaining ? `${hoursRemaining} hour${hoursRemaining === 1 ? '' : 's'}` : '1-2 hours';
+    subject = `⏰ Final Warning: ${taskTitle} is due in ${hoursText}!`;
+  } else if (reminderStage === 'overdue') {
+    subject = `⚠️ Overdue Notice: ${taskTitle} deadline has passed`;
+  }
 
   const html = buildUrgentWorkEmailHtml({
     userName,
@@ -558,13 +607,15 @@ export async function sendUrgentWorkEmail({
     task,
     urgentCount,
     summary,
+    reminderStage,
+    hoursRemaining,
   });
 
-  const text = `🚨 URGENT WORK & DEADLINE ALERT\n\nHello ${userName || 'there'},\n\nYou have an urgent deliverable requiring attention:\n\nTask: ${task?.title || 'Urgent Task'}\nProject: ${task?.projectName || 'Project'}\nClient: ${task?.clientName || 'Client'}\nDue: ${task?.dueDate || 'Approaching Deadline'}\nPriority: ${(task?.priority || 'urgent').toUpperCase()}\n\nOpen your workspace to review: https://multiclienttaskmanagement.vercel.app/\n\nBest regards,\nMe Plus Workspace Team`;
+  const text = `🚨 DEADLINE & WORK DELIVERABLE ALERT\n\nHello ${userName || 'there'},\n\nDeliverable: ${task?.title || 'Deliverable Task'}\nProject: ${task?.projectName || 'Project'}\nClient: ${task?.clientName || 'Client'}\nDeadline: ${dueDisplay}\nPriority: ${(task?.priority || 'urgent').toUpperCase()}\nStage: ${reminderStage.toUpperCase()}\n\nOpen your workspace to review: https://multiclienttaskmanagement.vercel.app/\n\nBest regards,\nMe Plus Workspace Team`;
 
   if (transporter) {
     try {
-      console.log(`📨 [EMAIL SERVICE] Sending urgent work alert via SMTP to: ${normalizedEmail}...`);
+      console.log(`📨 [EMAIL SERVICE] Sending [${reminderStage}] alert via SMTP to: ${normalizedEmail}...`);
       const info = await transporter.sendMail({
         from: fromAddress,
         to: normalizedEmail,
@@ -572,7 +623,7 @@ export async function sendUrgentWorkEmail({
         text,
         html,
       });
-      console.log(`✅ [EMAIL SERVICE] Urgent alert delivered! MessageId: ${info.messageId}`);
+      console.log(`✅ [EMAIL SERVICE] [${reminderStage}] alert delivered! MessageId: ${info.messageId}`);
 
       return {
         success: true,
@@ -588,10 +639,10 @@ export async function sendUrgentWorkEmail({
 
   // Fallback dev/simulation
   console.log(`\n======================================================`);
-  console.log(`📧 [EMAIL SERVICE - URGENT ALERT SIMULATED]`);
+  console.log(`📧 [EMAIL SERVICE - ${reminderStage.toUpperCase()} ALERT SIMULATED]`);
   console.log(`To: ${normalizedEmail}`);
   console.log(`Subject: ${subject}`);
-  console.log(`Task: ${task?.title || 'Urgent Deliverable'}`);
+  console.log(`Task: ${task?.title || 'Urgent Deliverable'} (${dueDisplay})`);
   console.log(`======================================================\n`);
 
   return {
