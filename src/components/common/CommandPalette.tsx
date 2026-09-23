@@ -114,14 +114,14 @@ export const CommandPalette: React.FC = () => {
               }
             }}
             placeholder="Search clients, projects, tasks, invoices, or type a command..."
-            className="flex-1 bg-transparent border-none text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-sm md:text-base font-medium"
+            className="flex-1 bg-transparent border-none text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none text-base md:text-lg font-semibold"
           />
           <Search className="w-5 h-5 text-emerald-600 shrink-0" />
           <button
             type="button"
             onClick={() => setIsCommandPaletteOpen(false)}
             title="Press Esc to close"
-            className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer"
           >
             ESC
           </button>
@@ -135,47 +135,47 @@ export const CommandPalette: React.FC = () => {
         </div>
 
         {/* Results Body */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        <div className="flex-1 overflow-y-auto p-3.5 space-y-4">
           {/* Quick Actions */}
           {!query && (
             <div>
-              <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-2">
                 Quick Actions
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 <button
                   onClick={() => handleAction(() => setIsTaskModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg transition-colors text-left"
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors text-left cursor-pointer"
                 >
-                  <Plus className="w-4 h-4 text-emerald-600" />
+                  <Plus className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Create New Task</span>
                 </button>
                 <button
                   onClick={() => handleAction(() => setIsProjectModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg transition-colors text-left"
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors text-left cursor-pointer"
                 >
-                  <FolderKanban className="w-4 h-4 text-teal-600" />
+                  <FolderKanban className="w-4 h-4 text-teal-600 shrink-0" />
                   <span>Add New Project</span>
                 </button>
                 <button
                   onClick={() => handleAction(() => setIsClientModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg transition-colors text-left"
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors text-left cursor-pointer"
                 >
-                  <Users className="w-4 h-4 text-blue-600" />
+                  <Users className="w-4 h-4 text-blue-600 shrink-0" />
                   <span>Add New Client</span>
                 </button>
                 <button
                   onClick={() => handleAction(() => setIsAiModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-600 dark:hover:text-purple-400 rounded-lg transition-colors text-left"
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-600 dark:hover:text-purple-400 rounded-xl transition-colors text-left cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-purple-600" />
+                  <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
                   <span>Open Me Plus AI Copilot</span>
                 </button>
                 <button
                   onClick={() => handleAction(() => setIsInvoiceModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-600 dark:hover:text-amber-400 rounded-lg transition-colors text-left"
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-600 dark:hover:text-amber-400 rounded-xl transition-colors text-left cursor-pointer"
                 >
-                  <FileText className="w-4 h-4 text-amber-600" />
+                  <FileText className="w-4 h-4 text-amber-600 shrink-0" />
                   <span>Generate Invoice</span>
                 </button>
               </div>
@@ -185,7 +185,7 @@ export const CommandPalette: React.FC = () => {
           {/* Navigation Links */}
           {!query && (
             <div>
-              <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1.5">
+              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-2">
                 Navigation
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
@@ -201,9 +201,9 @@ export const CommandPalette: React.FC = () => {
                   <button
                     key={nav.tab}
                     onClick={() => handleSelectTab(nav.tab)}
-                    className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors cursor-pointer"
                   >
-                    <nav.icon className="w-3.5 h-3.5 text-slate-400" />
+                    <nav.icon className="w-4 h-4 text-slate-400" />
                     <span>{nav.label}</span>
                   </button>
                 ))}
@@ -214,7 +214,7 @@ export const CommandPalette: React.FC = () => {
           {/* Tasks Results */}
           {filteredTasks.length > 0 && (
             <div>
-              <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1">
+              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-1.5">
                 Tasks ({filteredTasks.length})
               </div>
               {filteredTasks.slice(0, 4).map(task => (
@@ -225,10 +225,10 @@ export const CommandPalette: React.FC = () => {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
                       {task.title}
                     </span>
-                    <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                    <span className="text-[11px] uppercase font-extrabold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 tracking-wide">
                       {task.status}
                     </span>
                   </div>
@@ -241,7 +241,7 @@ export const CommandPalette: React.FC = () => {
           {/* Projects Results */}
           {filteredProjects.length > 0 && (
             <div>
-              <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1">
+              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-1.5">
                 Projects ({filteredProjects.length})
               </div>
               {filteredProjects.slice(0, 3).map(p => (
@@ -252,10 +252,10 @@ export const CommandPalette: React.FC = () => {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <FolderKanban className="w-4 h-4 text-teal-600 shrink-0" />
-                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
                       {p.title}
                     </span>
-                    <span className="text-xs text-slate-400">({p.progress}%)</span>
+                    <span className="text-xs sm:text-sm font-semibold text-slate-400">({p.progress}%)</span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
                 </div>
@@ -266,7 +266,7 @@ export const CommandPalette: React.FC = () => {
           {/* Clients Results */}
           {filteredClients.length > 0 && (
             <div>
-              <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1">
+              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-1.5">
                 Clients ({filteredClients.length})
               </div>
               {filteredClients.slice(0, 3).map(c => (
@@ -277,8 +277,8 @@ export const CommandPalette: React.FC = () => {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <Users className="w-4 h-4 text-blue-600 shrink-0" />
-                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
-                      {c.name} — <span className="text-slate-400">{c.company}</span>
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
+                      {c.name} — <span className="text-slate-500 dark:text-slate-400 font-medium">{c.company}</span>
                     </span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
@@ -290,7 +290,7 @@ export const CommandPalette: React.FC = () => {
           {/* Invoices Results */}
           {filteredInvoices.length > 0 && (
             <div>
-              <div className="text-[11px] font-bold tracking-wider text-slate-400 uppercase px-2 mb-1">
+              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-1.5">
                 Invoices ({filteredInvoices.length})
               </div>
               {filteredInvoices.slice(0, 3).map(inv => (
@@ -301,7 +301,7 @@ export const CommandPalette: React.FC = () => {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <FileText className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                    <span className="text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 truncate">
                       {inv.invoiceNumber} — {inv.clientCompany || inv.clientName || 'Client'} (${((inv.total ?? (inv as any).totalAmount) ?? 0).toLocaleString()})
                     </span>
                   </div>
@@ -313,12 +313,12 @@ export const CommandPalette: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span>Navigation: <kbd className="font-mono bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↑</kbd> <kbd className="font-mono bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↓</kbd></span>
-            <span>Select: <kbd className="font-mono bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↵</kbd></span>
+        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span>Navigation: <kbd className="font-mono font-bold bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↑</kbd> <kbd className="font-mono font-bold bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↓</kbd></span>
+            <span>Select: <kbd className="font-mono font-bold bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded">↵</kbd></span>
           </div>
-          <span>Me Plus Omnibar</span>
+          <span className="font-semibold">Me Plus Omnibar</span>
         </div>
       </div>
     </div>
