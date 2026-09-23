@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Task, PriorityLevel } from '../../types';
 import { TaskKanban } from './TaskKanban';
@@ -12,6 +12,7 @@ import {
   Calendar,
   List,
   Sparkles,
+  Eye,
 } from 'lucide-react';
 
 export const TasksView: React.FC = () => {
@@ -19,6 +20,8 @@ export const TasksView: React.FC = () => {
     tasks,
     projects,
     clients,
+    highlightedTaskId,
+    setHighlightedTaskId,
     setIsTaskModalOpen,
     setSelectedTaskForEdit,
     setIsAiModalOpen,
@@ -29,6 +32,30 @@ export const TasksView: React.FC = () => {
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<'all' | PriorityLevel>('all');
+
+  // Auto-focus and point to task if navigated from search
+  useEffect(() => {
+    if (highlightedTaskId) {
+      const target = tasks.find(t => t.id === highlightedTaskId);
+      if (target) {
+        setProjectFilter('all');
+        setClientFilter('all');
+        setPriorityFilter('all');
+        setSearch(target.title);
+
+        const timer = setTimeout(() => {
+          const el =
+            document.getElementById(`task-card-${highlightedTaskId}`) ||
+            document.getElementById(`task-row-${highlightedTaskId}`) ||
+            document.getElementById(`task-mobile-${highlightedTaskId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [highlightedTaskId, tasks]);
 
   const filteredTasks = tasks.filter(task => {
     if (!task) return false;
@@ -94,6 +121,44 @@ export const TasksView: React.FC = () => {
         </div>
       </div>
 
+      {/* Pointed Task Active Banner */}
+      {highlightedTaskId && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-emerald-900 dark:text-emerald-200 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
+            </span>
+            <span>
+              Pointing to matched task: <strong className="text-emerald-700 dark:text-emerald-300 font-black">{tasks.find(t => t.id === highlightedTaskId)?.title}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                const target = tasks.find(t => t.id === highlightedTaskId);
+                if (target) handleEditTask(target);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Edit Details</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setHighlightedTaskId(null);
+                setSearch('');
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Show All Tasks
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Control & Filter Toolbar */}
       <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3">
         {/* Search */}
@@ -101,7 +166,12 @@ export const TasksView: React.FC = () => {
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => {
+              setSearch(e.target.value);
+              if (highlightedTaskId && e.target.value !== tasks.find(t => t.id === highlightedTaskId)?.title) {
+                setHighlightedTaskId(null);
+              }
+            }}
             placeholder="Search tasks, descriptions, or tags..."
             className="w-full pl-3.5 pr-9 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
@@ -192,13 +262,13 @@ export const TasksView: React.FC = () => {
       {/* Main View Content */}
       <div>
         {viewType === 'kanban' && (
-          <TaskKanban filteredTasks={filteredTasks} onEditTask={handleEditTask} />
+          <TaskKanban filteredTasks={filteredTasks} onEditTask={handleEditTask} highlightedTaskId={highlightedTaskId} />
         )}
         {viewType === 'calendar' && (
           <TaskCalendar filteredTasks={filteredTasks} onEditTask={handleEditTask} />
         )}
         {viewType === 'list' && (
-          <TaskListView filteredTasks={filteredTasks} onEditTask={handleEditTask} />
+          <TaskListView filteredTasks={filteredTasks} onEditTask={handleEditTask} highlightedTaskId={highlightedTaskId} />
         )}
       </div>
     </div>

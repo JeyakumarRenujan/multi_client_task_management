@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Project, ProjectStatus } from '../../types';
 import { ProjectCard } from './ProjectCard';
@@ -17,6 +17,8 @@ import {
   Play,
   Archive,
   RotateCcw,
+  Eye,
+  Sparkles,
 } from 'lucide-react';
 
 export const ProjectListView: React.FC = () => {
@@ -24,6 +26,8 @@ export const ProjectListView: React.FC = () => {
     projects,
     clients,
     tasks,
+    highlightedProjectId,
+    setHighlightedProjectId,
     setIsProjectModalOpen,
     setSelectedProjectForEdit,
     deleteProject,
@@ -38,6 +42,32 @@ export const ProjectListView: React.FC = () => {
   const [clientFilter, setClientFilter] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
   const [inspectedProject, setInspectedProject] = useState<Project | null>(null);
+
+  // Auto-focus and point to project if navigated from search
+  useEffect(() => {
+    if (highlightedProjectId) {
+      const target = projects.find(p => p.id === highlightedProjectId);
+      if (target) {
+        if (target.status === 'archived') {
+          setStatusFilter('archived');
+        } else {
+          setStatusFilter('all');
+        }
+        setClientFilter('all');
+        setSearch(target.title);
+
+        const timer = setTimeout(() => {
+          const el =
+            document.getElementById(`project-card-${highlightedProjectId}`) ||
+            document.getElementById(`project-row-${highlightedProjectId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [highlightedProjectId, projects]);
 
   const activeProjectsCount = projects.filter(p => p.status !== 'archived').length;
   const archivedProjectsCount = projects.filter(p => p.status === 'archived').length;
@@ -109,6 +139,44 @@ export const ProjectListView: React.FC = () => {
         </button>
       </div>
 
+      {/* Pointed Project Active Banner */}
+      {highlightedProjectId && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-emerald-900 dark:text-emerald-200 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
+            </span>
+            <span>
+              Pointing to matched project: <strong className="text-emerald-700 dark:text-emerald-300 font-black">{projects.find(p => p.id === highlightedProjectId)?.title}</strong>
+            </span>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                const target = projects.find(p => p.id === highlightedProjectId);
+                if (target) setInspectedProject(target);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Open Details</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setHighlightedProjectId(null);
+                setSearch('');
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Show All Projects
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filter and Search Bar */}
       <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Search */}
@@ -116,7 +184,12 @@ export const ProjectListView: React.FC = () => {
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => {
+              setSearch(e.target.value);
+              if (highlightedProjectId && e.target.value !== projects.find(p => p.id === highlightedProjectId)?.title) {
+                setHighlightedProjectId(null);
+              }
+            }}
             placeholder="Search projects by title or tech tag..."
             className="w-full pl-3.5 pr-9 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
@@ -246,6 +319,7 @@ export const ProjectListView: React.FC = () => {
           ) : (
             <button
               onClick={() => {
+                setHighlightedProjectId(null);
                 setSearch('');
                 setStatusFilter('all');
                 setClientFilter('all');
@@ -262,6 +336,7 @@ export const ProjectListView: React.FC = () => {
             <ProjectCard
               key={project.id}
               project={project}
+              isHighlighted={highlightedProjectId === project.id}
               onView={p => setInspectedProject(p)}
               onEdit={handleEdit}
             />
@@ -285,17 +360,27 @@ export const ProjectListView: React.FC = () => {
               {filteredProjects.map(project => {
                 const client = clients.find(c => c.id === project.clientId);
                 const isArchived = project.status === 'archived';
+                const isHighlighted = highlightedProjectId === project.id;
                 return (
                   <tr
                     key={project.id}
+                    id={`project-row-${project.id}`}
                     onClick={() => setInspectedProject(project)}
                     className={`cursor-pointer transition-colors ${
-                      isArchived
+                      isHighlighted
+                        ? 'bg-emerald-50 dark:bg-emerald-950/70 ring-2 ring-emerald-500 font-bold'
+                        : isArchived
                         ? 'bg-slate-50/60 dark:bg-slate-900/40 hover:bg-slate-100/70 dark:hover:bg-slate-800/50 opacity-90'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
                     }`}
                   >
                     <td className="py-3.5 px-4">
+                      {isHighlighted && (
+                        <div className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full mb-1 shadow-xs">
+                          <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
+                          <span>Pointed Project &bull; Matched Search</span>
+                        </div>
+                      )}
                       <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                         {isArchived && <Archive className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
                         <span>{project.title}</span>

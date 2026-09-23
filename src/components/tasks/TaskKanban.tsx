@@ -9,14 +9,16 @@ import {
   Edit2,
   Trash2,
   CheckSquare,
+  Sparkles,
 } from 'lucide-react';
 
 interface TaskKanbanProps {
   filteredTasks: Task[];
   onEditTask: (task: Task) => void;
+  highlightedTaskId?: string | null;
 }
 
-export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTask }) => {
+export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTask, highlightedTaskId }) => {
   const {
     projects,
     clients,
@@ -136,16 +138,29 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
 
                   const completedSubtasks = task.subtasks.filter(s => s.completed).length;
 
+                  const isHighlighted = highlightedTaskId === task.id;
+
                   return (
                     <div
                       key={task.id}
+                      id={`task-card-${task.id}`}
                       draggable
                       onDragStart={e => handleDragStart(e, task.id)}
                       onClick={() => onEditTask(task)}
-                      className={`p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all cursor-grab active:cursor-grabbing group ${
-                        draggedTaskId === task.id ? 'opacity-50' : ''
-                      }`}
+                      className={`p-3.5 rounded-xl border shadow-sm transition-all cursor-grab active:cursor-grabbing group ${
+                        isHighlighted
+                          ? 'ring-4 ring-emerald-500/60 shadow-2xl scale-[1.03] border-emerald-500 dark:border-emerald-500 bg-emerald-50/40 dark:bg-slate-800'
+                          : 'bg-white dark:bg-slate-800/90 border-slate-200/80 dark:border-slate-700/60 hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600'
+                      } ${draggedTaskId === task.id ? 'opacity-50' : ''}`}
                     >
+                      {/* Pointed Task Badge */}
+                      {isHighlighted && (
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700/80 text-[10px] font-black text-emerald-800 dark:text-emerald-300 mb-2 w-fit shadow-xs">
+                          <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
+                          <span>Pointed Task &bull; Matched Search</span>
+                        </div>
+                      )}
+
                       {/* Card Top: Client & Priority */}
                       <div className="flex items-center justify-between gap-1 mb-2">
                         {client ? (

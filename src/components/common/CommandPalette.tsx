@@ -24,6 +24,9 @@ export const CommandPalette: React.FC = () => {
     invoices,
     setActiveTab,
     setHighlightedClientId,
+    setHighlightedProjectId,
+    setHighlightedTaskId,
+    setHighlightedInvoiceId,
     setIsClientModalOpen,
     setIsProjectModalOpen,
     setIsTaskModalOpen,
@@ -241,7 +244,11 @@ export const CommandPalette: React.FC = () => {
               {filteredTasks.slice(0, 4).map(task => (
                 <div
                   key={task.id}
-                  onClick={() => handleSelectTab('tasks')}
+                  onClick={() => {
+                    setHighlightedTaskId(task.id);
+                    setActiveTab('tasks');
+                    setIsCommandPaletteOpen(false);
+                  }}
                   className="flex items-center justify-between p-2.5 hover:bg-emerald-50/60 dark:hover:bg-slate-800/70 rounded-xl cursor-pointer transition-colors group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -268,7 +275,11 @@ export const CommandPalette: React.FC = () => {
               {filteredProjects.slice(0, 3).map(p => (
                 <div
                   key={p.id}
-                  onClick={() => handleSelectTab('projects')}
+                  onClick={() => {
+                    setHighlightedProjectId(p.id);
+                    setActiveTab('projects');
+                    setIsCommandPaletteOpen(false);
+                  }}
                   className="flex items-center justify-between p-2.5 hover:bg-emerald-50/60 dark:hover:bg-slate-800/70 rounded-xl cursor-pointer transition-colors group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -327,7 +338,11 @@ export const CommandPalette: React.FC = () => {
               {filteredInvoices.slice(0, 3).map(inv => (
                 <div
                   key={inv.id}
-                  onClick={() => handleSelectTab('invoices')}
+                  onClick={() => {
+                    setHighlightedInvoiceId(inv.id);
+                    setActiveTab('invoices');
+                    setIsCommandPaletteOpen(false);
+                  }}
                   className="flex items-center justify-between p-2.5 hover:bg-emerald-50/60 dark:hover:bg-slate-800/70 rounded-xl cursor-pointer transition-colors group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">

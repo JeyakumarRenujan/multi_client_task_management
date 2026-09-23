@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Invoice, InvoiceStatus } from '../../types';
 import { downloadInvoicePdf } from './pdfGenerator';
@@ -13,12 +13,16 @@ import {
   Edit2,
   Trash2,
   FolderKanban,
+  Eye,
+  Sparkles,
 } from 'lucide-react';
 
 export const InvoiceListView: React.FC = () => {
   const {
     invoices,
     projects,
+    highlightedInvoiceId,
+    setHighlightedInvoiceId,
     setIsInvoiceModalOpen,
     setSelectedInvoiceForEdit,
     updateInvoiceStatus,
@@ -30,6 +34,27 @@ export const InvoiceListView: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | InvoiceStatus>('all');
+
+  // Auto-focus and point to invoice if navigated from search
+  useEffect(() => {
+    if (highlightedInvoiceId) {
+      const target = invoices.find(i => i.id === highlightedInvoiceId);
+      if (target) {
+        setStatusFilter('all');
+        setSearch(target.invoiceNumber);
+
+        const timer = setTimeout(() => {
+          const el =
+            document.getElementById(`invoice-row-${highlightedInvoiceId}`) ||
+            document.getElementById(`invoice-card-${highlightedInvoiceId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [highlightedInvoiceId, invoices]);
 
   const getInvTotal = (i: Invoice) => (i.total ?? (i as any).totalAmount ?? 0);
 
@@ -190,6 +215,44 @@ export const InvoiceListView: React.FC = () => {
         </div>
       </div>
 
+      {/* Pointed Invoice Active Banner */}
+      {highlightedInvoiceId && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-700/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm font-semibold text-emerald-900 dark:text-emerald-200 animate-fade-in shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
+            </span>
+            <span>
+              Pointing to matched invoice: <strong className="text-emerald-700 dark:text-emerald-300 font-black">{invoices.find(i => i.id === highlightedInvoiceId)?.invoiceNumber}</strong> &mdash; {invoices.find(i => i.id === highlightedInvoiceId)?.clientCompany || 'Client'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                const target = invoices.find(i => i.id === highlightedInvoiceId);
+                if (target) handleEdit(target);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer inline-flex items-center gap-1.5"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Edit Details</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setHighlightedInvoiceId(null);
+                setSearch('');
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-emerald-300 dark:border-emerald-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Show All Invoices
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filter and Search Bar */}
       <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Search */}
@@ -197,7 +260,12 @@ export const InvoiceListView: React.FC = () => {
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => {
+              setSearch(e.target.value);
+              if (highlightedInvoiceId && e.target.value !== invoices.find(i => i.id === highlightedInvoiceId)?.invoiceNumber) {
+                setHighlightedInvoiceId(null);
+              }
+            }}
             placeholder="Search invoice number, client, project, or description..."
             className="w-full pl-3.5 pr-9 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs md:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
@@ -259,13 +327,25 @@ export const InvoiceListView: React.FC = () => {
             {filteredInvoices.map(inv => {
               const linkedProject = projects.find(p => p.id === inv.projectId);
               const isPaid = inv.status === 'paid';
+              const isHighlighted = highlightedInvoiceId === inv.id;
 
               return (
                 <div
                   key={inv.id}
+                  id={`invoice-card-${inv.id}`}
                   onClick={() => handleEdit(inv)}
-                  className="p-3.5 space-y-2.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+                  className={`p-3.5 space-y-2.5 transition-colors cursor-pointer ${
+                    isHighlighted
+                      ? 'bg-emerald-50 dark:bg-emerald-950/70 ring-4 ring-emerald-500/60 shadow-xl rounded-xl'
+                      : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
+                  }`}
                 >
+                  {isHighlighted && (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700/80 text-[10px] font-black text-emerald-800 dark:text-emerald-300 mb-1 w-fit shadow-xs">
+                      <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
+                      <span>Pointed Invoice &bull; Matched Search</span>
+                    </div>
+                  )}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -375,16 +455,28 @@ export const InvoiceListView: React.FC = () => {
                 const linkedProject = projects.find(p => p.id === inv.projectId);
                 const firstDescription = inv.items?.[0]?.description || 'Project Deliverables';
                 const isPaid = inv.status === 'paid';
+                const isHighlighted = highlightedInvoiceId === inv.id;
 
                 return (
                   <tr
                     key={inv.id}
+                    id={`invoice-row-${inv.id}`}
                     onClick={() => handleEdit(inv)}
-                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                    className={`cursor-pointer transition-colors ${
+                      isHighlighted
+                        ? 'bg-emerald-50 dark:bg-emerald-950/70 ring-2 ring-emerald-500 font-bold'
+                        : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
+                    }`}
                   >
                     {/* Invoice Number */}
                     <td className="py-3.5 px-4 font-mono font-bold text-sm text-slate-900 dark:text-white">
-                      {inv.invoiceNumber}
+                      {isHighlighted && (
+                        <div className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full mb-1 shadow-xs">
+                          <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
+                          <span>Pointed Invoice &bull; Matched Search</span>
+                        </div>
+                      )}
+                      <div>{inv.invoiceNumber}</div>
                     </td>
 
                     {/* Client & Project */}

@@ -9,16 +9,19 @@ import {
   Calendar,
   Clock,
   Tag,
+  Sparkles,
 } from 'lucide-react';
 
 interface TaskListViewProps {
   filteredTasks: Task[];
   onEditTask: (task: Task) => void;
+  highlightedTaskId?: string | null;
 }
 
 export const TaskListView: React.FC<TaskListViewProps> = ({
   filteredTasks,
   onEditTask,
+  highlightedTaskId,
 }) => {
   const {
     projects,
@@ -45,13 +48,25 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
             const client = clients.find(c => c.id === task.clientId);
             const isOverdue = task.dueDate < todayStr && task.status !== 'done';
             const completedSubtasks = task.subtasks.filter(s => s.completed).length;
+            const isHighlighted = highlightedTaskId === task.id;
 
             return (
               <div
                 key={task.id}
+                id={`task-mobile-${task.id}`}
                 onClick={() => onEditTask(task)}
-                className="p-3.5 space-y-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors cursor-pointer"
+                className={`p-3.5 space-y-2.5 transition-colors cursor-pointer ${
+                  isHighlighted
+                    ? 'bg-emerald-50 dark:bg-emerald-950/70 ring-4 ring-emerald-500/60 shadow-xl rounded-xl'
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                }`}
               >
+                {isHighlighted && (
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/90 border border-emerald-300 dark:border-emerald-700/80 text-[10px] font-black text-emerald-800 dark:text-emerald-300 mb-1 w-fit shadow-xs">
+                    <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
+                    <span>Pointed Task &bull; Matched Search</span>
+                  </div>
+                )}
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2.5 min-w-0">
                     <button
@@ -193,13 +208,26 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
               const isOverdue = task.dueDate < todayStr && task.status !== 'done';
               const completedSubtasks = task.subtasks.filter(s => s.completed).length;
 
+              const isHighlighted = highlightedTaskId === task.id;
+
               return (
                 <tr
                   key={task.id}
+                  id={`task-row-${task.id}`}
                   onClick={() => onEditTask(task)}
-                  className="hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-colors"
+                  className={`cursor-pointer transition-colors ${
+                    isHighlighted
+                      ? 'bg-emerald-50 dark:bg-emerald-950/70 ring-2 ring-emerald-500 font-bold'
+                      : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                  }`}
                 >
                   <td className="py-3.5 px-4 max-w-[240px]">
+                    {isHighlighted && (
+                      <div className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full mb-1 shadow-xs">
+                        <Sparkles className="w-3 h-3 text-emerald-600 animate-spin" />
+                        <span>Pointed Task &bull; Matched Search</span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2.5">
                       <button
                         onClick={e => {
