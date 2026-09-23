@@ -269,10 +269,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setIsAccentMenuOpen(!isAccentMenuOpen)}
             title="Change Theme Accent Color"
-            className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer relative shadow-2xs"
+            className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors cursor-pointer relative"
           >
-            <Palette className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="absolute bottom-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+            <Palette className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
           </button>
 
           {isAccentMenuOpen && (
@@ -318,9 +318,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           onClick={toggleTheme}
           title={`Switch to ${actualTheme === 'dark' ? 'Light' : 'Dark'} mode`}
-          className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer shadow-2xs"
+          className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors cursor-pointer"
         >
-          {actualTheme === 'dark' ? <Sun className="w-4.5 h-4.5 text-amber-400" /> : <Moon className="w-4.5 h-4.5 text-slate-600 dark:text-slate-300" />}
+          {actualTheme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-600 dark:text-slate-300" />}
         </button>
 
         {/* Notification Bell with Badge */}
@@ -328,11 +328,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
             title="Notifications & Deadline Alerts"
-            className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 rounded-xl transition-all relative cursor-pointer shadow-2xs"
+            className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 transition-colors relative cursor-pointer"
           >
-            <Bell className="w-4.5 h-4.5" />
+            <Bell className="w-5 h-5" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white font-black text-[10px] rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs">
+              <span className="absolute top-0.5 right-0.5 min-w-4 h-4 px-1 bg-rose-500 text-white font-black text-[10px] rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs">
                 {unreadNotificationsCount}
               </span>
             )}
@@ -350,12 +350,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               title={user.name}
-              className="w-10 h-10 flex items-center justify-center p-0.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all cursor-pointer shadow-2xs group"
+              className="flex items-center p-0.5 rounded-xl transition-all cursor-pointer group"
             >
               <img
                 src={user.avatar}
                 alt={user.name}
-                className="w-full h-full rounded-[10px] object-cover ring-1 ring-emerald-500/40 group-hover:ring-emerald-500 transition-all"
+                className="w-8.5 h-8.5 rounded-xl object-cover ring-2 ring-emerald-500/40 group-hover:ring-emerald-500 transition-all"
               />
             </button>
 
