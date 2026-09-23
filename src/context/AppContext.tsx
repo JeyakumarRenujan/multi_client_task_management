@@ -55,7 +55,8 @@ interface AppContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
-  register: (name: string, email: string, password: string, profession?: string) => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, email: string, password: string, profession?: string, otp?: string) => Promise<{ success: boolean; error?: string }>;
+  sendRegistrationOtp: (email: string, name?: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }>;
   forgotPassword: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }>;
   verifyOtp: (email: string, otp: string) => Promise<{ success: boolean; error?: string; message?: string; resetToken?: string }>;
   resendOtp: (email: string) => Promise<{ success: boolean; error?: string; message?: string; otpPreview?: string; isRealEmail?: boolean; expiresInSeconds?: number }>;
@@ -1277,11 +1278,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  const sendRegistrationOtp = async (
+    email: string,
+    name?: string
+  ): Promise<{
+    success: boolean;
+    error?: string;
+    message?: string;
+    otpPreview?: string;
+    isRealEmail?: boolean;
+    expiresInSeconds?: number;
+  }> => {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      return { success: false, error: 'Please enter a valid email address.' };
+    }
+
+    // Check if user already exists in local registered accounts
+    const existsLocally = registeredUsers.some(u => u.email.toLowerCase() === normalizedEmail);
+    if (existsLocally) {
+      return {
+        success: false,
+        error: 'An account with this email address already exists. Please sign in instead.',
+      };
+    }
+
+    try {
+      const res = await api.sendRegistrationOtp(normalizedEmail, name);
+      if (res && res.success) {
+        return {
+          success: true,
+          message: res.message,
+          otpPreview: res.otpPreview,
+          isRealEmail: res.isRealEmail,
+          expiresInSeconds: res.expiresInSeconds,
+        };
+      }
+    } catch (err: any) {
+      if (err?.message?.includes('already exists')) {
+        return { success: false, error: err.message };
+      }
+      console.warn('Backend sendRegistrationOtp unreachable, falling back:', err);
+    }
+
+    // Fallback simulated OTP for offline/static environments
+    const dummyOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    sessionStorage.setItem(`meplus_reg_otp_${normalizedEmail}`, dummyOtp);
+    return {
+      success: true,
+      message: `A 6-digit verification code has been dispatched to ${normalizedEmail}.`,
+      otpPreview: dummyOtp,
+      isRealEmail: false,
+      expiresInSeconds: 600,
+    };
+  };
+
   const register = async (
     name: string,
     email: string,
     password: string,
-    profession?: string
+    profession?: string,
+    otp?: string
   ): Promise<{ success: boolean; error?: string }> => {
     const normalizedEmail = (email || '').trim().toLowerCase();
 
@@ -1295,12 +1353,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Password must be at least 6 characters long.' };
     }
 
+    // Verify OTP if provided / required
+    if (otp) {
+      const cleanOtp = otp.trim();
+      const savedFallbackOtp = sessionStorage.getItem(`meplus_reg_otp_${normalizedEmail}`);
+      if (savedFallbackOtp && savedFallbackOtp !== cleanOtp) {
+        return { success: false, error: 'Invalid 6-digit verification code. Please check your email and try again.' };
+      }
+    }
+
     const deterministicId = getDeterministicUserId(normalizedEmail);
 
     // 1. Try backend REST API
     try {
-      const res = await api.register(name.trim(), normalizedEmail, password, profession);
+      const res = await api.register(name.trim(), normalizedEmail, password, profession, otp);
       if (res && res.user) {
+        sessionStorage.removeItem(`meplus_reg_otp_${normalizedEmail}`);
         const authenticatedUser: UserProfile = {
           ...res.user,
           id: deterministicId,
@@ -1317,14 +1385,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           },
         ]);
         showToast({
-          title: 'Account Created!',
+          title: 'Account Verified & Created!',
           message: `Welcome to Me Plus, ${name}! Your fresh workspace is ready.`,
           type: 'success',
         });
         return { success: true };
       }
     } catch (err: any) {
-      if (err?.message?.includes('already exists')) {
+      if (err?.message?.includes('already exists') || err?.message?.includes('verification code') || err?.message?.includes('Invalid')) {
         return { success: false, error: err.message };
       }
     }
@@ -1339,6 +1407,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     // Local client registration fallback (e.g. for static/Vercel environments)
+    sessionStorage.removeItem(`meplus_reg_otp_${normalizedEmail}`);
     const newUserAccount: RegisteredAccount = {
       id: deterministicId,
       name: name.trim(),
@@ -1366,7 +1435,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setUser(newUserProfile);
     showToast({
-      title: 'Account Created!',
+      title: 'Account Verified & Created!',
       message: `Welcome to Me Plus, ${name}! Your fresh workspace is ready.`,
       type: 'success',
     });
@@ -2400,6 +2469,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isAuthenticated: !!user,
         login,
         register,
+        sendRegistrationOtp,
         forgotPassword,
         verifyOtp,
         resendOtp,

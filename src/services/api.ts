@@ -38,10 +38,23 @@ export const api = {
       body: JSON.stringify({ email, password }),
     }),
 
-  register: (name: string, email: string, password?: string, profession?: string) =>
+  sendRegistrationOtp: (email: string, name?: string) =>
+    fetchJson<{
+      success: boolean;
+      message: string;
+      email: string;
+      otpPreview?: string;
+      isRealEmail?: boolean;
+      expiresInSeconds?: number;
+    }>('/auth/send-registration-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, name }),
+    }),
+
+  register: (name: string, email: string, password?: string, profession?: string, otp?: string) =>
     fetchJson<{ success: boolean; user: UserProfile }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password, profession }),
+      body: JSON.stringify({ name, email, password, profession, otp }),
     }),
 
   forgotPassword: (email: string) =>

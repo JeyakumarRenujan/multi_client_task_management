@@ -132,8 +132,49 @@ app.post('/api/auth/login', async (req, res) => {
   res.json({ success: true, user: safeUser });
 });
 
+app.post('/api/auth/send-registration-otp', async (req, res) => {
+  const { email, name } = req.body;
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ error: 'A valid email address is required' });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const alreadyExists = await findUserByEmail(normalizedEmail);
+  if (alreadyExists) {
+    return res.status(409).json({
+      error: 'An account with this email address already exists. Please sign in instead.',
+    });
+  }
+
+  // Generate a secure 6-digit numeric OTP and save to DB
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  await saveOtp(normalizedEmail, otp, 10);
+
+  try {
+    const emailResult = await sendOtpEmail({
+      toEmail: normalizedEmail,
+      otp,
+      userName: name || 'Freelancer',
+      type: 'registration',
+    });
+
+    return res.json({
+      success: true,
+      message: `A 6-digit verification code has been sent to ${normalizedEmail}. Please check your email inbox and spam folder.`,
+      email: normalizedEmail,
+      isRealEmail: emailResult.isRealEmail,
+      expiresInSeconds: 600,
+    });
+  } catch (err) {
+    console.error('❌ Failed to deliver registration OTP email:', err);
+    return res.status(500).json({
+      error: `Failed to deliver verification email: ${err.message || 'SMTP delivery error'}.`,
+    });
+  }
+});
+
 app.post('/api/auth/register', async (req, res) => {
-  const { name, email, password, profession } = req.body;
+  const { name, email, password, profession, otp } = req.body;
 
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Full name is required' });
@@ -146,6 +187,15 @@ app.post('/api/auth/register', async (req, res) => {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
+
+  // If OTP is provided, verify it first before creating account
+  if (otp) {
+    const otpResult = await verifyOtp(normalizedEmail, otp);
+    if (!otpResult.success) {
+      return res.status(400).json({ error: otpResult.error || 'Invalid or expired verification code.' });
+    }
+  }
+
   const alreadyExists = await findUserByEmail(normalizedEmail);
 
   if (alreadyExists) {

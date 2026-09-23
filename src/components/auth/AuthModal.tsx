@@ -19,6 +19,7 @@ import {
   PenTool,
   Inbox,
   Copy,
+  RefreshCw,
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -27,7 +28,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { login, register, forgotPassword, verifyOtp, resendOtp, resetPassword, loginDemoUser } = useApp();
+  const { login, register, sendRegistrationOtp, forgotPassword, verifyOtp, resendOtp, resetPassword, loginDemoUser } = useApp();
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
 
   // Form states
@@ -41,6 +42,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   // Visibility states
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Registration OTP states
+  const [registerStep, setRegisterStep] = useState<'form' | 'otp'>('form');
+  const [registerOtp, setRegisterOtp] = useState('');
+  const [registerOtpPreview, setRegisterOtpPreview] = useState('');
+  const [registerResendCooldown, setRegisterResendCooldown] = useState(0);
+  const [isRegisterResending, setIsRegisterResending] = useState(false);
 
   // Forgot password states
   const [forgotStep, setForgotStep] = useState<'email' | 'otp' | 'reset' | 'success'>('email');
@@ -59,7 +67,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Resend cooldown timer
+  // Registration Resend cooldown timer
+  useEffect(() => {
+    let timer: any;
+    if (registerResendCooldown > 0) {
+      timer = setInterval(() => {
+        setRegisterResendCooldown(prev => (prev <= 1 ? 0 : prev - 1));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [registerResendCooldown]);
+
+  // Forgot Resend cooldown timer
   useEffect(() => {
     let timer: any;
     if (resendCooldown > 0) {
@@ -93,10 +112,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setSuccessMessage('');
     setPassword('');
     setConfirmPassword('');
+    setRegisterStep('form');
+    setRegisterOtp('');
+    setRegisterOtpPreview('');
+    setRegisterResendCooldown(0);
+    setIsRegisterResending(false);
     setOtp('');
     setOtpPreview('');
     setResetToken('');
     setResendCooldown(0);
+    setIsResending(false);
     setNewPassword('');
     setConfirmNewPassword('');
     setForgotStep('email');
@@ -158,16 +183,57 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
+    setIsLoading(true);
+    const res = await sendRegistrationOtp(email.trim().toLowerCase(), name.trim());
+    setIsLoading(false);
+
+    if (res.success) {
+      setRegisterOtpPreview(res.otpPreview || '');
+      setRegisterResendCooldown(60);
+      setRegisterStep('otp');
+      setSuccessMessage(res.message || `We've sent a 6-digit verification code to ${email}.`);
+    } else {
+      setError(res.error || 'Failed to dispatch verification code. Please check your email.');
+    }
+  };
+
+  const handleRegisterOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (registerOtp.length !== 6) {
+      setError('Please enter the full 6-digit verification code.');
+      return;
+    }
+
+    const isOther = profession === 'Other (Specify your own)';
     const finalProfession = isOther ? customProfession.trim() : profession;
 
     setIsLoading(true);
-    const res = await register(name, email, password, finalProfession);
+    const res = await register(name, email, password, finalProfession, registerOtp);
     setIsLoading(false);
 
     if (res.success) {
       onClose();
     } else if (res.error) {
       setError(res.error);
+    }
+  };
+
+  const handleResendRegisterOtp = async () => {
+    if (registerResendCooldown > 0 || isRegisterResending) return;
+    setIsRegisterResending(true);
+    setError('');
+
+    const res = await sendRegistrationOtp(email.trim().toLowerCase(), name.trim());
+    setIsRegisterResending(false);
+
+    if (res.success) {
+      setRegisterOtpPreview(res.otpPreview || '');
+      setRegisterResendCooldown(60);
+      setSuccessMessage(res.message || 'A fresh verification code has been dispatched to your email.');
+    } else {
+      setError(res.error || 'Failed to resend code. Please try again.');
     }
   };
 
@@ -297,7 +363,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* 1-Click Demo Evaluation Banner */}
-        {mode !== 'forgot' && (
+        {mode !== 'forgot' && registerStep === 'form' && (
           <div className="mb-5 p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between shadow-2xs">
             <div className="flex items-center gap-2.5">
               <div className="p-1.5 rounded-xl bg-emerald-600 text-white">
@@ -324,7 +390,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
 
         {/* Tab switch */}
-        {mode !== 'forgot' ? (
+        {mode !== 'forgot' && registerStep === 'form' ? (
           <div className="flex rounded-2xl bg-slate-100 dark:bg-slate-800 p-1 mb-6 border border-slate-200 dark:border-slate-700 text-sm sm:text-[15px] font-bold">
             <button
               type="button"
@@ -350,15 +416,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </button>
           </div>
         ) : (
-          <div className="mb-4 flex items-center gap-2">
+          <div className="mb-4 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => resetAllFormStates('login')}
+              onClick={() => {
+                if (mode === 'register' && registerStep === 'otp') {
+                  setRegisterStep('form');
+                  setRegisterOtp('');
+                  setError('');
+                } else {
+                  resetAllFormStates('login');
+                }
+              }}
               className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Sign In</span>
+              <span>{mode === 'register' && registerStep === 'otp' ? 'Back to Registration' : 'Back to Sign In'}</span>
             </button>
+            {mode === 'register' && registerStep === 'otp' && (
+              <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                Email Verification
+              </span>
+            )}
           </div>
         )}
 
@@ -451,7 +530,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
 
         {/* --- 2. REGISTER FORM --- */}
-        {mode === 'register' && (
+        {mode === 'register' && registerStep === 'form' && (
           <form onSubmit={handleRegisterSubmit} className="space-y-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -600,8 +679,112 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               disabled={isLoading}
               className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-60"
             >
-              <span>{isLoading ? 'Creating Account...' : 'Create Free Account'}</span>
+              <span>{isLoading ? 'Verifying & Sending Code...' : 'Continue to Email Verification'}</span>
               <ArrowRight className="w-4 h-4" />
+            </button>
+            <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-1">
+              A 6-digit verification code will be sent to your email to verify account authenticity.
+            </p>
+          </form>
+        )}
+
+        {/* --- 2B. REGISTRATION EMAIL OTP VERIFICATION --- */}
+        {mode === 'register' && registerStep === 'otp' && (
+          <form onSubmit={handleRegisterOtpSubmit} className="space-y-3">
+            <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 truncate">
+                <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="truncate">Sent code to: <strong>{email}</strong></span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setRegisterStep('form');
+                  setRegisterOtp('');
+                  setError('');
+                }}
+                className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
+              >
+                Change Email
+              </button>
+            </div>
+
+            <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-slate-800 dark:text-slate-200 text-xs">
+              <div className="flex items-start gap-2.5">
+                <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold text-emerald-950 dark:text-emerald-300">Verification Email Dispatched</div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                    We've dispatched your 6-digit verification code to <strong>{email}</strong>. Check your inbox and spam folder. An invalid or non-existent email address cannot complete registration.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {registerOtpPreview && (
+              <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-900 dark:text-amber-200 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Inbox className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span>Demo/Dev Code: <strong className="font-mono text-sm tracking-wider text-amber-700 dark:text-amber-300">{registerOtpPreview}</strong></span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setRegisterOtp(registerOtpPreview)}
+                  className="text-[10px] font-bold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer flex items-center gap-0.5"
+                >
+                  <Copy className="w-3 h-3" /> Auto-fill
+                </button>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                6-Digit Verification Code *
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={registerOtp}
+                  onChange={e => setRegisterOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-center text-base sm:text-lg font-mono font-black tracking-[0.35em] text-slate-900 dark:text-slate-100 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                  required
+                  disabled={isLoading}
+                  autoFocus
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>
+              {registerResendCooldown > 0 ? (
+                <span className="text-slate-400 font-medium">
+                  Resend in <strong className="font-mono text-emerald-600 dark:text-emerald-400">{registerResendCooldown}s</strong>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendRegisterOtp}
+                  disabled={isRegisterResending}
+                  className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer inline-flex items-center gap-1 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isRegisterResending ? 'animate-spin' : ''}`} />
+                  <span>Resend Code</span>
+                </button>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || registerOtp.length !== 6}
+              className="w-full mt-2 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm md:text-base shadow-lg shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{isLoading ? 'Verifying & Creating Workspace...' : 'Verify Email & Activate Workspace'}</span>
             </button>
           </form>
         )}

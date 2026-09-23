@@ -32,7 +32,7 @@ import {
 } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
-  const { login, register, forgotPassword, verifyOtp, resendOtp, resetPassword, loginDemoUser } = useApp();
+  const { login, register, sendRegistrationOtp, forgotPassword, verifyOtp, resendOtp, resetPassword, loginDemoUser } = useApp();
   const { actualTheme, toggleTheme, accentColor, setAccentColor } = useTheme();
   const [isAccentMenuOpen, setIsAccentMenuOpen] = useState(false);
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
@@ -48,6 +48,13 @@ export const AuthPage: React.FC = () => {
   // Password visibility
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Registration OTP flow state: 'form' -> 'otp'
+  const [registerStep, setRegisterStep] = useState<'form' | 'otp'>('form');
+  const [registerOtp, setRegisterOtp] = useState('');
+  const [registerOtpPreview, setRegisterOtpPreview] = useState('');
+  const [registerResendCooldown, setRegisterResendCooldown] = useState(0);
+  const [isRegisterResending, setIsRegisterResending] = useState(false);
 
   // Forgot password OTP flow state: 'email' -> 'otp' -> 'reset' -> 'success'
   const [forgotStep, setForgotStep] = useState<'email' | 'otp' | 'reset' | 'success'>('email');
@@ -91,6 +98,16 @@ export const AuthPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    if (registerResendCooldown > 0) {
+      timer = setInterval(() => {
+        setRegisterResendCooldown(prev => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [registerResendCooldown]);
+
   const resetAllFormStates = (newMode: 'login' | 'register' | 'forgot') => {
     setMode(newMode);
     setError('');
@@ -104,6 +121,10 @@ export const AuthPage: React.FC = () => {
     setResetToken('');
     setResendCooldown(0);
     setForgotStep('email');
+    setRegisterStep('form');
+    setRegisterOtp('');
+    setRegisterOtpPreview('');
+    setRegisterResendCooldown(0);
     setIsLoading(false);
   };
 
@@ -162,15 +183,60 @@ export const AuthPage: React.FC = () => {
       return;
     }
 
+    // Dispatch verification OTP to verify the email exists and belongs to the user
+    setIsLoading(true);
+    const res = await sendRegistrationOtp(email, name);
+    setIsLoading(false);
+
+    if (!res.success) {
+      setError(res.error || 'Failed to dispatch verification code. Please check your email.');
+      return;
+    }
+
+    setRegisterOtpPreview(res.otpPreview || '');
+    setRegisterResendCooldown(60);
+    setRegisterStep('otp');
+    setSuccessMessage(res.message || `A 6-digit verification code has been dispatched to ${email}.`);
+  };
+
+  const handleRegisterOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    const cleanOtp = registerOtp.trim();
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      setError('Please enter the complete 6-digit verification code sent to your email.');
+      return;
+    }
+
+    const isOther = profession === 'Other (Specify your own)';
     const finalProfession = isOther ? customProfession.trim() : profession;
 
     setIsLoading(true);
-    const res = await register(name, email, password, finalProfession);
+    const res = await register(name, email, password, finalProfession, cleanOtp);
     setIsLoading(false);
 
     if (!res.success && res.error) {
       setError(res.error);
     }
+  };
+
+  const handleResendRegisterOtp = async () => {
+    if (registerResendCooldown > 0 || isRegisterResending) return;
+    setError('');
+    setIsRegisterResending(true);
+    const res = await sendRegistrationOtp(email, name);
+    setIsRegisterResending(false);
+
+    if (!res.success) {
+      setError(res.error || 'Failed to resend verification code.');
+      return;
+    }
+
+    setRegisterOtpPreview(res.otpPreview || '');
+    setRegisterResendCooldown(60);
+    setSuccessMessage(res.message || 'A new 6-digit verification code has been dispatched to your email.');
   };
 
   const handleForgotStep1Submit = async (e: React.FormEvent) => {
@@ -490,7 +556,7 @@ export const AuthPage: React.FC = () => {
                 )}
 
                 {/* Segmented Tab Switcher: Sign In / Create Account */}
-                {mode !== 'forgot' ? (
+                {mode !== 'forgot' && registerStep !== 'otp' ? (
                   <div className="p-1 bg-slate-100 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 rounded-xl grid grid-cols-2 gap-1 mb-3.5 text-sm sm:text-[15px] font-bold shadow-inner">
                     <button
                       type="button"
@@ -519,11 +585,19 @@ export const AuthPage: React.FC = () => {
                   <div className="mb-2.5">
                     <button
                       type="button"
-                      onClick={() => resetAllFormStates('login')}
+                      onClick={() => {
+                        if (registerStep === 'otp') {
+                          setRegisterStep('form');
+                          setRegisterOtp('');
+                          setError('');
+                        } else {
+                          resetAllFormStates('login');
+                        }
+                      }}
                       className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>Back to Sign In</span>
+                      <span>{registerStep === 'otp' ? 'Back to Account Details' : 'Back to Sign In'}</span>
                     </button>
                   </div>
                 )}
@@ -546,6 +620,11 @@ export const AuthPage: React.FC = () => {
                     </>
                   ) : mode === 'login' ? (
                     'Sign In to Workspace'
+                  ) : registerStep === 'otp' ? (
+                    <>
+                      <Mail className="w-4 h-4 text-emerald-600" />
+                      <span>Verify Your Email Address</span>
+                    </>
                   ) : (
                     'Create Your Workspace'
                   )}
@@ -561,6 +640,8 @@ export const AuthPage: React.FC = () => {
                       : 'Your password has been changed. You can now log in.'
                     : mode === 'login'
                     ? 'Enter your email and password to continue'
+                    : registerStep === 'otp'
+                    ? `Enter the 6-digit verification code sent to ${email} to activate your workspace`
                     : 'Fill in your details to create your freelancer account'}
                 </p>
               </div>
@@ -654,7 +735,7 @@ export const AuthPage: React.FC = () => {
               )}
 
               {/* --- 2. CREATE ACCOUNT FORM --- */}
-              {mode === 'register' && (
+              {mode === 'register' && registerStep === 'form' && (
                 <form onSubmit={handleRegisterSubmit} className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     {/* Full Name */}
@@ -814,8 +895,119 @@ export const AuthPage: React.FC = () => {
                     disabled={isLoading}
                     className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   >
-                    <span>{isLoading ? 'Creating Account...' : 'Create Free Account'}</span>
+                    <span>{isLoading ? 'Verifying & Sending Code...' : 'Continue to Email Verification'}</span>
                     <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-2">
+                    A 6-digit verification code will be sent to your email to verify account authenticity.
+                  </p>
+                </form>
+              )}
+
+              {/* --- 2B. REGISTRATION EMAIL OTP VERIFICATION --- */}
+              {mode === 'register' && registerStep === 'otp' && (
+                <form onSubmit={handleRegisterOtpSubmit} className="space-y-3">
+                  {/* Sent-to banner with Change option */}
+                  <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="truncate">Sent code to: <strong>{email}</strong></span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRegisterStep('form');
+                        setRegisterOtp('');
+                        setError('');
+                      }}
+                      className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
+                    >
+                      Change Email
+                    </button>
+                  </div>
+
+                  {/* Real Email Dispatched Notice */}
+                  <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-slate-800 dark:text-slate-200 text-xs">
+                    <div className="flex items-start gap-2.5">
+                      <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="font-bold text-emerald-950 dark:text-emerald-300">Verification Email Dispatched</div>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                          We've dispatched your 6-digit verification code to <strong>{email}</strong>. Check your inbox and spam folder. An invalid or non-existent email address cannot complete registration.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Simulated/Dev Mode Preview Banner (Only shown if offline/preview available) */}
+                  {registerOtpPreview && (
+                    <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-900 dark:text-amber-200 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Inbox className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span>Demo/Dev Code: <strong className="font-mono text-sm tracking-wider text-amber-700 dark:text-amber-300">{registerOtpPreview}</strong></span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setRegisterOtp(registerOtpPreview)}
+                        className="text-[10px] font-bold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer flex items-center gap-0.5"
+                      >
+                        <Copy className="w-3 h-3" /> Auto-fill
+                      </button>
+                    </div>
+                  )}
+
+                  {/* OTP Input Field */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      6-Digit Verification Code *
+                    </label>
+                    <div className="relative">
+                      <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={6}
+                        value={registerOtp}
+                        onChange={e => setRegisterOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        placeholder="000000"
+                        className="w-full pl-9 pr-3 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-center text-base sm:text-lg font-mono font-black tracking-[0.35em] text-slate-900 dark:text-slate-100 placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                        required
+                        disabled={isLoading}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  {/* Resend OTP Bar */}
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>
+                    {registerResendCooldown > 0 ? (
+                      <span className="text-slate-400 font-medium">
+                        Resend in <strong className="font-mono text-emerald-600 dark:text-emerald-400">{registerResendCooldown}s</strong>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResendRegisterOtp}
+                        disabled={isRegisterResending}
+                        className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer inline-flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${isRegisterResending ? 'animate-spin' : ''}`} />
+                        <span>Resend Code</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading || registerOtp.length !== 6}
+                    className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{isLoading ? 'Verifying & Creating Workspace...' : 'Verify Email & Activate Workspace'}</span>
                   </button>
                 </form>
               )}

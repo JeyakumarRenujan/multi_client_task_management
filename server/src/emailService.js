@@ -90,8 +90,10 @@ export async function testSmtpConnection() {
 /**
  * Build responsive HTML template for OTP verification email
  */
-function buildOtpEmailHtml({ otp, userName, toEmail }) {
+function buildOtpEmailHtml({ otp, userName, toEmail, type = 'reset' }) {
   const greeting = userName ? `Hello ${userName}` : 'Hello';
+  const isRegistration = type === 'registration';
+  const pageTitle = isRegistration ? 'Account Verification Code' : 'Password Reset Verification Code';
 
   return `
 <!DOCTYPE html>
@@ -99,7 +101,7 @@ function buildOtpEmailHtml({ otp, userName, toEmail }) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Password Reset Verification Code</title>
+  <title>${pageTitle}</title>
   <style>
     body {
       margin: 0;
@@ -221,12 +223,14 @@ function buildOtpEmailHtml({ otp, userName, toEmail }) {
       <div class="content">
         <p class="greeting">${greeting},</p>
         <p class="description">
-          We received a request to reset your password for your <strong>Me Plus</strong> account (<code>${toEmail}</code>).
-          Use the 6-digit verification code below to complete your password reset:
+          ${isRegistration
+            ? `Thank you for creating your account on <strong>Me Plus Workspace</strong> (<code>${toEmail}</code>). Please use the 6-digit verification code below to verify your email address and activate your workspace:`
+            : `We received a request to reset your password for your <strong>Me Plus</strong> account (<code>${toEmail}</code>). Use the 6-digit verification code below to complete your password reset:`
+          }
         </p>
         
         <div class="otp-card">
-          <div class="otp-label">Verification Code</div>
+          <div class="otp-label">${isRegistration ? 'Account Verification Code' : 'Verification Code'}</div>
           <div class="otp-code">${otp}</div>
           <div class="otp-expiry">⏱️ Valid for 10 minutes</div>
         </div>
@@ -236,7 +240,10 @@ function buildOtpEmailHtml({ otp, userName, toEmail }) {
         </div>
 
         <p class="description" style="margin-bottom: 0; font-size: 13px;">
-          If you did not request a password reset, you can safely disregard this email. Your account remains secure.
+          ${isRegistration
+            ? 'If you did not attempt to create a Me Plus account with this email address, you can safely disregard this email.'
+            : 'If you did not request a password reset, you can safely disregard this email. Your account remains secure.'
+          }
         </p>
       </div>
       <div class="footer">
@@ -257,10 +264,20 @@ function buildOtpEmailHtml({ otp, userName, toEmail }) {
  * @param {string} options.toEmail
  * @param {string} options.otp
  * @param {string} [options.userName]
+ * @param {'registration' | 'reset'} [options.type]
  * @returns {Promise<{ success: boolean, messageId?: string, isRealEmail: boolean }>}
  */
-export async function sendOtpEmail({ toEmail, otp, userName }) {
+export async function sendOtpEmail({ toEmail, otp, userName, type = 'reset' }) {
   const normalizedEmail = (toEmail || '').trim().toLowerCase();
+  const isRegistration = type === 'registration';
+
+  const subject = isRegistration
+    ? `${otp} is your Me Plus account verification code`
+    : `${otp} is your Me Plus password reset verification code`;
+
+  const textBody = isRegistration
+    ? `Hello ${userName || 'there'},\n\nYour Me Plus account verification code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not create this account, you can safely ignore this email.\n\nBest regards,\nMe Plus Workspace Team`
+    : `Hello ${userName || 'there'},\n\nYour Me Plus password reset verification code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not request this, you can safely ignore this email.\n\nBest regards,\nMe Plus Workspace Team`;
 
   // If email service is configured, send real email
   if (isEmailConfigured()) {
@@ -272,12 +289,12 @@ export async function sendOtpEmail({ toEmail, otp, userName }) {
     const mailOptions = {
       from: fromAddress,
       to: normalizedEmail,
-      subject: `${otp} is your Me Plus password reset verification code`,
-      text: `Hello ${userName || 'there'},\n\nYour Me Plus password reset verification code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not request this, you can safely ignore this email.\n\nBest regards,\nMe Plus Workspace Team`,
-      html: buildOtpEmailHtml({ otp, userName, toEmail: normalizedEmail }),
+      subject,
+      text: textBody,
+      html: buildOtpEmailHtml({ otp, userName, toEmail: normalizedEmail, type }),
     };
 
-    console.log(`📨 [EMAIL SERVICE] Sending real email via SMTP to: ${normalizedEmail}...`);
+    console.log(`📨 [EMAIL SERVICE] Sending real ${type} verification email via SMTP to: ${normalizedEmail}...`);
     const info = await transporter.sendMail(mailOptions);
     console.log(`✅ [EMAIL SERVICE] Email delivered successfully! MessageId: ${info.messageId}`);
 
@@ -292,7 +309,7 @@ export async function sendOtpEmail({ toEmail, otp, userName }) {
   console.log(`\n======================================================`);
   console.log(`📧 [EMAIL SERVICE - SIMULATED / DEV MODE]`);
   console.log(`To: ${normalizedEmail}`);
-  console.log(`Subject: ${otp} is your Me Plus password reset verification code`);
+  console.log(`Subject: ${subject}`);
   console.log(`OTP Code: 👉 ${otp} 👈 (Valid for 10 minutes)`);
   console.log(`💡 Tip: To send real emails to inboxes, configure SMTP_USER and SMTP_PASS in .env`);
   console.log(`======================================================\n`);
