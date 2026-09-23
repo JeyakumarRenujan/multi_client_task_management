@@ -32,11 +32,15 @@ const MainContent: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
-  // Scroll to top of main content whenever the active tab changes
+  // Scroll to top of main content and window whenever the active tab changes
   useEffect(() => {
     if (mainRef.current) {
-      mainRef.current.scrollTo({ top: 0, behavior: 'instant' });
+      mainRef.current.scrollTop = 0;
+      mainRef.current.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   }, [activeTab]);
 
   // If user is not authenticated, show the dedicated Full Auth Page
@@ -87,7 +91,11 @@ const MainContent: React.FC = () => {
         />
 
         {/* Dynamic Main Workspace Content Viewport (Scrolls independently) */}
-        <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full min-w-0">
+        <main
+          key={activeTab}
+          ref={mainRef}
+          className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full min-w-0"
+        >
           {renderActiveView()}
         </main>
       </div>
