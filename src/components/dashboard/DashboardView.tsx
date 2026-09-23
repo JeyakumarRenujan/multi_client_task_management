@@ -25,12 +25,6 @@ interface ThemeAccentConfig {
   cursorClass: string;
   cursorShadow: string;
   accentText: string;
-  accentTextMuted: string;
-  badgeBorder: string;
-  badgeText: string;
-  heroGradient: string;
-  glow1: string;
-  glow2: string;
   modalBtnGradient: string;
 }
 
@@ -43,76 +37,46 @@ const THEME_ACCENTS: Record<AccentColor, ThemeAccentConfig> = {
     cursorClass: 'bg-emerald-400',
     cursorShadow: '0 0 8px rgba(52, 211, 153, 0.9)',
     accentText: 'text-emerald-300',
-    accentTextMuted: 'text-emerald-200',
-    badgeBorder: 'border-emerald-400/25',
-    badgeText: 'text-emerald-100',
-    heroGradient: 'bg-gradient-to-r from-whatsapp-dark via-whatsapp-teal to-whatsapp-dark',
-    glow1: 'bg-whatsapp-light/25',
-    glow2: 'bg-teal-300/15',
     modalBtnGradient: 'from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-emerald-700/20',
   },
   rose: {
     beamConic:
       'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(244, 63, 94, 0.25) 300deg, #f43f5e 325deg, #fb7185 345deg, #fda4af 355deg, #ffffff 360deg)',
-    borderGlitchClass: 'border-rose-400/40',
-    borderGlitchStyle: { borderColor: 'rgba(251, 113, 133, 0.4)' },
+    borderGlitchClass: 'border-rose-400/50',
+    borderGlitchStyle: { borderColor: 'rgba(251, 113, 133, 0.5)' },
     cursorClass: 'bg-rose-400',
     cursorShadow: '0 0 8px rgba(251, 113, 133, 0.9)',
     accentText: 'text-rose-300',
-    accentTextMuted: 'text-rose-200',
-    badgeBorder: 'border-rose-400/25',
-    badgeText: 'text-rose-100',
-    heroGradient: 'bg-gradient-to-r from-[#2a0b16] via-[#431422] to-[#1c080e]',
-    glow1: 'bg-rose-500/25',
-    glow2: 'bg-pink-400/15',
     modalBtnGradient: 'from-rose-600 via-pink-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 shadow-rose-700/20',
   },
   blue: {
     beamConic:
       'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(59, 130, 246, 0.25) 300deg, #3b82f6 325deg, #60a5fa 345deg, #93c5fd 355deg, #ffffff 360deg)',
-    borderGlitchClass: 'border-blue-400/40',
-    borderGlitchStyle: { borderColor: 'rgba(96, 165, 250, 0.4)' },
+    borderGlitchClass: 'border-blue-400/50',
+    borderGlitchStyle: { borderColor: 'rgba(96, 165, 250, 0.5)' },
     cursorClass: 'bg-blue-400',
     cursorShadow: '0 0 8px rgba(96, 165, 250, 0.9)',
     accentText: 'text-blue-300',
-    accentTextMuted: 'text-blue-200',
-    badgeBorder: 'border-blue-400/25',
-    badgeText: 'text-blue-100',
-    heroGradient: 'bg-gradient-to-r from-[#0c223a] via-[#133152] to-[#081726]',
-    glow1: 'bg-blue-500/25',
-    glow2: 'bg-sky-400/15',
     modalBtnGradient: 'from-blue-600 via-sky-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-700/20',
   },
   purple: {
     beamConic:
       'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(168, 85, 247, 0.25) 300deg, #a855f7 325deg, #c084fc 345deg, #d8b4fe 355deg, #ffffff 360deg)',
-    borderGlitchClass: 'border-purple-400/40',
-    borderGlitchStyle: { borderColor: 'rgba(192, 132, 252, 0.4)' },
+    borderGlitchClass: 'border-purple-400/50',
+    borderGlitchStyle: { borderColor: 'rgba(192, 132, 252, 0.5)' },
     cursorClass: 'bg-purple-400',
     cursorShadow: '0 0 8px rgba(192, 132, 252, 0.9)',
     accentText: 'text-purple-300',
-    accentTextMuted: 'text-purple-200',
-    badgeBorder: 'border-purple-400/25',
-    badgeText: 'text-purple-100',
-    heroGradient: 'bg-gradient-to-r from-[#210936] via-[#351056] to-[#140522]',
-    glow1: 'bg-purple-500/25',
-    glow2: 'bg-fuchsia-400/15',
     modalBtnGradient: 'from-purple-600 via-fuchsia-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-purple-700/20',
   },
   amber: {
     beamConic:
       'conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 270deg, rgba(245, 158, 11, 0.25) 300deg, #f59e0b 325deg, #fbbf24 345deg, #fde68a 355deg, #ffffff 360deg)',
-    borderGlitchClass: 'border-amber-400/40',
-    borderGlitchStyle: { borderColor: 'rgba(251, 191, 36, 0.4)' },
+    borderGlitchClass: 'border-amber-400/50',
+    borderGlitchStyle: { borderColor: 'rgba(251, 191, 36, 0.5)' },
     cursorClass: 'bg-amber-400',
     cursorShadow: '0 0 8px rgba(251, 191, 36, 0.9)',
     accentText: 'text-amber-300',
-    accentTextMuted: 'text-amber-200',
-    badgeBorder: 'border-amber-400/25',
-    badgeText: 'text-amber-100',
-    heroGradient: 'bg-gradient-to-r from-[#2e1805] via-[#482506] to-[#1c0f03]',
-    glow1: 'bg-amber-500/25',
-    glow2: 'bg-yellow-400/15',
     modalBtnGradient: 'from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-amber-700/20',
   },
 };
@@ -333,23 +297,23 @@ export const DashboardView: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Welcome Hero Banner with Signature WhatsApp Green/Teal Theme */}
-      <div className={`relative overflow-hidden rounded-2xl sm:rounded-3xl ${activeThemeAccent.heroGradient} text-white p-4 sm:p-6 md:p-8 shadow-xl border ${activeThemeAccent.badgeBorder} transition-colors duration-500`}>
-        {/* Soft luminous ambient glows matching theme */}
-        <div className={`absolute top-0 right-0 -mt-8 -mr-8 w-80 h-80 ${activeThemeAccent.glow1} rounded-full blur-3xl pointer-events-none transition-colors duration-500`} />
-        <div className={`absolute bottom-0 left-1/3 -mb-8 w-60 h-60 ${activeThemeAccent.glow2} rounded-full blur-2xl pointer-events-none transition-colors duration-500`} />
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-whatsapp-dark via-whatsapp-teal to-whatsapp-dark text-white p-4 sm:p-6 md:p-8 shadow-xl border border-emerald-400/25">
+        {/* Soft luminous ambient glows matching signature green style */}
+        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-80 h-80 bg-whatsapp-light/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-8 w-60 h-60 bg-teal-300/15 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
           <div className="min-w-0 flex-1">
             {/* Live Date & Time Badges */}
-            <div className={`flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs font-semibold ${activeThemeAccent.badgeText} mb-2 sm:mb-2.5`}>
-              <div className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-slate-950/30 border ${activeThemeAccent.badgeBorder} backdrop-blur-xs text-[11px] sm:text-xs`}>
-                <Calendar className={`w-3.5 h-3.5 ${activeThemeAccent.accentText}`} />
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 text-xs font-semibold text-emerald-100 mb-2 sm:mb-2.5">
+              <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-slate-950/30 border border-emerald-400/25 backdrop-blur-xs text-[11px] sm:text-xs">
+                <Calendar className="w-3.5 h-3.5 text-emerald-300" />
                 <span>{todayFormatted}</span>
               </div>
-              <div className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-slate-950/30 border ${activeThemeAccent.badgeBorder} backdrop-blur-xs text-[11px] sm:text-xs`}>
-                <span className={`w-2 h-2 rounded-full ${activeThemeAccent.cursorClass} animate-pulse`} />
-                <Clock className={`w-3.5 h-3.5 ${activeThemeAccent.accentText}`} />
+              <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-slate-950/30 border border-emerald-400/25 backdrop-blur-xs text-[11px] sm:text-xs">
+                <span className="w-2 h-2 rounded-full bg-whatsapp-light animate-pulse" />
+                <Clock className="w-3.5 h-3.5 text-emerald-300" />
                 <span className="font-mono">{timeFormatted}</span>
               </div>
             </div>
@@ -359,7 +323,7 @@ export const DashboardView: React.FC = () => {
               {getGreeting()}, {user?.name ? user.name.split(' ')[0] : 'Freelancer'}!
             </h1>
 
-            <p className={`text-xs sm:text-sm ${activeThemeAccent.badgeText}/90 mt-1 max-w-xl leading-relaxed`}>
+            <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 max-w-xl leading-relaxed">
               Your client projects, pending task deadlines, and productive work sessions are unified in one centralized workspace.
             </p>
           </div>
@@ -398,7 +362,7 @@ export const DashboardView: React.FC = () => {
                   type="button"
                   onClick={handleNextSpark}
                   title="Discover Next Daily Spark"
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${activeThemeAccent.accentTextMuted} hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer group/spark active:scale-95`}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer group/spark active:scale-95"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${activeThemeAccent.accentText} group-hover/spark:rotate-12 transition-transform`} />
                   <span>New Spark</span>
@@ -407,7 +371,7 @@ export const DashboardView: React.FC = () => {
 
               {/* Quote Content with Typewriter Animation, Simple Modern Font & Reduced Balanced Size */}
               <div className="h-[50px] flex items-center overflow-hidden my-auto">
-                <p className="text-xs sm:text-[13px] md:text-sm font-medium italic text-white/95 leading-snug tracking-normal line-clamp-2 select-text">
+                <p className="text-xs sm:text-[13px] md:text-sm font-medium italic text-emerald-50 leading-snug tracking-normal line-clamp-2 select-text">
                   <span className={`${activeThemeAccent.accentText} not-italic font-serif text-sm mr-0.5 select-none opacity-90`}>“</span>
                   {displayedQuote}
                   <span className={`${activeThemeAccent.accentText} not-italic font-serif text-sm ml-0.5 select-none opacity-90`}>”</span>
