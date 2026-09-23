@@ -312,54 +312,56 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
             ? 'border-slate-300/80'
             : 'border-slate-200/80'
         }`}>
-          {/* Real-Time Sidebar Color Customizer */}
-          <div className="flex items-center justify-between px-1">
-            <span className={`text-xs font-bold uppercase tracking-wider ${getSectionHeaderClass()}`}>
-              Sidebar Style
-            </span>
-            <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Sidebar style">
-              <button
-                type="button"
-                onClick={() => setSidebarTheme('slate')}
-                title="Cool Slate (Blue-gray tone)"
-                className={`w-4 h-4 rounded-full bg-[#cbd5e1] border ${
-                  sidebarTheme === 'slate'
-                    ? 'ring-2 ring-primary-500 ring-offset-1 border-slate-500 scale-110'
-                    : 'border-slate-400'
-                } cursor-pointer transition-all hover:scale-125`}
-              />
-              <button
-                type="button"
-                onClick={() => setSidebarTheme('sage')}
-                title={`${softSidebarTheme.name} (${softSidebarTheme.tone})`}
-                className={`w-4 h-4 rounded-full bg-primary-300 border ${
-                  sidebarTheme === 'sage'
-                    ? 'ring-2 ring-primary-500 ring-offset-1 border-primary-600 scale-110'
-                    : 'border-primary-400'
-                } cursor-pointer transition-all hover:scale-125`}
-              />
-              <button
-                type="button"
-                onClick={() => setSidebarTheme('dark')}
-                title="Deep Slate (High contrast dark sidebar)"
-                className={`w-4 h-4 rounded-full bg-slate-900 border ${
-                  sidebarTheme === 'dark'
-                    ? 'ring-2 ring-primary-500 ring-offset-1 border-slate-600 scale-110'
-                    : 'border-slate-700'
-                } cursor-pointer transition-all hover:scale-125`}
-              />
-              <button
-                type="button"
-                onClick={() => setSidebarTheme('white')}
-                title="Classic White"
-                className={`w-4 h-4 rounded-full bg-white border ${
-                  sidebarTheme === 'white'
-                    ? 'ring-2 ring-primary-500 ring-offset-1 border-slate-400 scale-110'
-                    : 'border-slate-300'
-                } cursor-pointer transition-all hover:scale-125`}
-              />
+          {/* Real-Time Sidebar Color Customizer (Only visible in Light mode, as Dark mode uses unified dark styling) */}
+          {!isDark && (
+            <div className="flex items-center justify-between px-1">
+              <span className={`text-xs font-bold uppercase tracking-wider ${getSectionHeaderClass()}`}>
+                Sidebar Style
+              </span>
+              <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Sidebar style">
+                <button
+                  type="button"
+                  onClick={() => setSidebarTheme('slate')}
+                  title="Cool Slate (Blue-gray tone)"
+                  className={`w-4 h-4 rounded-full bg-[#cbd5e1] border ${
+                    sidebarTheme === 'slate'
+                      ? 'ring-2 ring-primary-500 ring-offset-1 border-slate-500 scale-110'
+                      : 'border-slate-400'
+                  } cursor-pointer transition-all hover:scale-125`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setSidebarTheme('sage')}
+                  title={`${softSidebarTheme.name} (${softSidebarTheme.tone})`}
+                  className={`w-4 h-4 rounded-full bg-primary-300 border ${
+                    sidebarTheme === 'sage'
+                      ? 'ring-2 ring-primary-500 ring-offset-1 border-primary-600 scale-110'
+                      : 'border-primary-400'
+                  } cursor-pointer transition-all hover:scale-125`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setSidebarTheme('dark')}
+                  title="Deep Slate (High contrast dark sidebar)"
+                  className={`w-4 h-4 rounded-full bg-slate-900 border ${
+                    sidebarTheme === 'dark'
+                      ? 'ring-2 ring-primary-500 ring-offset-1 border-slate-600 scale-110'
+                      : 'border-slate-700'
+                  } cursor-pointer transition-all hover:scale-125`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setSidebarTheme('white')}
+                  title="Classic White"
+                  className={`w-4 h-4 rounded-full bg-white border ${
+                    sidebarTheme === 'white'
+                      ? 'ring-2 ring-primary-500 ring-offset-1 border-slate-400 scale-110'
+                      : 'border-slate-300'
+                  } cursor-pointer transition-all hover:scale-125`}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* User Sign Out Action Button */}
           {user && (

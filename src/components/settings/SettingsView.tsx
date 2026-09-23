@@ -675,109 +675,111 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Left Sidebar Contrast & Color Mode */}
-        <div>
-          <div className="mb-2">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              Left Navigation Bar Style (Light Theme)
-            </label>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
-              Choose a distinct tone for the left sidebar so it doesn't blend into the white content area
-            </p>
+        {/* Left Sidebar Contrast & Color Mode (Only functional and visible in Light mode) */}
+        {actualTheme !== 'dark' && (
+          <div>
+            <div className="mb-2">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                Left Navigation Bar Style (Light Theme)
+              </label>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Choose a distinct tone for the left sidebar so it doesn't blend into the white content area
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+              {/* Slate (Default) */}
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('slate')}
+                className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                  sidebarTheme === 'slate'
+                    ? 'border-primary-500 bg-slate-100/90 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-4 h-4 rounded-full bg-[#cbd5e1] border border-slate-400 shadow-2xs" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Cool Slate</span>
+                  {sidebarTheme === 'slate' && (
+                    <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                  Cool blue-gray tone with distinct contrast.
+                </p>
+              </button>
+
+              {/* Soft Theme Tint (Dynamic to Accent Color) */}
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('sage')}
+                className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                  sidebarTheme === 'sage'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-4 h-4 rounded-full bg-primary-300 border border-primary-500 shadow-2xs" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                    {softSidebarTheme.name}
+                  </span>
+                  {sidebarTheme === 'sage' && (
+                    <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                  {softSidebarTheme.desc}
+                </p>
+              </button>
+
+              {/* Deep Slate (High Contrast) */}
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('dark')}
+                className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                  sidebarTheme === 'dark'
+                    ? 'border-primary-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-4 h-4 rounded-full bg-slate-900 border border-slate-700 shadow-2xs" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Deep Slate</span>
+                  {sidebarTheme === 'dark' && (
+                    <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                  High-contrast dark sidebar for focus.
+                </p>
+              </button>
+
+              {/* Classic White */}
+              <button
+                type="button"
+                onClick={() => setSidebarTheme('white')}
+                className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
+                  sidebarTheme === 'white'
+                    ? 'border-primary-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
+                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-4 h-4 rounded-full bg-white border border-slate-300 shadow-2xs" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Classic White</span>
+                  {sidebarTheme === 'white' && (
+                    <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                  Minimal monochrome clean white.
+                </p>
+              </button>
+            </div>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
-            {/* Slate (Default) */}
-            <button
-              type="button"
-              onClick={() => setSidebarTheme('slate')}
-              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
-                sidebarTheme === 'slate'
-                  ? 'border-primary-500 bg-slate-100/90 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-4 h-4 rounded-full bg-[#cbd5e1] border border-slate-400 shadow-2xs" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Cool Slate</span>
-                {sidebarTheme === 'slate' && (
-                  <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                Cool blue-gray tone with distinct contrast.
-              </p>
-            </button>
-
-            {/* Soft Theme Tint (Dynamic to Accent Color) */}
-            <button
-              type="button"
-              onClick={() => setSidebarTheme('sage')}
-              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
-                sidebarTheme === 'sage'
-                  ? 'border-primary-500 bg-primary-50 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-4 h-4 rounded-full bg-primary-300 border border-primary-500 shadow-2xs" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  {softSidebarTheme.name}
-                </span>
-                {sidebarTheme === 'sage' && (
-                  <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                {softSidebarTheme.desc}
-              </p>
-            </button>
-
-            {/* Deep Slate (High Contrast) */}
-            <button
-              type="button"
-              onClick={() => setSidebarTheme('dark')}
-              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
-                sidebarTheme === 'dark'
-                  ? 'border-primary-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-4 h-4 rounded-full bg-slate-900 border border-slate-700 shadow-2xs" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Deep Slate</span>
-                {sidebarTheme === 'dark' && (
-                  <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                High-contrast dark sidebar for focus.
-              </p>
-            </button>
-
-            {/* Classic White */}
-            <button
-              type="button"
-              onClick={() => setSidebarTheme('white')}
-              className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
-                sidebarTheme === 'white'
-                  ? 'border-primary-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-4 h-4 rounded-full bg-white border border-slate-300 shadow-2xs" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Classic White</span>
-                {sidebarTheme === 'white' && (
-                  <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                Minimal monochrome clean white.
-              </p>
-            </button>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Idle Animation & Inactivity Screensaver */}
