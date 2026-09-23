@@ -199,6 +199,30 @@ export const api = {
     fetchJson<{ success: boolean }>('/notifications', {
       method: 'DELETE',
     }),
+  sendEmailAlert: (data: {
+    toEmail?: string;
+    userName?: string;
+    alertType?: string;
+    task?: {
+      id?: string;
+      title: string;
+      projectName?: string;
+      clientName?: string;
+      dueDate?: string;
+      priority?: string;
+      status?: string;
+    };
+    urgentCount?: number;
+    summary?: string;
+    userId?: string;
+  }) =>
+    fetchJson<{ success: boolean; deliveredTo: string; isRealEmail: boolean; messageId?: string }>(
+      '/notifications/send-email-alert',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    ),
 
   // AI Chat & Multi-Provider Connection
   sendAiMessage: (

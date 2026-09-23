@@ -334,3 +334,4 @@ export const parseStoredPhone = (
 
   return { countryCode: '+94', localNumber: formatAsYouType(cleaned, '+94') };
 };
+

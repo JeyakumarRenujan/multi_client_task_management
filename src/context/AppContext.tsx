@@ -107,6 +107,7 @@ interface AppContextType {
   markAllNotificationsAsRead: () => void;
   addNotification: (notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => void;
   clearAllNotifications: () => void;
+  sendUrgentEmailAlert: (task?: Partial<Task>, reason?: string) => Promise<boolean>;
 
   // Toast Alerts
   toasts: ToastMessage[];
@@ -898,6 +899,94 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [user, playAlertChime]);
 
+  // Urgent Work Email Dispatcher (Delivers alerts to user's registered login email via SMTP)
+  const sendUrgentEmailAlert = useCallback(
+    async (targetTask?: Partial<Task>, reason?: string): Promise<boolean> => {
+      const targetEmail = user?.email?.trim();
+      if (!targetEmail) {
+        showToast({
+          title: 'Email Alert',
+          message: 'No login email registered with your account.',
+          type: 'warning',
+        });
+        return false;
+      }
+
+      const taskToAlert =
+        targetTask ||
+        tasks.find(t => t.priority === 'urgent' && t.status !== 'done') ||
+        tasks.find(t => t.status !== 'done') ||
+        tasks[0];
+
+      const project = projects.find(p => p.id === taskToAlert?.projectId);
+      const client = clients.find(c => c.id === taskToAlert?.clientId || c.id === project?.clientId);
+      const urgentCount = tasks.filter(t => t.priority === 'urgent' && t.status !== 'done').length;
+
+      try {
+        const res = await api.sendEmailAlert({
+          toEmail: targetEmail,
+          userName: user?.name || 'Freelancer',
+          alertType: 'urgent_deadline',
+          summary:
+            reason ||
+            (taskToAlert
+              ? `Urgent deliverable "${taskToAlert.title}" requires immediate attention.`
+              : 'Urgent workspace deadlines and tasks are awaiting your attention.'),
+          task: taskToAlert
+            ? {
+                id: taskToAlert.id,
+                title: taskToAlert.title || 'Urgent Deliverable',
+                projectName: project?.title || 'Active Project',
+                clientName: client?.name || 'Valued Client',
+                dueDate: taskToAlert.dueDate,
+                priority: taskToAlert.priority,
+                status: taskToAlert.status,
+              }
+            : undefined,
+          urgentCount: Math.max(1, urgentCount),
+          userId: user?.id,
+        });
+
+        if (res?.success) {
+          showToast({
+            title: '📨 Urgent Alert Dispatched',
+            message: `Delivery sent to ${res.deliveredTo || targetEmail}. Check your inbox!`,
+            type: 'success',
+          });
+          return true;
+        }
+        return false;
+      } catch (err: any) {
+        console.warn('Failed to send urgent email notification:', err);
+        showToast({
+          title: 'Alert Notice',
+          message: 'Could not send email alert at this time.',
+          type: 'warning',
+        });
+        return false;
+      }
+    },
+    [user, tasks, projects, clients, showToast]
+  );
+
+  const maybeSendUrgentEmail = useCallback(
+    (task: Task, reason?: string) => {
+      if (!user?.email) return;
+      if (user.notificationSettings?.email === false) return;
+
+      const dedupKey = `meplus_last_urgent_email_${user.id || 'usr'}_${task.id}`;
+      const lastSent = Number(localStorage.getItem(dedupKey) || 0);
+      const now = Date.now();
+      // 12-hour throttling per specific task to prevent spamming
+      if (now - lastSent < 12 * 60 * 60 * 1000) {
+        return;
+      }
+      localStorage.setItem(dedupKey, String(now));
+      sendUrgentEmailAlert(task, reason).catch(() => {});
+    },
+    [user, sendUrgentEmailAlert]
+  );
+
   // User Actions - Strict Authentication with Bidirectional Persistence Sync
   const login = async (email: string, password?: string): Promise<{ success: boolean; error?: string }> => {
     const normalizedEmail = (email || '').trim().toLowerCase();
@@ -1599,6 +1688,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         relatedId: newTask.id,
         relatedType: 'task',
       });
+
+      // Dispatch real email alert to login mail if urgent or deadline today/overdue
+      if (newTask.priority === 'urgent' || isDueToday || isOverdue) {
+        maybeSendUrgentEmail(newTask, `Urgent task "${newTask.title}" was scheduled for ${newTask.dueDate}.`);
+      }
     }
 
     return newTask;
@@ -1630,6 +1724,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           relatedId: id,
           relatedType: 'task',
         });
+
+        const updatedTaskObj = tasks.find(t => t.id === id);
+        if (updatedTaskObj) {
+          maybeSendUrgentEmail(
+            { ...updatedTaskObj, ...updates },
+            `Task "${updatedTaskObj.title}" has an urgent deadline updated to ${newDue}.`
+          );
+        }
       }
     }
 
@@ -2060,6 +2162,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         markAllNotificationsAsRead,
         addNotification,
         clearAllNotifications,
+        sendUrgentEmailAlert,
         toasts,
         showToast,
         dismissToast,

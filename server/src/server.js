@@ -42,6 +42,7 @@ import {
 
 import {
   sendOtpEmail,
+  sendUrgentWorkEmail,
   isEmailConfigured,
   testSmtpConnection,
 } from './emailService.js';
@@ -667,6 +668,45 @@ app.delete('/api/notifications', async (req, res) => {
   const userId = getReqUserId(req);
   await deleteNotifications(userId);
   res.json({ success: true });
+});
+
+app.post('/api/notifications/send-email-alert', async (req, res) => {
+  try {
+    const userId = getReqUserId(req);
+    const user = (await findUserById(userId)) || {};
+    const {
+      toEmail,
+      userName,
+      alertType = 'urgent_task',
+      task,
+      urgentCount = 1,
+      summary,
+    } = req.body || {};
+
+    const targetEmail = (toEmail || user.email || activeSessionUser?.email || '').trim().toLowerCase();
+    if (!targetEmail) {
+      return res.status(400).json({ error: 'No recipient email found' });
+    }
+
+    const result = await sendUrgentWorkEmail({
+      toEmail: targetEmail,
+      userName: userName || user.name || activeSessionUser?.name || 'Freelancer',
+      alertType,
+      task,
+      urgentCount,
+      summary,
+    });
+
+    res.json({
+      success: true,
+      deliveredTo: targetEmail,
+      isRealEmail: result.isRealEmail,
+      messageId: result.messageId,
+    });
+  } catch (err) {
+    console.error('Failed to send email alert:', err);
+    res.status(500).json({ error: err.message || 'Failed to dispatch email alert' });
+  }
 });
 
 // --- AI Helpers (Me Plus App Guide & Platform Assistant) ---

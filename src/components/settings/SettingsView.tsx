@@ -21,6 +21,9 @@ import {
   Zap,
   RotateCcw,
   Database,
+  Mail,
+  Send,
+  Loader2,
 } from 'lucide-react';
 import { playNotificationTone } from '../../services/soundService';
 
@@ -77,7 +80,10 @@ export const SettingsView: React.FC = () => {
     showToast,
     resetDemoData,
     setIsAiModalOpen,
+    sendUrgentEmailAlert,
   } = useApp();
+
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme, accentColor, setAccentColor } = useTheme();
 
@@ -199,6 +205,25 @@ export const SettingsView: React.FC = () => {
     });
   };
 
+  const handleSendTestUrgentEmail = async () => {
+    if (!user?.email) {
+      showToast({
+        title: 'Email Alert',
+        message: 'No login email registered on this account.',
+        type: 'warning',
+      });
+      return;
+    }
+    setIsSendingEmail(true);
+    try {
+      await sendUrgentEmailAlert(
+        undefined,
+        'Test notification: Your Me Plus account is configured to receive real urgent deadline alerts when you are away from the app.'
+      );
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
 
   const handlePreviewScreensaver = () => {
     window.dispatchEvent(new CustomEvent('meplus:trigger-screensaver-preview'));
@@ -987,22 +1012,52 @@ export const SettingsView: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
-            <div>
-              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
-                Email Notifications for Upcoming Deadlines
-              </span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                Receive daily summaries and deadline digest reminders via email
-              </span>
+          <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                  Email Notifications for Urgent Tasks &amp; Deadlines
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                  When you are away or logged out from the web app, urgent deliverables and deadlines are delivered right to your login email.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={emailAlerts}
+                onChange={e => handleToggleNotificationSetting('email', e.target.checked)}
+                className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+              />
             </div>
-            <input
-              type="checkbox"
-              checked={emailAlerts}
-              onChange={e => handleToggleNotificationSetting('email', e.target.checked)}
-              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-            />
-          </label>
+
+            <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+                <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="text-[11px]">
+                  Delivering to: <strong className="font-mono text-emerald-700 dark:text-emerald-300">{user?.email || 'your account email'}</strong>
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSendTestUrgentEmail}
+                disabled={isSendingEmail || !emailAlerts}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white shadow-xs transition-colors cursor-pointer"
+              >
+                {isSendingEmail ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Sending Alert...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Send Urgent Alert to My Email</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
 
           <label className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer hover:border-emerald-500/40 transition-colors">
             <div>

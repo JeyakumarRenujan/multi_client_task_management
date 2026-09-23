@@ -7,12 +7,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
+const DEFAULT_SMTP_USER = 'renujanrenu03@gmail.com';
+const DEFAULT_SMTP_PASS = 'fjfaqfayqwqcdbiv';
+
 /**
- * Check whether SMTP email service credentials are configured in .env
+ * Check whether SMTP email service credentials are configured in .env or defaults
  */
 export function isEmailConfigured() {
-  const user = process.env.SMTP_USER?.trim();
-  const pass = process.env.SMTP_PASS?.trim();
+  const user = (process.env.SMTP_USER || DEFAULT_SMTP_USER)?.trim();
+  const pass = (process.env.SMTP_PASS || DEFAULT_SMTP_PASS)?.trim();
   return Boolean(user && pass);
 }
 
@@ -27,9 +30,9 @@ export function getEmailTransporter() {
   const host = process.env.SMTP_HOST?.trim() || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT) || 587;
   const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  const user = process.env.SMTP_USER.trim();
+  const user = (process.env.SMTP_USER || DEFAULT_SMTP_USER).trim();
   // Strip any spaces if the user copied Google's formatted App Password (e.g. 'abcd efgh ijkl mnop')
-  const pass = process.env.SMTP_PASS.trim().replace(/\s+/g, '');
+  const pass = (process.env.SMTP_PASS || DEFAULT_SMTP_PASS).trim().replace(/\s+/g, '');
 
   if (host === 'smtp.gmail.com') {
     return nodemailer.createTransport({
@@ -297,5 +300,304 @@ export async function sendOtpEmail({ toEmail, otp, userName }) {
   return {
     success: true,
     isRealEmail: false,
+  };
+}
+
+/**
+ * Build responsive HTML template for Urgent Work & Deadline Alert email
+ */
+function buildUrgentWorkEmailHtml({
+  userName,
+  toEmail,
+  task,
+  urgentCount = 1,
+  summary,
+  appUrl = 'https://multiclienttaskmanagement.vercel.app/',
+}) {
+  const greeting = userName ? `Hello ${userName}` : 'Hello';
+  const taskTitle = task?.title || 'Urgent Deliverable Task';
+  const projectName = task?.projectName || task?.projectTitle || 'Client Project';
+  const clientName = task?.clientName || 'Assigned Client';
+  const dueDate = task?.dueDate || task?.deadline || 'Today / Approaching Soon';
+  const priority = (task?.priority || 'urgent').toUpperCase();
+  const summaryText =
+    summary ||
+    `You have ${urgentCount > 1 ? `${urgentCount} urgent deliverables` : 'an urgent task'} requiring your immediate attention.`;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚨 Urgent Work & Deadline Alert</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+    .wrapper {
+      width: 100%;
+      background-color: #f8fafc;
+      padding: 32px 16px;
+    }
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border: 1px solid #e2e8f0;
+    }
+    .header {
+      background: linear-gradient(135deg, #0f766e 0%, #128c7e 100%);
+      padding: 28px 32px;
+      text-align: left;
+    }
+    .brand-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+    .brand-tagline {
+      font-size: 12px;
+      color: #ccfbf1;
+      margin: 4px 0 0;
+      font-weight: 500;
+    }
+    .content {
+      padding: 32px;
+    }
+    .alert-banner {
+      background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+      border: 1px solid #fecdd3;
+      border-left: 5px solid #e11d48;
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .alert-banner-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #9f1239;
+      margin: 0 0 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .alert-banner-text {
+      font-size: 13px;
+      color: #881337;
+      margin: 0;
+      line-height: 1.5;
+    }
+    .task-card {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .task-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 12px 0;
+      line-height: 1.4;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      background-color: #ffe4e6;
+      color: #be123c;
+      margin-bottom: 12px;
+    }
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+    .meta-label {
+      color: #64748b;
+      font-weight: 500;
+    }
+    .meta-value {
+      color: #0f172a;
+      font-weight: 700;
+      text-align: right;
+    }
+    .cta-button {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      background: linear-gradient(135deg, #128c7e 0%, #0d9488 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      margin: 24px 0 16px;
+      box-shadow: 0 4px 12px rgba(18, 140, 126, 0.25);
+    }
+    .footer {
+      border-top: 1px solid #f1f5f9;
+      padding: 20px 28px;
+      background-color: #f8fafc;
+      text-align: center;
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h1 class="brand-title">Me Plus Workspace</h1>
+        <p class="brand-tagline">Multi-Client Task Management Platform</p>
+      </div>
+      <div class="content">
+        <div class="alert-banner">
+          <div class="alert-banner-title">🚨 Urgent Work &amp; Approaching Deadline Alert</div>
+          <p class="alert-banner-text">${summaryText}</p>
+        </div>
+
+        <p style="font-size: 14px; line-height: 1.6; margin-top: 0;">
+          ${greeting},<br>
+          You have an urgent task requiring your attention. Because you may not currently be logged in or active in the workspace, we are notifying you directly via your registered login email.
+        </p>
+
+        <div class="task-card">
+          <span class="badge">🔥 ${priority} Priority</span>
+          <div class="task-title">${taskTitle}</div>
+
+          <div class="meta-row">
+            <span class="meta-label">Client</span>
+            <span class="meta-value">${clientName}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Project</span>
+            <span class="meta-value">${projectName}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Target Deadline</span>
+            <span class="meta-value" style="color: #e11d48;">${dueDate}</span>
+          </div>
+        </div>
+
+        <a href="${appUrl}" class="cta-button" target="_blank">
+          👉 Open Workspace &amp; View Task
+        </a>
+
+        <p style="font-size: 12px; color: #64748b; line-height: 1.5; text-align: center; margin-bottom: 0;">
+          Deliverables completed on time keep client satisfaction and billable income at their highest.
+        </p>
+      </div>
+      <div class="footer">
+        &copy; ${new Date().getFullYear()} Me Plus Workspace • All rights reserved.<br>
+        This alert was dispatched to your account email: <strong>${toEmail}</strong><br>
+        You can adjust your alert preferences anytime in Settings &rarr; Notifications.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+}
+
+/**
+ * Send Urgent Work & Deadline Alert email to recipient
+ *
+ * @param {Object} options
+ * @param {string} options.toEmail
+ * @param {string} [options.userName]
+ * @param {string} [options.alertType]
+ * @param {Object} [options.task]
+ * @param {number} [options.urgentCount]
+ * @param {string} [options.summary]
+ * @returns {Promise<{ success: boolean, messageId?: string, isRealEmail: boolean, recipient: string }>}
+ */
+export async function sendUrgentWorkEmail({
+  toEmail,
+  userName,
+  alertType = 'urgent_task',
+  task,
+  urgentCount = 1,
+  summary,
+}) {
+  const normalizedEmail = (toEmail || '').trim().toLowerCase();
+  if (!normalizedEmail) {
+    throw new Error('Recipient email address is required');
+  }
+
+  const transporter = getEmailTransporter();
+  const user = (process.env.SMTP_USER || DEFAULT_SMTP_USER).trim();
+  const fromAddress = process.env.SMTP_FROM?.trim() || `"Me Plus Workspace" <${user}>`;
+  const taskTitle = task?.title ? `"${task.title}"` : 'Urgent Deliverable';
+  const subject = `🚨 Urgent Work Alert: ${taskTitle} requires attention`;
+
+  const html = buildUrgentWorkEmailHtml({
+    userName,
+    toEmail: normalizedEmail,
+    task,
+    urgentCount,
+    summary,
+  });
+
+  const text = `🚨 URGENT WORK & DEADLINE ALERT\n\nHello ${userName || 'there'},\n\nYou have an urgent deliverable requiring attention:\n\nTask: ${task?.title || 'Urgent Task'}\nProject: ${task?.projectName || 'Project'}\nClient: ${task?.clientName || 'Client'}\nDue: ${task?.dueDate || 'Approaching Deadline'}\nPriority: ${(task?.priority || 'urgent').toUpperCase()}\n\nOpen your workspace to review: https://multiclienttaskmanagement.vercel.app/\n\nBest regards,\nMe Plus Workspace Team`;
+
+  if (transporter) {
+    try {
+      console.log(`📨 [EMAIL SERVICE] Sending urgent work alert via SMTP to: ${normalizedEmail}...`);
+      const info = await transporter.sendMail({
+        from: fromAddress,
+        to: normalizedEmail,
+        subject,
+        text,
+        html,
+      });
+      console.log(`✅ [EMAIL SERVICE] Urgent alert delivered! MessageId: ${info.messageId}`);
+
+      return {
+        success: true,
+        messageId: info.messageId,
+        isRealEmail: true,
+        recipient: normalizedEmail,
+      };
+    } catch (err) {
+      console.error('❌ [EMAIL SERVICE] SMTP dispatch error:', err.message);
+      // Fallback
+    }
+  }
+
+  // Fallback dev/simulation
+  console.log(`\n======================================================`);
+  console.log(`📧 [EMAIL SERVICE - URGENT ALERT SIMULATED]`);
+  console.log(`To: ${normalizedEmail}`);
+  console.log(`Subject: ${subject}`);
+  console.log(`Task: ${task?.title || 'Urgent Deliverable'}`);
+  console.log(`======================================================\n`);
+
+  return {
+    success: true,
+    messageId: `sim-${Date.now()}`,
+    isRealEmail: false,
+    recipient: normalizedEmail,
   };
 }
