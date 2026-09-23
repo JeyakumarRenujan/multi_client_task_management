@@ -527,8 +527,8 @@ export const AuthPage: React.FC = () => {
             {/* Auth Form Card */}
             <div className="bg-white dark:bg-slate-900 rounded-[26px] sm:rounded-[30px] border border-emerald-300/80 dark:border-emerald-700/70 ring-1 ring-emerald-500/20 dark:ring-emerald-500/25 shadow-[0_20px_50px_-10px_rgba(5,150,105,0.18),0_12px_28px_-6px_rgba(0,0,0,0.08)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] p-3.5 sm:p-5 lg:p-6 flex flex-col relative transition-colors duration-200">
 
-                {/* 1-Click Demo Banner (only in login/register mode) */}
-                {mode !== 'forgot' && (
+                {/* 1-Click Demo Banner (only in login/register form mode) */}
+                {mode !== 'forgot' && registerStep === 'form' && (
                   <div className="mb-3 p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-between shadow-2xs">
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
@@ -623,7 +623,7 @@ export const AuthPage: React.FC = () => {
                   ) : registerStep === 'otp' ? (
                     <>
                       <Mail className="w-4 h-4 text-emerald-600" />
-                      <span>Verify Your Email Address</span>
+                      <span>Verify Your Email</span>
                     </>
                   ) : (
                     'Create Your Workspace'
@@ -641,7 +641,7 @@ export const AuthPage: React.FC = () => {
                     : mode === 'login'
                     ? 'Enter your email and password to continue'
                     : registerStep === 'otp'
-                    ? `Enter the 6-digit verification code sent to ${email} to activate your workspace`
+                    ? 'Enter the 6-digit verification code to activate your workspace.'
                     : 'Fill in your details to create your freelancer account'}
                 </p>
               </div>
@@ -654,8 +654,8 @@ export const AuthPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Success Alert Box */}
-              {successMessage && (
+              {/* Success Alert Box (hidden on OTP step to avoid duplicate banners) */}
+              {successMessage && registerStep !== 'otp' && (
                 <div className="mb-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs space-y-0.5">
                   <div className="font-bold flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -899,20 +899,20 @@ export const AuthPage: React.FC = () => {
                     <ArrowRight className="w-4 h-4" />
                   </button>
 
-                  <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-2">
-                    A 6-digit verification code will be sent to your email to verify account authenticity.
+                  <p className="text-[11px] text-center text-slate-400 dark:text-slate-500 mt-2">
+                    A 6-digit verification code will be sent to your email.
                   </p>
                 </form>
               )}
 
               {/* --- 2B. REGISTRATION EMAIL OTP VERIFICATION --- */}
               {mode === 'register' && registerStep === 'otp' && (
-                <form onSubmit={handleRegisterOtpSubmit} className="space-y-3">
+                <form onSubmit={handleRegisterOtpSubmit} className="space-y-3.5">
                   {/* Sent-to banner with Change option */}
-                  <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span className="truncate">Sent code to: <strong>{email}</strong></span>
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                    <div className="flex items-center gap-2 truncate">
+                      <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span className="truncate">Sent code to <strong className="text-slate-900 dark:text-slate-100">{email}</strong></span>
                     </div>
                     <button
                       type="button"
@@ -921,23 +921,10 @@ export const AuthPage: React.FC = () => {
                         setRegisterOtp('');
                         setError('');
                       }}
-                      className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
+                      className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
                     >
                       Change Email
                     </button>
-                  </div>
-
-                  {/* Real Email Dispatched Notice */}
-                  <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-slate-800 dark:text-slate-200 text-xs">
-                    <div className="flex items-start gap-2.5">
-                      <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                      <div>
-                        <div className="font-bold text-emerald-950 dark:text-emerald-300">Verification Email Dispatched</div>
-                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-                          We've dispatched your 6-digit verification code to <strong>{email}</strong>. Check your inbox and spam folder. An invalid or non-existent email address cannot complete registration.
-                        </p>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Simulated/Dev Mode Preview Banner (Only shown if offline/preview available) */}

@@ -1,7 +1,14 @@
+import dns from 'dns';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch {
+  // ignore
+}
 
 import {
   readDb,
@@ -56,28 +63,6 @@ export async function initDatabase() {
         console.log(`🌱 [MongoDB] Empty database detected. Auto-seeding initial demo data...`);
         await seedMongoFromSeed(initialSeed);
         console.log(`✅ [MongoDB] Auto-seeding complete.`);
-      }
-
-      // Auto-migrate any non-demo users from db.json into MongoDB if they don't exist yet
-      try {
-        const db = readDb();
-        const jsonUsers = db.users || [];
-        for (const u of jsonUsers) {
-          if (u.email && u.email !== 'alex.rivera@gmail.com' && u.email !== 'demo@meplus.io') {
-            const normalized = u.email.toLowerCase().trim();
-            const exists = await UserModel.findOne({ email: normalized });
-            if (!exists) {
-              console.log(`📥 [MongoDB] Migrating user from db.json to MongoDB: ${u.email}`);
-              await UserModel.create({
-                ...u,
-                id: u.id || getDeterministicUserId(normalized),
-                email: normalized,
-              });
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('Notice while checking user migration from db.json:', e.message);
       }
 
       return { mode: 'mongodb', host: mongoose.connection.host };

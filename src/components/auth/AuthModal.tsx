@@ -450,7 +450,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
 
         {/* Success notification */}
-        {successMessage && (
+        {successMessage && registerStep !== 'otp' && (
           <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs space-y-1">
             <div className="font-bold flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -682,19 +682,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <span>{isLoading ? 'Verifying & Sending Code...' : 'Continue to Email Verification'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-            <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 mt-1">
-              A 6-digit verification code will be sent to your email to verify account authenticity.
+            <p className="text-[11px] text-center text-slate-400 dark:text-slate-500 mt-1">
+              A 6-digit verification code will be sent to your email.
             </p>
           </form>
         )}
 
         {/* --- 2B. REGISTRATION EMAIL OTP VERIFICATION --- */}
         {mode === 'register' && registerStep === 'otp' && (
-          <form onSubmit={handleRegisterOtpSubmit} className="space-y-3">
-            <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+          <form onSubmit={handleRegisterOtpSubmit} className="space-y-3.5">
+            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between">
               <div className="flex items-center gap-1.5 truncate">
-                <Mail className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                <span className="truncate">Sent code to: <strong>{email}</strong></span>
+                <Mail className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="truncate">Sent code to <strong className="text-slate-900 dark:text-white">{email}</strong></span>
               </div>
               <button
                 type="button"
@@ -703,22 +703,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   setRegisterOtp('');
                   setError('');
                 }}
-                className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
+                className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer ml-2 shrink-0"
               >
                 Change Email
               </button>
-            </div>
-
-            <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 text-slate-800 dark:text-slate-200 text-xs">
-              <div className="flex items-start gap-2.5">
-                <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-emerald-950 dark:text-emerald-300">Verification Email Dispatched</div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
-                    We've dispatched your 6-digit verification code to <strong>{email}</strong>. Check your inbox and spam folder. An invalid or non-existent email address cannot complete registration.
-                  </p>
-                </div>
-              </div>
             </div>
 
             {registerOtpPreview && (

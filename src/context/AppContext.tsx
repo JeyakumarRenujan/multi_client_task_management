@@ -435,15 +435,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
   const [highlightedInvoiceId, setHighlightedInvoiceId] = useState<string | null>(null);
 
-  // Registered Users Directory
+  // Registered Users Directory (Strictly retain demo accounts, purging unverified accounts)
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredAccount[]>(() => {
-    return safeGetStorage<RegisteredAccount[]>(STORAGE_KEYS.USERS, defaultRegisteredUsers);
+    const saved = safeGetStorage<RegisteredAccount[]>(STORAGE_KEYS.USERS, defaultRegisteredUsers);
+    const hasUnverified = saved.some(
+      u => u.email.toLowerCase() !== 'alex.rivera@gmail.com' && u.email.toLowerCase() !== 'demo@meplus.io'
+    );
+    if (hasUnverified) {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(defaultRegisteredUsers));
+      return defaultRegisteredUsers;
+    }
+    return saved;
   });
 
   // User & Auth State
   const [user, setUser] = useState<UserProfile | null>(() => {
     const u = safeGetStorage<UserProfile | null>(STORAGE_KEYS.USER, null);
     if (u && u.email) {
+      const norm = u.email.toLowerCase().trim();
+      // If previous unverified non-demo session was cached, purge it
+      if (norm !== 'alex.rivera@gmail.com' && norm !== 'demo@meplus.io') {
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        return null;
+      }
       const deterministicId = getDeterministicUserId(u.email);
       const backupAvatar =
         safeGetStorage<string | null>(`meplus_avatar_${deterministicId}`, null) ||
