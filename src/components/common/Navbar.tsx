@@ -233,7 +233,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="relative" ref={quickAddRef}>
           <button
             onClick={() => setIsQuickAddOpen(!isQuickAddOpen)}
-            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
             title="Quick Add"
           >
             <Plus className="w-4 h-4" />
@@ -241,16 +241,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           {isQuickAddOpen && (
-            <div className="absolute right-0 top-11 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-1.5 z-50 animate-slide-up">
+            <div className="absolute right-0 top-11 w-52 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 z-50 animate-slide-up space-y-1">
               <button
                 onClick={() => {
                   setSelectedTaskForEdit(null);
                   setIsTaskModalOpen(true);
                   setIsQuickAddOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg transition-colors text-left cursor-pointer"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-xl transition-colors text-left cursor-pointer"
               >
-                <CheckSquare className="w-4 h-4 text-emerald-600" />
+                <CheckSquare className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>New Task</span>
               </button>
               <button
@@ -259,9 +259,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setIsProjectModalOpen(true);
                   setIsQuickAddOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg transition-colors text-left cursor-pointer"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-xl transition-colors text-left cursor-pointer"
               >
-                <FolderKanban className="w-4 h-4 text-teal-600" />
+                <FolderKanban className="w-4 h-4 text-teal-600 shrink-0" />
                 <span>New Project</span>
               </button>
               <button
@@ -270,9 +270,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setIsClientModalOpen(true);
                   setIsQuickAddOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg transition-colors text-left cursor-pointer"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-xl transition-colors text-left cursor-pointer"
               >
-                <Users className="w-4 h-4 text-emerald-600" />
+                <Users className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>New Client</span>
               </button>
               <button
@@ -281,9 +281,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setIsInvoiceModalOpen(true);
                   setIsQuickAddOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-lg transition-colors text-left cursor-pointer"
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 hover:text-emerald-700 dark:hover:text-emerald-300 rounded-xl transition-colors text-left cursor-pointer"
               >
-                <FileText className="w-4 h-4 text-amber-500" />
+                <FileText className="w-4 h-4 text-amber-500 shrink-0" />
                 <span>New Invoice</span>
               </button>
             </div>
