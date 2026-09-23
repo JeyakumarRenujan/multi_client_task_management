@@ -438,32 +438,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [highlightedTaskId, setHighlightedTaskId] = useState<string | null>(null);
   const [highlightedInvoiceId, setHighlightedInvoiceId] = useState<string | null>(null);
 
-  // Registered Users Directory (Strictly retain demo accounts, purging unverified accounts)
+  // Registered Users Directory (Always retain demo accounts alongside user-created accounts)
   const [registeredUsers, setRegisteredUsers] = useState<RegisteredAccount[]>(() => {
     const saved = safeGetStorage<RegisteredAccount[]>(STORAGE_KEYS.USERS, defaultRegisteredUsers);
-    const hasUnverified = saved.some(
-      u => u.email.toLowerCase() !== 'alex.rivera@gmail.com' && u.email.toLowerCase() !== 'demo@meplus.io'
-    );
-    if (hasUnverified) {
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(defaultRegisteredUsers));
-      return defaultRegisteredUsers;
+    const currentUser = safeGetStorage<UserProfile | null>(STORAGE_KEYS.USER, null);
+
+    const map = new Map<string, RegisteredAccount>();
+    defaultRegisteredUsers.forEach(d => map.set(d.email.toLowerCase(), d));
+    saved.forEach(s => {
+      if (s && s.email) map.set(s.email.toLowerCase(), s);
+    });
+
+    if (currentUser && currentUser.email) {
+      const emailLower = currentUser.email.toLowerCase();
+      if (!map.has(emailLower)) {
+        map.set(emailLower, {
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email,
+          title: currentUser.title,
+          avatar: currentUser.avatar,
+          bio: currentUser.bio,
+          hourlyRate: currentUser.hourlyRate,
+          currency: currentUser.currency,
+        });
+      }
     }
-    return saved;
+
+    const merged = Array.from(map.values());
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(merged));
+    return merged;
   });
 
-  // User & Auth State
+  // User & Auth State - Persists active session on page reload/refresh
   const [user, setUser] = useState<UserProfile | null>(() => {
     const u = safeGetStorage<UserProfile | null>(STORAGE_KEYS.USER, null);
     if (u && u.email) {
-      const norm = u.email.toLowerCase().trim();
-      const isDemo = norm === 'alex.rivera@gmail.com' || norm === 'demo@meplus.io';
-      const isRegistered = registeredUsers.some(r => r.email.toLowerCase() === norm);
-      // If user in localStorage is neither demo nor an active registered user, purge it
-      if (!isDemo && !isRegistered) {
-        localStorage.removeItem(STORAGE_KEYS.USER);
-        cleanupOrphanedStorage();
-        return null;
-      }
       const deterministicId = getDeterministicUserId(u.email);
       cleanupOrphanedStorage(deterministicId);
       const backupAvatar =
