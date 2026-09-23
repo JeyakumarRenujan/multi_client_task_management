@@ -90,7 +90,7 @@ interface AppContextType {
   resetTimer: () => void;
   updateTimerDescription: (desc: string) => void;
   timeEntries: TimeEntry[];
-  addTimeEntry: (entry: Omit<TimeEntry, 'id'>) => void;
+  addTimeEntry: (entry: Omit<TimeEntry, 'id'>, prevActiveTimer?: ActiveTimer) => void;
   deleteTimeEntry: (id: string) => void;
 
   // Invoices
@@ -1843,6 +1843,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (activeTimer.elapsedSeconds > 0) {
       const activeClient = clients.find(c => c.id === activeTimer.clientId);
       const effectiveRate = activeClient?.hourlyRate || user?.hourlyRate || 65;
+      const timerSnapshot: ActiveTimer = { ...activeTimer };
       const newEntry: Omit<TimeEntry, 'id'> = {
         userId: user?.id || 'usr-1',
         projectId: activeTimer.projectId,
@@ -1857,7 +1858,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isBilled: false,
         date: new Date().toISOString().split('T')[0],
       };
-      addTimeEntry(newEntry);
+      addTimeEntry(newEntry, timerSnapshot);
     }
     resetTimer();
   };
@@ -1878,7 +1879,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveTimer(prev => ({ ...prev, description }));
   };
 
-  const addTimeEntry = (entryData: Omit<TimeEntry, 'id'>) => {
+  const addTimeEntry = (entryData: Omit<TimeEntry, 'id'>, prevActiveTimer?: ActiveTimer) => {
     const activeUserId = user?.id || (user?.email ? getDeterministicUserId(user.email) : 'usr-1');
     const newEntry: TimeEntry = {
       ...entryData,
@@ -1910,21 +1911,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     }
 
-    const hrsDisplay = (newEntry.durationSeconds / 3600).toFixed(1);
+    // Accurate human-friendly duration for the toast message
+    const totalSecs = newEntry.durationSeconds || 0;
+    const formatDurationAccurate = (secs: number) => {
+      if (secs < 60) {
+        return `${secs}s`;
+      }
+      const hrs = Math.floor(secs / 3600);
+      const mins = Math.floor((secs % 3600) / 60);
+      const remSecs = secs % 60;
+      if (hrs === 0) {
+        return remSecs > 0 ? `${mins}m ${remSecs}s` : `${mins}m`;
+      }
+      const decimalHrs = (secs / 3600).toFixed(1);
+      return `${hrs}h ${mins > 0 ? `${mins}m ` : ''}(${decimalHrs} hrs)`;
+    };
+
+    const accurateDuration = formatDurationAccurate(totalSecs);
+
     showToast({
       title: 'Time Logged',
-      message: `${hrsDisplay} hrs recorded successfully.`,
+      message: `${accurateDuration} recorded successfully.`,
       type: 'success',
+      duration: 6500,
       undoAction: () => {
-        setTimeEntries(prev => prev.filter(e => e.id !== newEntry.id));
+        // 1. Remove from React state and sync localStorage
+        setTimeEntries(prev => {
+          const next = prev.filter(e => e.id !== newEntry.id);
+          if (user) {
+            localStorage.setItem(`${STORAGE_KEYS.TIME_PREFIX}${user.id}`, JSON.stringify(next));
+          }
+          return next;
+        });
+
+        // 2. Call backend delete API
         api.deleteTimeEntry(newEntry.id).catch(() => {});
+
+        // 3. Revert task actualHours if linked to a task
+        if (newEntry.taskId) {
+          const addedHours = Number((newEntry.durationSeconds / 3600).toFixed(2));
+          setTasks(prev => {
+            const next = prev.map(t =>
+              t.id === newEntry.taskId
+                ? { ...t, actualHours: Math.max(0, Number(((t.actualHours || 0) - addedHours).toFixed(2))) }
+                : t
+            );
+            if (user) {
+              localStorage.setItem(`${STORAGE_KEYS.TASKS_PREFIX}${user.id}`, JSON.stringify(next));
+            }
+            return next;
+          });
+        }
+
+        // 4. Restore active stopwatch timer if session came from stopTimer
+        if (prevActiveTimer && prevActiveTimer.elapsedSeconds > 0) {
+          setActiveTimer({ ...prevActiveTimer, isRunning: false });
+        }
+
+        // 5. Provide immediate feedback confirmation toast
+        showToast({
+          title: 'Time Log Undone',
+          message: prevActiveTimer && prevActiveTimer.elapsedSeconds > 0
+            ? 'Time entry removed and timer restored.'
+            : 'Logged time entry removed.',
+          type: 'info',
+        });
       },
       undoLabel: 'Undo',
     });
   };
 
   const deleteTimeEntry = (id: string) => {
-    setTimeEntries(prev => prev.filter(e => e.id !== id));
+    setTimeEntries(prev => {
+      const next = prev.filter(e => e.id !== id);
+      if (user) {
+        localStorage.setItem(`${STORAGE_KEYS.TIME_PREFIX}${user.id}`, JSON.stringify(next));
+      }
+      return next;
+    });
     api.deleteTimeEntry(id).catch(() => {});
     showToast({
       title: 'Time Entry Deleted',

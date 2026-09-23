@@ -53,11 +53,13 @@ export const ToastContainer: React.FC = () => {
 
               {toast.undoAction && (
                 <button
-                  onClick={() => {
+                  type="button"
+                  onClick={e => {
+                    e.stopPropagation();
                     toast.undoAction!();
                     dismissToast(toast.id);
                   }}
-                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg transition-colors"
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 px-2.5 py-1 rounded-lg transition-all cursor-pointer active:scale-95 shadow-2xs"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   {toast.undoLabel || 'Undo Action'}

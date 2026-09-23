@@ -59,6 +59,29 @@ export const TimeTrackerView: React.FC = () => {
   const totalHours = (totalSeconds / 3600).toFixed(1);
   const uniqueProjectsCount = new Set(timeEntries.map(e => e.projectId).filter(Boolean)).size;
 
+  const formatDurationDisplay = (secs: number) => {
+    if (secs < 60) return `${secs}s`;
+    const mins = Math.floor(secs / 60);
+    const remSecs = secs % 60;
+    if (secs < 3600) {
+      return remSecs > 0 ? `${mins}m ${remSecs}s` : `${mins}m`;
+    }
+    const hrs = Math.floor(secs / 3600);
+    const remMins = Math.floor((secs % 3600) / 60);
+    return remMins > 0 ? `${hrs}h ${remMins}m` : `${hrs}h`;
+  };
+
+  const formatTotalTime = (secs: number) => {
+    if (secs === 0) return '0 hrs';
+    if (secs < 60) return `${secs}s`;
+    if (secs < 3600) {
+      const mins = Math.floor(secs / 60);
+      const rem = secs % 60;
+      return rem > 0 ? `${mins}m ${rem}s` : `${mins}m`;
+    }
+    return `${(secs / 3600).toFixed(1)} hrs`;
+  };
+
   const handleExportCSV = () => {
     const headers = ['ID,Date,Client,Project,Work Description,Duration (Hours)'];
     const rows = timeEntries.map(e => {
@@ -88,7 +111,7 @@ export const TimeTrackerView: React.FC = () => {
               Time Tracker &amp; Logs
             </h1>
             <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
-              {totalHours} hrs Total
+              {formatTotalTime(totalSeconds)} Total
             </span>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -230,9 +253,9 @@ export const TimeTrackerView: React.FC = () => {
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[11px] font-bold text-slate-400 uppercase">Total Hours Logged</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase">Total Time Logged</span>
             <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-              {totalHours} hrs
+              {formatTotalTime(totalSeconds)}
             </div>
           </div>
         </div>
@@ -300,10 +323,10 @@ export const TimeTrackerView: React.FC = () => {
                       </div>
                       <div className="text-right shrink-0">
                         <span className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-400">
-                          {hoursNum} hrs
+                          {formatDurationDisplay(secs)}
                         </span>
-                        <div className="text-xs text-slate-400 mt-0.5">
-                          {entry.date}
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          {hoursNum} hrs &bull; {entry.date}
                         </div>
                       </div>
                     </div>
@@ -371,7 +394,10 @@ export const TimeTrackerView: React.FC = () => {
                         </td>
 
                         <td className="py-3.5 px-4 font-mono font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                          {hoursNum} hrs
+                          <div>{formatDurationDisplay(secs)}</div>
+                          <div className="text-[11px] text-slate-400 font-normal">
+                            {hoursNum} hrs
+                          </div>
                         </td>
 
                         <td className="py-3.5 px-4 text-right">
