@@ -87,7 +87,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
             key={col.id}
             onDragOver={handleDragOver}
             onDrop={e => handleDrop(e, col.id)}
-            className="flex flex-col bg-slate-100/70 dark:bg-slate-900/60 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 p-2.5 sm:p-3 min-h-[140px] md:min-h-[480px]"
+            className="flex flex-col bg-slate-100/70 dark:bg-slate-900/60 rounded-2xl border border-primary-400/70 dark:border-slate-800/80 p-2.5 sm:p-3 min-h-[140px] md:min-h-[480px]"
           >
             {/* Column Header */}
             <div className="flex items-center justify-between px-2 py-1.5 mb-2.5">
@@ -142,7 +142,7 @@ export const TaskKanban: React.FC<TaskKanbanProps> = ({ filteredTasks, onEditTas
                       draggable
                       onDragStart={e => handleDragStart(e, task.id)}
                       onClick={() => onEditTask(task)}
-                      className={`p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/60 shadow-sm hover:shadow-md hover:border-emerald-400 dark:hover:border-emerald-600 transition-all cursor-grab active:cursor-grabbing group ${
+                      className={`p-3.5 rounded-xl bg-white dark:bg-slate-800/90 border border-primary-400/70 dark:border-slate-700/60 shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-emerald-600 transition-all cursor-grab active:cursor-grabbing group ${
                         draggedTaskId === task.id ? 'opacity-50' : ''
                       }`}
                     >
