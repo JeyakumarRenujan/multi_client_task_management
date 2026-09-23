@@ -15,7 +15,6 @@ import {
   Calendar,
   FileText,
   Clock,
-  ShieldCheck,
   Zap,
   Eye,
   EyeOff,
@@ -356,7 +355,7 @@ export const AuthPage: React.FC = () => {
             )}
           </button>
 
-          {/* Switch Mode Button */}
+          {/* Switch Mode Button (Fixed width to prevent header controls layout shifting) */}
           <button
             type="button"
             onClick={() => {
@@ -364,7 +363,7 @@ export const AuthPage: React.FC = () => {
               setError('');
               setSuccessMessage('');
             }}
-            className="text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 px-3 py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 transition-colors cursor-pointer"
+            className="w-[115px] sm:w-[125px] flex items-center justify-center text-center whitespace-nowrap text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 transition-colors cursor-pointer"
           >
             {mode === 'login'
               ? 'Create Account'
@@ -396,7 +395,7 @@ export const AuthPage: React.FC = () => {
                 </span>
               </h1>
               <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
-                Manage clients, track deadlines, and stay organized — all in one place.
+                Manage clients, track deadlines, and stay organized.
               </p>
             </div>
 
@@ -531,10 +530,6 @@ export const AuthPage: React.FC = () => {
 
                 {/* Form Title & Subtitle */}
                 <div className="mb-3.5">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/90 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold mb-1.5">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                    <span>Freelancer Portal</span>
-                  </div>
                   <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
                   {mode === 'forgot' ? (
                     <>
@@ -660,21 +655,21 @@ export const AuthPage: React.FC = () => {
 
               {/* --- 2. CREATE ACCOUNT FORM --- */}
               {mode === 'register' && (
-                <form onSubmit={handleRegisterSubmit} className="space-y-2.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <form onSubmit={handleRegisterSubmit} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     {/* Full Name */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">
+                      <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Full Name *
                       </label>
                       <div className="relative">
-                        <User className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                        <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                         <input
                           type="text"
                           value={name}
                           onChange={e => setName(e.target.value)}
                           placeholder="Alex Rivera"
-                          className="w-full pl-8 pr-2.5 py-1.5 sm:py-2 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                          className="w-full pl-9 pr-3.5 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
                           required
                           disabled={isLoading}
                         />
@@ -683,15 +678,15 @@ export const AuthPage: React.FC = () => {
 
                     {/* Profession */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">
+                      <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Profession *
                       </label>
                       <div className="relative">
-                        <Briefcase className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                        <Briefcase className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                         <select
                           value={profession}
                           onChange={e => setProfession(e.target.value)}
-                          className="w-full pl-8 pr-2 py-1.5 sm:py-2 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-medium cursor-pointer"
+                          className="w-full pl-9 pr-3 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all font-medium cursor-pointer"
                           disabled={isLoading}
                         >
                           {professionsList.map(p => (
@@ -707,8 +702,8 @@ export const AuthPage: React.FC = () => {
                   {/* Dynamic Custom Profession Input when 'Other' is selected */}
                   {profession === 'Other (Specify your own)' && (
                     <div className="animate-fade-in">
-                      <label className="block text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-0.5 flex items-center gap-1">
-                        <PenTool className="w-3 h-3" />
+                      <label className="block text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                        <PenTool className="w-3.5 h-3.5" />
                         <span>Specify Your Profession *</span>
                       </label>
                       <div className="relative">
@@ -717,7 +712,7 @@ export const AuthPage: React.FC = () => {
                           value={customProfession}
                           onChange={e => setCustomProfession(e.target.value)}
                           placeholder="e.g. 3D Animator, Voiceover Artist"
-                          className="w-full px-2.5 py-1.5 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+                          className="w-full px-3.5 py-2 sm:py-2.5 bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
                           required
                           disabled={isLoading}
                           autoFocus
@@ -728,17 +723,17 @@ export const AuthPage: React.FC = () => {
 
                   {/* Email */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">
+                    <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                       Email Address *
                     </label>
                     <div className="relative">
-                      <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                      <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                       <input
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         placeholder="name123@gmail.com"
-                        className="w-full pl-8 pr-2.5 py-1.5 sm:py-2 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                        className="w-full pl-9 pr-3.5 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
                         required
                         disabled={isLoading}
                       />
@@ -746,47 +741,47 @@ export const AuthPage: React.FC = () => {
                   </div>
 
                   {/* Password & Confirm in 2 columns */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                     {/* Password */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">
+                      <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Password * (min. 6)
                       </label>
                       <div className="relative">
-                        <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                        <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                         <input
                           type={showPassword ? 'text' : 'password'}
                           value={password}
                           onChange={e => setPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="w-full pl-8 pr-7 py-1.5 sm:py-2 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
+                          className="w-full pl-9 pr-10 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-800 transition-all"
                           required
                           disabled={isLoading}
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-2 top-2 sm:top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                          className="absolute right-3 top-2.5 sm:top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                           tabIndex={-1}
                         >
-                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>
 
                     {/* Confirm Password */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">
+                      <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Confirm Password *
                       </label>
                       <div className="relative">
-                        <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                        <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                         <input
                           type={showConfirmPassword ? 'text' : 'password'}
                           value={confirmPassword}
                           onChange={e => setConfirmPassword(e.target.value)}
                           placeholder="••••••••"
-                          className={`w-full pl-8 pr-7 py-1.5 sm:py-2 bg-[#f0f4fa] dark:bg-slate-800/80 border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
+                          className={`w-full pl-9 pr-10 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
                             confirmPassword && confirmPassword !== password
                               ? 'border-rose-400 focus:ring-rose-400'
                               : confirmPassword && confirmPassword === password
@@ -799,25 +794,25 @@ export const AuthPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-2 top-2 sm:top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                          className="absolute right-3 top-2.5 sm:top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                           tabIndex={-1}
                         >
-                          {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>
                   </div>
 
                   {confirmPassword && confirmPassword === password && (
-                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                      <Check className="w-3 h-3" /> Passwords match
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                      <Check className="w-3.5 h-3.5" /> Passwords match
                     </p>
                   )}
 
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                    className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                   >
                     <span>{isLoading ? 'Creating Account...' : 'Create Free Account'}</span>
                     <ArrowRight className="w-4 h-4" />
@@ -832,7 +827,7 @@ export const AuthPage: React.FC = () => {
                   {forgotStep === 'email' && (
                     <form onSubmit={handleForgotStep1Submit} className="space-y-3">
                       <div>
-                        <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                           Registered Email Address *
                         </label>
                         <div className="relative">
@@ -842,7 +837,7 @@ export const AuthPage: React.FC = () => {
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             placeholder="name123@gmail.com"
-                            className="w-full pl-9 pr-3 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                            className="w-full pl-9 pr-3.5 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
                             required
                             disabled={isLoading}
                             autoFocus
@@ -856,7 +851,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                       >
                         <span>{isLoading ? 'Sending Code...' : 'Send Verification Code'}</span>
                         <ArrowRight className="w-4 h-4" />
@@ -901,7 +896,7 @@ export const AuthPage: React.FC = () => {
 
                       {/* OTP Input Field */}
                       <div>
-                        <label className="block text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                           6-Digit Verification Code *
                         </label>
                         <div className="relative">
@@ -946,7 +941,7 @@ export const AuthPage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={isLoading || otp.length !== 6}
-                        className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                       >
                         <span>{isLoading ? 'Verifying Code...' : 'Verify Code & Proceed'}</span>
                         <ArrowRight className="w-4 h-4" />
@@ -956,7 +951,7 @@ export const AuthPage: React.FC = () => {
 
                   {/* Step 3: Set New Password & Confirm */}
                   {forgotStep === 'reset' && (
-                    <form onSubmit={handleForgotStep3Submit} className="space-y-2.5">
+                    <form onSubmit={handleForgotStep3Submit} className="space-y-3">
                       <div className="p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -965,20 +960,20 @@ export const AuthPage: React.FC = () => {
                       </div>
 
                       {/* Password & Confirm in 2 columns */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                         {/* New Password */}
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">
+                          <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                             New Password * (min. 6)
                           </label>
                           <div className="relative">
-                            <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                            <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                             <input
                               type={showNewPassword ? 'text' : 'password'}
                               value={newPassword}
                               onChange={e => setNewPassword(e.target.value)}
                               placeholder="••••••••"
-                              className="w-full pl-8 pr-7 py-1.5 sm:py-2 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                              className="w-full pl-9 pr-10 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
                               required
                               disabled={isLoading}
                               autoFocus
@@ -986,27 +981,27 @@ export const AuthPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setShowNewPassword(!showNewPassword)}
-                              className="absolute right-2 top-2 sm:top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                              className="absolute right-3 top-2.5 sm:top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                               tabIndex={-1}
                             >
-                              {showNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
                         </div>
 
                         {/* Confirm New Password */}
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-0.5">
+                          <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                             Confirm New Password *
                           </label>
                           <div className="relative">
-                            <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                            <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                             <input
                               type={showConfirmNewPassword ? 'text' : 'password'}
                               value={confirmNewPassword}
                               onChange={e => setConfirmNewPassword(e.target.value)}
                               placeholder="••••••••"
-                              className={`w-full pl-8 pr-7 py-1.5 sm:py-2 bg-[#f0f4fa] dark:bg-slate-800/80 border rounded-xl text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
+                              className={`w-full pl-9 pr-10 py-2 sm:py-2.5 bg-[#f0f4fa] dark:bg-slate-800/80 border rounded-xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 transition-all ${
                                 confirmNewPassword && confirmNewPassword !== newPassword
                                   ? 'border-rose-400 focus:ring-rose-400'
                                   : confirmNewPassword && confirmNewPassword === newPassword
@@ -1019,25 +1014,25 @@ export const AuthPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
-                              className="absolute right-2 top-2 sm:top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                              className="absolute right-3 top-2.5 sm:top-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                               tabIndex={-1}
                             >
-                              {showConfirmNewPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              {showConfirmNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                           </div>
                         </div>
                       </div>
 
                       {confirmNewPassword && confirmNewPassword === newPassword && (
-                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                          <Check className="w-3 h-3" /> Passwords match
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5" /> Passwords match
                         </p>
                       )}
 
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full mt-2.5 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-700/25 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
                       >
                         <span>{isLoading ? 'Updating Password...' : 'Save New Password & Continue'}</span>
                         <ArrowRight className="w-4 h-4" />
