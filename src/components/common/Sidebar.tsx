@@ -256,38 +256,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
           {/* Quick AI Section */}
           <div>
-            <div className={`text-xs font-black uppercase tracking-wider px-3 mb-2.5 transition-colors ${getSectionHeaderClass()}`}>
+            <div className={`text-[10px] font-extrabold uppercase tracking-wider px-3 mb-1.5 transition-colors ${getSectionHeaderClass()}`}>
               Smart Assistant
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <button
                 onClick={() => {
                   setIsAiModalOpen(true);
                   onCloseMobile();
                 }}
-                className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all text-left group cursor-pointer ${getAiCardClass()}`}
+                className={`w-full flex items-center justify-between p-2 sm:p-2.5 rounded-xl border transition-all text-left group cursor-pointer ${getAiCardClass()}`}
               >
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
-                    <Sparkles className="w-4 h-4" />
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
+                    <Sparkles className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className={`text-sm font-bold flex items-center gap-1.5 ${
+                    <div className={`text-xs font-bold flex items-center gap-1.5 ${
                       isDark || sidebarTheme === 'dark' ? 'text-white' : 'text-slate-900'
                     }`}>
                       App Guide &amp; AI
-                      <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded-full font-bold">
+                      <span className="text-[9px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded-full font-bold">
                         Help
                       </span>
                     </div>
-                    <div className={`text-xs ${
+                    <div className={`text-[10px] ${
                       isDark || sidebarTheme === 'dark' ? 'text-slate-400' : 'text-slate-500'
                     }`}>
                       App Help &amp; External AI
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-3.5 h-3.5 text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>
