@@ -389,9 +389,11 @@ export const AuthPage: React.FC = () => {
 
             {/* Headline */}
             <div className="space-y-2 sm:space-y-2.5">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[48px] xl:text-[56px] font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
-                Work Smarter,<br />
-                <span className="text-emerald-600 dark:text-emerald-400">Freelance Happier</span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[48px] xl:text-[56px] font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-[1.22] lg:leading-[1.25]">
+                <span className="block">Work Smarter,</span>
+                <span className="block text-emerald-600 dark:text-emerald-400 mt-1 sm:mt-1.5 lg:mt-2">
+                  Freelance Happier
+                </span>
               </h1>
               <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg">
                 Manage clients, track deadlines, and stay organized — all in one place.
