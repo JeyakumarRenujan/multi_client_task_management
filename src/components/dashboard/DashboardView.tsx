@@ -511,7 +511,7 @@ export const DashboardView: React.FC = () => {
         </div>
 
         {/* Quick Launchpad Card */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-black dark:border-slate-800 shadow-sm flex flex-col">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-primary-500/35 shadow-sm flex flex-col animate-card-subtle-glitch [animation-delay:4.2s] transition-shadow">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">

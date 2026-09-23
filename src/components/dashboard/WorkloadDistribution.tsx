@@ -8,7 +8,7 @@ export const WorkloadDistribution: React.FC = () => {
   const activeProjects = projects.filter(p => p.status !== 'archived');
 
   return (
-    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-black dark:border-slate-800 shadow-sm flex flex-col justify-between">
+    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-primary-500/35 shadow-sm flex flex-col justify-between animate-card-subtle-glitch [animation-delay:1.4s] transition-shadow">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
