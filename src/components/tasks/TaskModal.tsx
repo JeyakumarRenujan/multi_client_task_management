@@ -67,10 +67,7 @@ export const TaskModal: React.FC = () => {
       setDueDate(defaultDue.toISOString().split('T')[0]);
       setDueTime('18:00');
       setEstimatedHours(3);
-      setSubtasks([
-        { id: `st-init-1`, title: 'Requirement review & draft mockup', completed: false },
-        { id: `st-init-2`, title: 'Core code implementation', completed: false },
-      ]);
+      setSubtasks([]);
       setTags(['Frontend', 'Milestone']);
     }
     setError('');
