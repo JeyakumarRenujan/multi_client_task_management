@@ -196,9 +196,11 @@ export const TimeTrackerView: React.FC = () => {
               <div className="font-mono text-3xl sm:text-5xl md:text-6xl font-black tracking-wider text-white drop-shadow-md">
                 {formatTime(activeTimer.elapsedSeconds)}
               </div>
-              <div className="text-[11px] sm:text-xs font-semibold text-emerald-200 mt-1">
-                {activeTimer.isRunning ? '● RECORDING LIVE TIME' : activeTimer.elapsedSeconds > 0 ? 'PAUSED' : 'READY TO START'}
-              </div>
+              {(activeTimer.isRunning || activeTimer.elapsedSeconds > 0) && (
+                <div className="text-[11px] sm:text-xs font-semibold text-emerald-200 mt-1">
+                  {activeTimer.isRunning ? '● RECORDING LIVE TIME' : 'PAUSED'}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
