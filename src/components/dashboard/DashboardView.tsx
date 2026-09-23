@@ -146,52 +146,42 @@ export const DashboardView: React.FC = () => {
   });
   const [displayedQuote, setDisplayedQuote] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const isHoveredRef = useRef(false);
+  const [typeLoopKey, setTypeLoopKey] = useState(0);
 
   useEffect(() => {
-    isHoveredRef.current = isHovered;
-  }, [isHovered]);
-
-  useEffect(() => {
+    let isCancelled = false;
     const fullText = DAILY_SPARKS[sparkIndex].quote;
     setDisplayedQuote('');
     setIsTyping(true);
 
     let currentIdx = 0;
-    let holdTimer: NodeJS.Timeout | null = null;
-    let hoverPoll: NodeJS.Timeout | null = null;
+    let typeInterval: NodeJS.Timeout | null = null;
+    let restartTimer: NodeJS.Timeout | null = null;
 
-    const interval = setInterval(() => {
+    typeInterval = setInterval(() => {
+      if (isCancelled) return;
       currentIdx++;
       if (currentIdx <= fullText.length) {
         setDisplayedQuote(fullText.slice(0, currentIdx));
       } else {
         setIsTyping(false);
-        clearInterval(interval);
+        if (typeInterval) clearInterval(typeInterval);
 
-        // Quote fully typed: hold for 6 seconds, then loop to next spark in sequence
-        holdTimer = setTimeout(() => {
-          if (isHoveredRef.current) {
-            hoverPoll = setInterval(() => {
-              if (!isHoveredRef.current) {
-                clearInterval(hoverPoll!);
-                setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
-              }
-            }, 800);
-          } else {
-            setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
+        // Quote fully typed: hold for 2.5s, then re-trigger typewriter animation for the SAME spark
+        restartTimer = setTimeout(() => {
+          if (!isCancelled) {
+            setTypeLoopKey(prev => prev + 1);
           }
-        }, 6000);
+        }, 2500);
       }
     }, 24);
 
     return () => {
-      clearInterval(interval);
-      if (holdTimer) clearTimeout(holdTimer);
-      if (hoverPoll) clearInterval(hoverPoll);
+      isCancelled = true;
+      if (typeInterval) clearInterval(typeInterval);
+      if (restartTimer) clearTimeout(restartTimer);
     };
-  }, [sparkIndex]);
+  }, [sparkIndex, typeLoopKey]);
 
   const handleNextSpark = () => {
     setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
@@ -260,11 +250,7 @@ export const DashboardView: React.FC = () => {
           </div>
 
           {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Fixed Size & Typewriter Effect in Time Loop) */}
-          <div
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="relative group w-full md:w-[410px] h-[152px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-3.5 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0"
-          >
+          <div className="relative group w-full md:w-[410px] h-[152px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-3.5 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0">
             {/* Top Bar: Flame Streak Pill (matches reference image) & Next Quote Shuffle */}
             <div className="flex items-center justify-between gap-2 h-7 shrink-0">
               <button
@@ -294,9 +280,7 @@ export const DashboardView: React.FC = () => {
                 <span className="text-emerald-400 not-italic font-serif text-base mr-0.5 select-none opacity-90">“</span>
                 {displayedQuote}
                 <span className="text-emerald-400 not-italic font-serif text-base ml-0.5 select-none opacity-90">”</span>
-                {isTyping && (
-                  <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
-                )}
+                <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
               </p>
             </div>
 
