@@ -265,10 +265,10 @@ export const TimeTrackerView: React.FC = () => {
       {/* Time Entries Table */}
       <div className="rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <div className="p-3.5 sm:p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-          <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+          <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
             Time Entries History ({timeEntries.length})
           </h3>
-          <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             Sorted by most recent
           </span>
         </div>
@@ -291,18 +291,18 @@ export const TimeTrackerView: React.FC = () => {
                   <div key={entry.id} className="p-3.5 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                        <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
                           {client?.name || 'Client'} &bull; {project?.title || 'Project'}
                         </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
                           {entry.description || 'Logged work session'}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
-                        <span className="font-mono font-black text-xs text-emerald-700 dark:text-emerald-400">
+                        <span className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-400">
                           {hoursNum} hrs
                         </span>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div className="text-xs text-slate-400 mt-0.5">
                           {entry.date}
                         </div>
                       </div>
@@ -334,14 +334,14 @@ export const TimeTrackerView: React.FC = () => {
 
             {/* Desktop Table (hidden on mobile) */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider text-xs">
                   <tr>
-                    <th className="py-3 px-4">Date</th>
-                    <th className="py-3 px-4">Client &amp; Project</th>
-                    <th className="py-3 px-4">Work Description</th>
-                    <th className="py-3 px-4">Duration</th>
-                    <th className="py-3 px-4 text-right">Delete</th>
+                    <th className="py-3.5 px-4">Date</th>
+                    <th className="py-3.5 px-4">Client &amp; Project</th>
+                    <th className="py-3.5 px-4">Work Description</th>
+                    <th className="py-3.5 px-4">Duration</th>
+                    <th className="py-3.5 px-4 text-right">Delete</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -353,28 +353,28 @@ export const TimeTrackerView: React.FC = () => {
 
                     return (
                       <tr key={entry.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                        <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">
                           {entry.date}
                         </td>
 
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-slate-900 dark:text-white">
+                        <td className="py-3.5 px-4">
+                          <div className="text-sm font-bold text-slate-900 dark:text-white">
                             {client?.name || 'Client'}
                           </div>
-                          <div className="text-[11px] text-slate-400 truncate max-w-[180px]">
+                          <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[200px] mt-0.5">
                             {project?.title || 'Project'}
                           </div>
                         </td>
 
-                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300 max-w-md">
+                        <td className="py-3.5 px-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 max-w-md">
                           {entry.description}
                         </td>
 
-                        <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
+                        <td className="py-3.5 px-4 font-mono font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
                           {hoursNum} hrs
                         </td>
 
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3.5 px-4 text-right">
                           <button
                             type="button"
                             onClick={() =>
@@ -390,7 +390,7 @@ export const TimeTrackerView: React.FC = () => {
                             className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                             title="Delete log"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
