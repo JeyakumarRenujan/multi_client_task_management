@@ -91,7 +91,7 @@ export const TasksView: React.FC = () => {
       </div>
 
       {/* Control & Filter Toolbar */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm flex flex-col xl:flex-row xl:items-center justify-between gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
           <input
