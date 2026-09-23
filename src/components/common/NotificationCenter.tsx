@@ -9,12 +9,8 @@ import {
   FileText,
   Volume2,
   VolumeX,
-  Mail,
-  Smartphone,
   Check,
   X,
-  Send,
-  Loader2,
 } from 'lucide-react';
 
 import { playNotificationTone } from '../../services/soundService';
@@ -35,32 +31,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
     updateUserProfile,
     setActiveTab,
     showToast,
-    sendUrgentEmailAlert,
   } = useApp();
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
-  const [showSimulatedPreview, setShowSimulatedPreview] = useState<boolean>(false);
-  const [isSendingAlert, setIsSendingAlert] = useState<boolean>(false);
-
-  const handleSendUrgentEmail = async () => {
-    if (!user?.email) {
-      showToast({
-        title: 'Email Alert',
-        message: 'No login email registered on this account.',
-        type: 'warning',
-      });
-      return;
-    }
-    setIsSendingAlert(true);
-    try {
-      await sendUrgentEmailAlert(
-        undefined,
-        'Notification Center dispatch: Urgent tasks and approaching deadlines alert.'
-      );
-    } finally {
-      setIsSendingAlert(false);
-    }
-  };
 
   // Close on Escape key
   useEffect(() => {
@@ -107,21 +80,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
         : 'Notification alert sounds have been muted.',
       type: nextSound ? 'success' : 'info',
     });
-  };
-
-  const handleSimulatePush = () => {
-    const nextState = !showSimulatedPreview;
-    setShowSimulatedPreview(nextState);
-    if (nextState) {
-      if (isSoundOn) {
-        playNotificationTone('chime');
-      }
-      showToast({
-        title: '🚨 Deadline Alert Ping',
-        message: 'FinTech Pulse deliverable "Dark Theme WCAG Audit" deadline at 6:00 PM!',
-        type: 'warning',
-      });
-    }
   };
 
   const getNotificationIcon = (type: string, priority: string) => {
@@ -298,58 +256,6 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ isOpen, 
               )}
             </div>
           ))
-        )}
-      </div>
-
-      {/* Real Email Alert & Multi-Channel Bar */}
-      <div className="p-3 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 text-xs space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[11px] font-medium text-slate-500 truncate">
-            Alert Mail: <strong className="font-mono text-emerald-700 dark:text-emerald-400">{user?.email}</strong>
-          </span>
-          <button
-            type="button"
-            onClick={handleSendUrgentEmail}
-            disabled={isSendingAlert}
-            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 disabled:opacity-50 cursor-pointer flex items-center gap-1 shrink-0 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/60"
-            title="Dispatch real urgent work notification email to your login address"
-          >
-            {isSendingAlert ? (
-              <>
-                <Loader2 className="w-3 h-3 animate-spin" />
-                <span>Sending...</span>
-              </>
-            ) : (
-              <>
-                <Send className="w-3 h-3" />
-                <span>Email Me Urgent Alert</span>
-              </>
-            )}
-          </button>
-        </div>
-
-        <div className="flex items-center justify-between text-[10px] text-slate-400">
-          <span>Channels: Real Email &bull; Audio Chime &bull; Browser</span>
-          <button
-            type="button"
-            onClick={handleSimulatePush}
-            className="text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1"
-          >
-            <Bell className="w-2.5 h-2.5" />
-            <span>{showSimulatedPreview ? 'Hide Preview' : 'Preview Format'}</span>
-          </button>
-        </div>
-
-        {showSimulatedPreview && (
-          <div className="p-2 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/50 border border-emerald-200/50 dark:border-emerald-800/40 text-[11px] space-y-1.5 animate-fade-in">
-            <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
-              <Mail className="w-3.5 h-3.5" />
-              <span>Real Email Alert to {user?.email}</span>
-            </div>
-            <p className="text-slate-600 dark:text-slate-300">
-              &quot;Delivers urgent tasks &amp; deadlines straight to your inbox even when you are logged out from the web app.&quot;
-            </p>
-          </div>
         )}
       </div>
     </div>
