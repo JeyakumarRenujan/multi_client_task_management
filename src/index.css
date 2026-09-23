@@ -259,7 +259,7 @@
   }
 }
 
-/* Running Border Beam & Cyber Glitch Effect */
+/* Running Border Beam */
 @keyframes borderBeamRotate {
   0% {
     transform: rotate(0deg);
@@ -269,128 +269,9 @@
   }
 }
 
-@keyframes borderGlitchFlicker {
-  0%, 100% {
-    opacity: 0.95;
-    filter: drop-shadow(0 0 3px rgb(var(--color-primary-400) / 0.5)) drop-shadow(0 0 6px rgb(var(--color-primary-500) / 0.3));
-  }
-  8% {
-    opacity: 1;
-    filter: drop-shadow(0 0 7px rgb(var(--color-primary-400) / 0.8)) drop-shadow(0 0 12px rgb(var(--color-primary-300) / 0.6));
-  }
-  9% {
-    opacity: 0.5;
-    filter: drop-shadow(0 0 1px rgb(var(--color-primary-400) / 0.2));
-  }
-  11% {
-    opacity: 1;
-    filter: drop-shadow(0 0 6px rgb(var(--color-primary-400) / 0.7));
-  }
-  35% {
-    opacity: 0.9;
-    filter: drop-shadow(0 0 4px rgb(var(--color-primary-400) / 0.4));
-  }
-  52% {
-    opacity: 1;
-    filter: drop-shadow(0 0 8px rgb(var(--color-primary-400) / 0.8)) drop-shadow(0 0 14px rgb(var(--color-primary-500) / 0.5));
-  }
-  53% {
-    opacity: 0.6;
-  }
-  55% {
-    opacity: 1;
-  }
-  78% {
-    opacity: 0.92;
-    filter: drop-shadow(0 0 4px rgb(var(--color-primary-400) / 0.5));
-  }
-  89% {
-    opacity: 1;
-    filter: drop-shadow(0 0 9px rgb(var(--color-primary-300) / 0.8)) drop-shadow(0 0 15px rgb(var(--color-primary-400) / 0.5));
-  }
-  91% {
-    opacity: 0.7;
-  }
-  93% {
-    opacity: 1;
-  }
-}
-
 .animate-border-beam {
   animation: borderBeamRotate 3.5s linear infinite;
 }
 
-.animate-border-glitch {
-  animation: borderGlitchFlicker 3s ease-in-out infinite;
-}
-
-/* 4 Section Cards: Subtle Theme Border with Small Cyber Glitch ("not too much") */
-@keyframes cardSubtleGlitchLight {
-  0%, 82%, 100% {
-    border-color: rgb(var(--color-primary-400) / 0.7);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 0 0 1px rgb(var(--color-primary-400) / 0.15);
-  }
-  84% {
-    border-color: rgb(var(--color-primary-400) / 0.95);
-    box-shadow: 0 0 8px 1px rgb(var(--color-primary-400) / 0.35), 0 0 0 1px rgb(var(--color-primary-300) / 0.5);
-  }
-  86% {
-    border-color: rgb(var(--color-primary-400) / 0.4);
-    box-shadow: 0 0 2px 0 rgb(var(--color-primary-400) / 0.15);
-  }
-  88% {
-    border-color: rgb(var(--color-primary-300) / 1);
-    box-shadow: 0 0 10px 2px rgb(var(--color-primary-300) / 0.45), 0 0 0 1px rgb(var(--color-primary-200) / 0.6);
-  }
-  90% {
-    border-color: rgb(var(--color-primary-400) / 0.5);
-    box-shadow: 0 0 3px 0 rgb(var(--color-primary-400) / 0.2);
-  }
-  92% {
-    border-color: rgb(var(--color-primary-400) / 0.7);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 0 0 1px rgb(var(--color-primary-400) / 0.15);
-  }
-}
-
-@keyframes cardSubtleGlitchDark {
-  0%, 82%, 100% {
-    border-color: rgb(var(--color-primary-500) / 0.35);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 0 0 1px rgb(var(--color-primary-500) / 0.15);
-  }
-  84% {
-    border-color: rgb(var(--color-primary-400) / 0.85);
-    box-shadow: 0 0 8px 1px rgb(var(--color-primary-400) / 0.35), 0 0 0 1px rgb(var(--color-primary-300) / 0.4);
-  }
-  86% {
-    border-color: rgb(var(--color-primary-500) / 0.2);
-    box-shadow: 0 0 2px 0 rgb(var(--color-primary-500) / 0.1);
-  }
-  88% {
-    border-color: rgb(var(--color-primary-300) / 0.95);
-    box-shadow: 0 0 10px 2px rgb(var(--color-primary-300) / 0.4), 0 0 0 1px rgb(var(--color-primary-200) / 0.5);
-  }
-  90% {
-    border-color: rgb(var(--color-primary-500) / 0.3);
-    box-shadow: 0 0 3px 0 rgb(var(--color-primary-500) / 0.2);
-  }
-  92% {
-    border-color: rgb(var(--color-primary-500) / 0.35);
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 0 0 1px rgb(var(--color-primary-500) / 0.15);
-  }
-}
-
-.animate-card-subtle-glitch {
-  animation: cardSubtleGlitchLight 5.5s ease-in-out infinite;
-}
-
-.dark .animate-card-subtle-glitch {
-  animation: cardSubtleGlitchDark 5.5s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-card-subtle-glitch {
-    animation: none;
-  }
-}
 
 

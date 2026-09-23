@@ -339,9 +339,9 @@ export const DashboardView: React.FC = () => {
               }}
             />
 
-            {/* 2. Cyber Glitch & Electric Spark Flicker Aura along the border perimeter */}
+            {/* 2. Subtle Theme Border Outline along the perimeter */}
             <div
-              className={`absolute inset-0 rounded-2xl border-2 ${activeThemeAccent.borderGlitchClass} pointer-events-none animate-border-glitch z-0`}
+              className={`absolute inset-0 rounded-2xl border ${activeThemeAccent.borderGlitchClass} pointer-events-none z-0`}
               style={activeThemeAccent.borderGlitchStyle}
             />
 
@@ -511,7 +511,7 @@ export const DashboardView: React.FC = () => {
         </div>
 
         {/* Quick Launchpad Card */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-primary-500/35 shadow-sm flex flex-col animate-card-subtle-glitch [animation-delay:4.2s] transition-shadow">
+        <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-primary-500/35 shadow-sm flex flex-col transition-shadow">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
