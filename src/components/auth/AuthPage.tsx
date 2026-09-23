@@ -459,11 +459,8 @@ export const AuthPage: React.FC = () => {
             {/* Ambient backlight glow */}
             <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-whatsapp-light/25 rounded-[34px] blur-xl opacity-80 pointer-events-none" />
 
-            {/* High-Contrast Card Outer Border & Elevation Frame */}
-            <div className="p-[2.5px] rounded-[26px] sm:rounded-[30px] bg-gradient-to-b from-emerald-500/70 via-emerald-400/40 to-teal-600/70 dark:from-emerald-500/80 dark:via-slate-700 dark:to-teal-500/80 shadow-[0_20px_50px_-10px_rgba(5,150,105,0.25),0_12px_28px_-6px_rgba(0,0,0,0.14)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] transition-all">
-              <div className="bg-white dark:bg-slate-900 rounded-[23.5px] sm:rounded-[27.5px] border border-emerald-100/90 dark:border-slate-800 p-3.5 sm:p-5 lg:p-6 flex flex-col relative">
-                {/* Solid Green Top Accent Bar with gradient glow */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-600 via-teal-500 to-whatsapp-teal rounded-t-[23.5px] sm:rounded-t-[27.5px]" />
+            {/* Auth Form Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-[26px] sm:rounded-[30px] border border-slate-200/90 dark:border-slate-800 shadow-[0_20px_50px_-10px_rgba(5,150,105,0.18),0_12px_28px_-6px_rgba(0,0,0,0.08)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] p-3.5 sm:p-5 lg:p-6 flex flex-col relative transition-all">
 
                 {/* 1-Click Demo Banner (only in login/register mode) */}
                 {mode !== 'forgot' && (
@@ -1093,7 +1090,6 @@ export const AuthPage: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
 
             {/* Artistic Handwritten Accents (Matching Mockup) */}
             <div className="hidden xl:flex flex-col items-center absolute -right-20 top-4 select-none pointer-events-none rotate-2">
