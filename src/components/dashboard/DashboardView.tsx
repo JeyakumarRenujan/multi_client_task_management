@@ -12,20 +12,103 @@ import {
   Layers,
   ArrowRight,
   Zap,
+  Flame,
 } from 'lucide-react';
+
+const DAILY_SPARKS = [
+  {
+    quote: 'Focus on being productive instead of busy.',
+    author: 'Tim Ferriss',
+  },
+  {
+    quote: 'Small daily improvements over time lead to stunning results.',
+    author: 'Robin Sharma',
+  },
+  {
+    quote: 'Your time is your inventory — price it and protect it with pride.',
+    author: 'Freelance Wisdom',
+  },
+  {
+    quote: 'Done is better than perfect. Ship with confidence and iterate.',
+    author: 'Sheryl Sandberg',
+  },
+  {
+    quote: 'Deep focus creates rare work that clients eagerly pay for.',
+    author: 'Cal Newport',
+  },
+  {
+    quote: 'Action cures anxiety. Take the next clear step today.',
+    author: 'Productivity Rule',
+  },
+  {
+    quote: 'Quality work for one happy client opens doors to five more.',
+    author: 'Agency Principle',
+  },
+  {
+    quote: 'Simplicity is the soul of efficiency.',
+    author: 'Austin Freeman',
+  },
+];
 
 export const DashboardView: React.FC = () => {
   const {
     user,
-    setIsTaskModalOpen,
     setIsProjectModalOpen,
     setIsClientModalOpen,
     setIsTimeLogModalOpen,
-    setIsAiModalOpen,
     setActiveTab,
   } = useApp();
 
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
+  // Daily Streak Calculation & Persistence
+  const [streakDays, setStreakDays] = useState<number>(5);
+  const [sparkIndex, setSparkIndex] = useState<number>(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+    return Math.abs(dayOfYear) % DAILY_SPARKS.length;
+  });
+  const [isSparkAnimating, setIsSparkAnimating] = useState(false);
+  const [showStreakCheer, setShowStreakCheer] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('meplus_daily_streak');
+      const today = new Date().toISOString().slice(0, 10);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.lastDate === today) {
+          setStreakDays(parsed.count || 5);
+        } else {
+          const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+          if (parsed.lastDate === yesterday) {
+            const newCount = (parsed.count || 5) + 1;
+            setStreakDays(newCount);
+            localStorage.setItem('meplus_daily_streak', JSON.stringify({ count: newCount, lastDate: today }));
+          } else {
+            setStreakDays(parsed.count || 5);
+            localStorage.setItem('meplus_daily_streak', JSON.stringify({ count: parsed.count || 5, lastDate: today }));
+          }
+        }
+      } else {
+        localStorage.setItem('meplus_daily_streak', JSON.stringify({ count: 5, lastDate: today }));
+        setStreakDays(5);
+      }
+    } catch {
+      // fallback
+    }
+  }, []);
+
+  const handleNextSpark = () => {
+    setIsSparkAnimating(true);
+    setTimeout(() => {
+      setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
+      setIsSparkAnimating(false);
+    }, 150);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -89,23 +172,59 @@ export const DashboardView: React.FC = () => {
             </p>
           </div>
 
-          {/* Action Buttons with Proper Flex Alignment */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 w-full sm:w-auto">
-            <button
-              onClick={() => setIsAiModalOpen(true)}
-              className="flex-1 sm:flex-none justify-center h-10 px-4 rounded-xl bg-purple-600/35 hover:bg-purple-600/50 border border-purple-300/40 text-purple-100 text-xs font-bold transition-all shadow-sm group cursor-pointer backdrop-blur-xs flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
-            >
-              <Sparkles className="w-4 h-4 text-purple-200 group-hover:rotate-12 transition-transform" />
-              <span>AI Copilot</span>
-            </button>
+          {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Delightful) */}
+          <div className="relative group w-full md:w-auto md:min-w-[310px] md:max-w-[380px] rounded-2xl bg-slate-950/30 hover:bg-slate-950/40 backdrop-blur-md border border-emerald-400/25 p-3 sm:p-3.5 transition-all shadow-lg shadow-black/15 shrink-0">
+            {/* Top Bar: Flame Streak & Next Quote Shuffle */}
+            <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowStreakCheer(true);
+                  setTimeout(() => setShowStreakCheer(false), 2400);
+                }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/35 text-amber-200 text-xs font-bold transition-all cursor-pointer group/streak"
+                title="Your consecutive active workdays! Click for a cheer."
+              >
+                <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+                <span>{streakDays}-Day Streak</span>
+                <span className="text-[10px] text-amber-300/80 font-semibold hidden sm:inline">• High Momentum</span>
+              </button>
 
-            <button
-              onClick={() => setIsTaskModalOpen(true)}
-              className="flex-1 sm:flex-none justify-center h-10 px-4 rounded-xl bg-whatsapp-light hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-md shadow-black/20 transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap shrink-0 active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-slate-950 font-black stroke-[3]" />
-              <span>New Task</span>
-            </button>
+              <button
+                type="button"
+                onClick={handleNextSpark}
+                title="Discover Next Daily Spark"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-[11px] font-semibold transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+                <span>New Spark</span>
+              </button>
+            </div>
+
+            {/* Quote Content */}
+            <div className={`transition-opacity duration-150 ${isSparkAnimating ? 'opacity-0' : 'opacity-100'}`}>
+              <p className="text-xs sm:text-[13px] text-emerald-50/95 font-medium italic leading-snug line-clamp-2">
+                “{DAILY_SPARKS[sparkIndex].quote}”
+              </p>
+              <div className="flex items-center justify-between mt-1 text-[10px] text-emerald-300/80 font-semibold">
+                <span>— {DAILY_SPARKS[sparkIndex].author}</span>
+                <span className="text-[9px] text-emerald-300/60 uppercase tracking-wider">Daily Inspiration</span>
+              </div>
+            </div>
+
+            {/* Streak Cheer Popup */}
+            {showStreakCheer && (
+              <div className="absolute inset-0 z-20 bg-emerald-950/95 backdrop-blur-md rounded-2xl flex items-center justify-center p-3 text-center border border-amber-400/40 animate-fade-in">
+                <div className="space-y-0.5">
+                  <p className="text-xs font-black text-amber-300 flex items-center justify-center gap-1.5">
+                    <Flame className="w-4 h-4 fill-amber-400" /> You're on fire! {streakDays} days strong!
+                  </p>
+                  <p className="text-[11px] text-emerald-100">
+                    Keep your freelance momentum flowing today!
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
