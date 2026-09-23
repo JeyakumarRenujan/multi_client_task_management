@@ -509,19 +509,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (isDemoAccount(initial)) {
       return safeGetStorage<AppNotification[]>(`${STORAGE_KEYS.NOTIFS_PREFIX}${initial.id}`, initialNotifications);
     }
-    const defaultWelcomeNotif: AppNotification[] = [
-      {
-        id: `notif-welcome-${initial.id}`,
-        userId: initial.id,
-        title: 'Welcome to Me Plus!',
-        message: `Hello ${initial.name}, your workspace is ready. Click "+ New Client" to start managing projects.`,
-        type: 'system',
-        priority: 'medium',
-        timestamp: 'Just now',
-        read: false,
-      },
-    ];
-    return getSavedUserDataWithMigration<AppNotification[]>(STORAGE_KEYS.NOTIFS_PREFIX, initial, defaultWelcomeNotif);
+    // On page refresh: load saved notifications only — do NOT re-inject the welcome notif.
+    // The welcome notification is only added once, right after a real login/register action.
+    return getSavedUserDataWithMigration<AppNotification[]>(STORAGE_KEYS.NOTIFS_PREFIX, initial, []);
+
   });
 
   // Active Stopwatch Timer
@@ -632,23 +623,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       currentUser,
       isDemo ? initialInvoices : []
     );
-    const defaultWelcomeNotif: AppNotification[] = [
-      {
-        id: `notif-welcome-${currentUser.id}`,
-        userId: currentUser.id,
-        title: 'Welcome to Me Plus!',
-        message: `Hello ${currentUser.name}, your workspace is ready. Click "+ New Client" to start managing projects.`,
-        type: 'system',
-        priority: 'medium',
-        timestamp: 'Just now',
-        read: false,
-      },
-    ];
+    // Load saved notifications; welcome notif is injected only on real login/register
     const localNotifs = getSavedUserDataWithMigration<AppNotification[]>(
       STORAGE_KEYS.NOTIFS_PREFIX,
       currentUser,
-      isDemo ? initialNotifications : defaultWelcomeNotif
+      isDemo ? initialNotifications : []
     );
+
 
     setClients(localClients);
     setProjects(localProjects);
@@ -754,7 +735,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       if (apiNotifs !== null) {
         if (apiNotifs.length > 0) setNotifications(apiNotifs);
-        else if (!isDemo) setNotifications(defaultWelcomeNotif);
+        // If API returns empty, keep local notifications — welcome notif only added on real login
       }
     });
   }, []);
@@ -1197,6 +1178,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           message: `Signed in as ${res.user.name || res.user.email}`,
           type: 'success',
         });
+        // Inject welcome notification once per login session (not on refresh)
+        const welcomeId = `notif-welcome-${deterministicId}`;
+        if (!sessionStorage.getItem('meplus_welcome_shown')) {
+          sessionStorage.setItem('meplus_welcome_shown', '1');
+          setNotifications(prev => {
+            if (prev.some(n => n.id === welcomeId)) return prev;
+            return [
+              {
+                id: welcomeId,
+                userId: deterministicId,
+                title: 'Welcome to Me Plus!',
+                message: `Hello ${res.user.name || res.user.email}, your workspace is ready. Click "+ New Client" to start managing projects.`,
+                type: 'system',
+                priority: 'medium',
+                timestamp: 'Just now',
+                read: false,
+              },
+              ...prev,
+            ];
+          });
+        }
         return { success: true };
       }
     } catch (err: any) {
@@ -1251,6 +1253,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       message: `Signed in as ${authenticatedUser.name}`,
       type: 'success',
     });
+    // Inject welcome notification once per login session (not on refresh)
+    const welcomeId = `notif-welcome-${deterministicId}`;
+    if (!sessionStorage.getItem('meplus_welcome_shown')) {
+      sessionStorage.setItem('meplus_welcome_shown', '1');
+      setNotifications(prev => {
+        if (prev.some(n => n.id === welcomeId)) return prev;
+        return [
+          {
+            id: welcomeId,
+            userId: deterministicId,
+            title: 'Welcome to Me Plus!',
+            message: `Hello ${authenticatedUser.name}, your workspace is ready. Click "+ New Client" to start managing projects.`,
+            type: 'system',
+            priority: 'medium',
+            timestamp: 'Just now',
+            read: false,
+          },
+          ...prev,
+        ];
+      });
+    }
     return { success: true };
   };
 
