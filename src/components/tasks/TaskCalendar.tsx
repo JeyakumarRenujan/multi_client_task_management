@@ -80,10 +80,10 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
             <CalendarIcon className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
               {monthNames[month]} {year}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               Monthly Deliverable Schedule &amp; Deadlines
             </p>
           </div>
@@ -92,7 +92,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentDate(new Date())}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 transition-colors"
+            className="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 transition-colors"
           >
             Today
           </button>
@@ -114,7 +114,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
       </div>
 
       {/* Weekday Labels */}
-      <div className="grid grid-cols-7 gap-1 text-center font-bold text-[10px] sm:text-xs text-slate-400 py-1 border-b border-slate-100 dark:border-slate-800">
+      <div className="grid grid-cols-7 gap-1 text-center font-bold text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 py-1.5 border-b border-slate-100 dark:border-slate-800 uppercase tracking-wider">
         {daysOfWeek.map(d => (
           <div key={d}>{d}</div>
         ))}
@@ -139,7 +139,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
             >
               <div className="flex items-center justify-between mb-0.5 sm:mb-1">
                 <span
-                  className={`text-[10px] sm:text-xs font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center ${
+                  className={`text-xs sm:text-sm font-black w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center ${
                     isToday
                       ? 'bg-emerald-600 text-white shadow-sm'
                       : cell.isCurrentMonth
@@ -151,7 +151,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                 </span>
 
                 {dayTasks.length > 0 && (
-                  <span className="text-[9px] sm:text-[10px] font-black px-1 sm:px-1.5 py-0.2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  <span className="text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                     {dayTasks.length}
                   </span>
                 )}
@@ -166,7 +166,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                       e.stopPropagation();
                       onEditTask(task);
                     }}
-                    className={`w-1.5 h-1.5 rounded-full cursor-pointer ${
+                    className={`w-2 h-2 rounded-full cursor-pointer ${
                       task.status === 'done'
                         ? 'bg-emerald-500'
                         : task.priority === 'urgent'
@@ -177,14 +177,14 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                   />
                 ))}
                 {dayTasks.length > 3 && (
-                  <span className="text-[8px] font-bold text-slate-400">
+                  <span className="text-[9px] font-bold text-slate-400">
                     +{dayTasks.length - 3}
                   </span>
                 )}
               </div>
 
               {/* Tablet/Desktop View (>= sm): Full task chip list */}
-              <div className="hidden sm:block space-y-1 overflow-y-auto max-h-[75px]">
+              <div className="hidden sm:block space-y-1 overflow-y-auto max-h-[85px]">
                 {dayTasks.slice(0, 2).map(task => {
                   const client = clients.find(c => c.id === task.clientId);
                   const isDone = task.status === 'done';
@@ -193,7 +193,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                     <div
                       key={task.id}
                       onClick={() => onEditTask(task)}
-                      className={`px-1.5 py-1 rounded-lg text-[10px] font-bold truncate cursor-pointer transition-all flex items-center gap-1 ${
+                      className={`px-2 py-1 rounded-lg text-xs font-semibold truncate cursor-pointer transition-all flex items-center gap-1.5 ${
                         isDone
                           ? 'bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 line-through'
                           : task.priority === 'urgent'
@@ -203,7 +203,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                       title={`${task.title} (${client?.company})`}
                     >
                       <span
-                        className="w-1.5 h-1.5 rounded-full shrink-0"
+                        className="w-2 h-2 rounded-full shrink-0"
                         style={{ backgroundColor: client?.color || '#10b981' }}
                       />
                       <span className="truncate">{task.title}</span>
@@ -212,7 +212,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
                 })}
 
                 {dayTasks.length > 2 && (
-                  <div className="text-[9px] font-bold text-slate-400 text-center">
+                  <div className="text-[10px] sm:text-[11px] font-semibold text-slate-400 text-center">
                     +{dayTasks.length - 2} more
                   </div>
                 )}

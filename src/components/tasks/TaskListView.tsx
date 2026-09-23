@@ -166,8 +166,8 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
 
       {/* Desktop/Tablet Table View (hidden on mobile) */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase tracking-wider">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider text-xs">
           <tr>
             <th className="py-3.5 px-4">Task Deliverable</th>
             <th className="py-3.5 px-4">Client / Project</th>
@@ -216,7 +216,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                       </button>
 
                       <span
-                        className={`font-bold truncate ${
+                        className={`text-sm font-bold truncate ${
                           task.status === 'done'
                             ? 'line-through text-slate-400'
                             : 'text-slate-900 dark:text-white'
@@ -228,10 +228,10 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                   </td>
 
                   <td className="py-3.5 px-4">
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">
+                    <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
                       {client?.company || 'Client'}
                     </div>
-                    <div className="text-[11px] text-slate-400 truncate max-w-[150px]">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[150px]">
                       {project?.title || 'Project'}
                     </div>
                   </td>
@@ -240,7 +240,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                     <select
                       value={task.status}
                       onChange={e => moveTaskStatus(task.id, e.target.value as TaskStatus)}
-                      className={`text-[10px] font-bold px-2 py-1 rounded-lg border uppercase focus:outline-none ${
+                      className={`text-xs font-bold px-2.5 py-1.5 rounded-lg border uppercase focus:outline-none cursor-pointer ${
                         task.status === 'done'
                           ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300'
                           : task.status === 'in-progress'
@@ -259,7 +259,7 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
 
                   <td className="py-3.5 px-4">
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                      className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wide ${
                         task.priority === 'urgent'
                           ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400'
                           : task.priority === 'high'
@@ -272,20 +272,20 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
                   </td>
 
                   <td
-                    className={`py-3.5 px-4 ${
+                    className={`py-3.5 px-4 text-xs sm:text-sm ${
                       isOverdue
                         ? 'font-bold text-rose-600 dark:text-rose-400'
-                        : 'text-slate-600 dark:text-slate-300'
+                        : 'font-semibold text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     {task.dueDate}
                   </td>
 
-                  <td className="py-3.5 px-4 font-mono font-semibold text-slate-700 dark:text-slate-300">
+                  <td className="py-3.5 px-4 text-xs sm:text-sm font-mono font-semibold text-slate-700 dark:text-slate-300">
                     {task.estimatedHours}h
                   </td>
 
-                  <td className="py-3.5 px-4 text-slate-500">
+                  <td className="py-3.5 px-4 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400">
                     {task.subtasks.length > 0
                       ? `${completedSubtasks}/${task.subtasks.length}`
                       : '—'}
