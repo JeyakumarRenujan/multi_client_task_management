@@ -385,7 +385,7 @@ export const SettingsView: React.FC = () => {
       {/* Profile Form */}
       <form
         onSubmit={handleSaveProfile}
-        className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-5 sm:space-y-6"
+        className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm space-y-5 sm:space-y-6"
       >
         {/* Profile Picture Section */}
         <div className="pb-6 border-b border-slate-100 dark:border-slate-800">
@@ -518,7 +518,7 @@ export const SettingsView: React.FC = () => {
       </form>
 
       {/* Appearance & Navigation Customization */}
-      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-5 sm:space-y-6">
+      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm space-y-5 sm:space-y-6">
         <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white shadow-md shadow-emerald-700/20">
             <Palette className="w-5 h-5" />
@@ -778,7 +778,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Idle Animation & Inactivity Screensaver */}
-      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-5 sm:space-y-6">
+      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm space-y-5 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-whatsapp-teal text-white shadow-md shadow-emerald-700/20">
@@ -941,7 +941,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Direct AI Tools & Workspace Guide (No Developer API Keys Required) */}
-      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-5">
+      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-gradient-to-tr from-emerald-600 to-whatsapp-teal text-white shadow-md shadow-emerald-700/20">
@@ -1041,7 +1041,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Notifications & Sound Settings */}
-      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm space-y-4">
         <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-md shadow-emerald-700/20">
             <Bell className="w-5 h-5" />
@@ -1266,7 +1266,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Workspace Demo & Sample Data */}
-      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm space-y-4">
+      <div className="p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm space-y-4">
         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-700/20">
