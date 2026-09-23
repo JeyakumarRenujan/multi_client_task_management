@@ -269,7 +269,7 @@ export const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200 relative">
+    <div className="min-h-screen overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable] bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200 relative">
       {/* Decorative Ambient Background Gradients & Grid Pattern */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Top-left ambient primary glow */}
@@ -287,7 +287,7 @@ export const AuthPage: React.FC = () => {
       <header className="w-full h-13 sm:h-14 border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 lg:px-10 flex items-center justify-between bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shrink-0 z-30 shadow-xs">
         <Logo size="md" />
 
-        <div className="flex items-center gap-2.5 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
           {/* Quick Accent Color Dropdown */}
           <div className="relative">
             <button
@@ -363,7 +363,7 @@ export const AuthPage: React.FC = () => {
               setError('');
               setSuccessMessage('');
             }}
-            className="w-[115px] sm:w-[125px] flex items-center justify-center text-center whitespace-nowrap text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 transition-colors cursor-pointer"
+            className="w-32 shrink-0 flex items-center justify-center text-center whitespace-nowrap text-xs font-bold text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/80 transition-colors cursor-pointer"
           >
             {mode === 'login'
               ? 'Create Account'
@@ -373,11 +373,11 @@ export const AuthPage: React.FC = () => {
       </header>
 
       {/* Main Content Hero */}
-      <main className="flex-1 flex items-center justify-center p-3 sm:p-4 lg:p-6 relative z-10 py-4 sm:py-6 lg:py-8">
-        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center relative my-auto">
+      <main className="flex-1 flex justify-center p-3 sm:p-4 lg:p-6 relative z-10 pt-4 sm:pt-6 lg:pt-8 xl:pt-10 pb-4 sm:pb-6 lg:pb-8">
+        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 lg:items-start relative">
           
           {/* Left Column: Hero & 4 Feature Icons (7 Cols) */}
-          <div className="lg:col-span-7 flex flex-col justify-center space-y-3 sm:space-y-4 lg:space-y-5">
+          <div className="lg:col-span-7 flex flex-col justify-start space-y-3 sm:space-y-4 lg:space-y-5">
             {/* Top Workspace Status Tag */}
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200/90 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300 text-xs font-semibold shadow-2xs">
@@ -459,7 +459,7 @@ export const AuthPage: React.FC = () => {
             <div className="absolute -inset-2 bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-whatsapp-light/25 rounded-[34px] blur-xl opacity-80 pointer-events-none" />
 
             {/* Auth Form Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-[26px] sm:rounded-[30px] border border-emerald-300/80 dark:border-emerald-700/70 ring-1 ring-emerald-500/20 dark:ring-emerald-500/25 shadow-[0_20px_50px_-10px_rgba(5,150,105,0.18),0_12px_28px_-6px_rgba(0,0,0,0.08)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] p-3.5 sm:p-5 lg:p-6 flex flex-col relative transition-all">
+            <div className="bg-white dark:bg-slate-900 rounded-[26px] sm:rounded-[30px] border border-emerald-300/80 dark:border-emerald-700/70 ring-1 ring-emerald-500/20 dark:ring-emerald-500/25 shadow-[0_20px_50px_-10px_rgba(5,150,105,0.18),0_12px_28px_-6px_rgba(0,0,0,0.08)] dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] p-3.5 sm:p-5 lg:p-6 flex flex-col relative transition-colors duration-200">
 
                 {/* 1-Click Demo Banner (only in login/register mode) */}
                 {mode !== 'forgot' && (
