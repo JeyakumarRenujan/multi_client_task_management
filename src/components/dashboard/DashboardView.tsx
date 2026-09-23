@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../../context/AppContext';
 import { useTheme, type AccentColor } from '../../context/ThemeContext';
 import { StatCards } from './StatCards';
@@ -392,104 +393,107 @@ export const DashboardView: React.FC = () => {
         </div>
       </div>
 
-      {/* 7-Day Streak Pop-up Modal (matching reference screenshot) */}
-      {isStreakModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setIsStreakModalOpen(false)}
-        >
+      {/* 7-Day Streak Pop-up Modal (Portaled directly to document.body to fully cover viewport including top navbar) */}
+      {isStreakModalOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
           <div
-            className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-100 dark:border-slate-800 text-center animate-scale-in"
-            onClick={e => e.stopPropagation()}
-            role="dialog"
-            aria-label="Daily Streak Details"
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+            onClick={() => setIsStreakModalOpen(false)}
           >
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={() => setIsStreakModalOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Close"
+            <div
+              className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-100 dark:border-slate-800 text-center animate-scale-in"
+              onClick={e => e.stopPropagation()}
+              role="dialog"
+              aria-label="Daily Streak Details"
             >
-              <X className="w-4 h-4" />
-            </button>
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setIsStreakModalOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
 
-            {/* Large 3D-styled Flame Illustration */}
-            <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28 mb-3 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500/20 via-orange-500/20 to-rose-500/10 blur-xl animate-pulse" />
-              <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100/70 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-slate-800 border border-amber-300/40 dark:border-amber-500/30 flex items-center justify-center shadow-lg shadow-orange-500/10">
-                <Flame className="w-12 h-12 sm:w-14 sm:h-14 text-orange-500 fill-orange-500 drop-shadow-md animate-bounce-subtle" />
+              {/* Large 3D-styled Flame Illustration */}
+              <div className="relative mx-auto w-24 h-24 sm:w-28 sm:h-28 mb-3 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-amber-500/20 via-orange-500/20 to-rose-500/10 blur-xl animate-pulse" />
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-b from-amber-50 via-orange-50/80 to-amber-100/70 dark:from-amber-950/40 dark:via-orange-950/30 dark:to-slate-800 border border-amber-300/40 dark:border-amber-500/30 flex items-center justify-center shadow-lg shadow-orange-500/10">
+                  <Flame className="w-12 h-12 sm:w-14 sm:h-14 text-orange-500 fill-orange-500 drop-shadow-md animate-bounce-subtle" />
+                </div>
               </div>
-            </div>
 
-            {/* Streak Heading */}
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-              {streakDays} day streak
-            </h3>
+              {/* Streak Heading */}
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                {streakDays} day streak
+              </h3>
 
-            {/* 7-Day Week Row with Connected Active Days */}
-            <div className="relative flex items-center justify-between gap-1 my-6 px-1">
-              {getWeekDates().map((day, idx, arr) => {
-                const nextDay = arr[idx + 1];
-                const hasConnector = day.isActive && nextDay && nextDay.isActive;
+              {/* 7-Day Week Row with Connected Active Days */}
+              <div className="relative flex items-center justify-between gap-1 my-6 px-1">
+                {getWeekDates().map((day, idx, arr) => {
+                  const nextDay = arr[idx + 1];
+                  const hasConnector = day.isActive && nextDay && nextDay.isActive;
 
-                return (
-                  <div key={day.label} className="relative flex flex-col items-center flex-1">
-                    {/* Orange Connector Bar between consecutive active days */}
-                    {hasConnector && (
-                      <span className="absolute top-[28px] left-[50%] w-full h-1.5 bg-amber-500 z-0 pointer-events-none" />
-                    )}
-
-                    {/* Day Name */}
-                    <span
-                      className={`text-xs font-bold mb-2 transition-colors ${
-                        day.isActive
-                          ? 'text-amber-500'
-                          : day.isToday
-                          ? 'text-indigo-600 dark:text-indigo-400'
-                          : 'text-slate-400 dark:text-slate-500'
-                      }`}
-                    >
-                      {day.label}
-                    </span>
-
-                    {/* Day Circle */}
-                    <div
-                      className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                        day.isActive
-                          ? 'bg-amber-500 text-white shadow-xs'
-                          : day.isToday
-                          ? 'bg-indigo-100 dark:bg-indigo-950/60 border-2 border-indigo-400 text-indigo-600 dark:text-indigo-300'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600'
-                      }`}
-                    >
-                      {day.isActive ? (
-                        <Check className="w-4 h-4 stroke-[3]" />
-                      ) : (
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                  return (
+                    <div key={day.label} className="relative flex flex-col items-center flex-1">
+                      {/* Orange Connector Bar between consecutive active days */}
+                      {hasConnector && (
+                        <span className="absolute top-[28px] left-[50%] w-full h-1.5 bg-amber-500 z-0 pointer-events-none" />
                       )}
+
+                      {/* Day Name */}
+                      <span
+                        className={`text-xs font-bold mb-2 transition-colors ${
+                          day.isActive
+                            ? 'text-amber-500'
+                            : day.isToday
+                            ? 'text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-400 dark:text-slate-500'
+                        }`}
+                      >
+                        {day.label}
+                      </span>
+
+                      {/* Day Circle */}
+                      <div
+                        className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                          day.isActive
+                            ? 'bg-amber-500 text-white shadow-xs'
+                            : day.isToday
+                            ? 'bg-indigo-100 dark:bg-indigo-950/60 border-2 border-indigo-400 text-indigo-600 dark:text-indigo-300'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600'
+                        }`}
+                      >
+                        {day.isActive ? (
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        ) : (
+                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-40" />
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              {/* Motivation Subtitle */}
+              <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 leading-relaxed px-2">
+                Complete a task or log time to extend your streak!
+              </p>
+
+              {/* Keep Going Action Button */}
+              <button
+                type="button"
+                onClick={() => setIsStreakModalOpen(false)}
+                className={`w-full mt-6 py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r ${activeThemeAccent.modalBtnGradient} shadow-md active:scale-95 transition-all cursor-pointer`}
+              >
+                Keep It Going
+              </button>
             </div>
-
-            {/* Motivation Subtitle */}
-            <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-400 leading-relaxed px-2">
-              Complete a task or log time to extend your streak!
-            </p>
-
-            {/* Keep Going Action Button */}
-            <button
-              type="button"
-              onClick={() => setIsStreakModalOpen(false)}
-              className={`w-full mt-6 py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r ${activeThemeAccent.modalBtnGradient} shadow-md active:scale-95 transition-all cursor-pointer`}
-            >
-              Keep It Going
-            </button>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* KPI Stats Grid */}
       <StatCards />
