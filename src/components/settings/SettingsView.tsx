@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme, getSoftSidebarThemeInfo } from '../../context/ThemeContext';
 import {
   User,
   Bell,
@@ -89,6 +89,7 @@ export const SettingsView: React.FC = () => {
   const [isScanningDeadlines, setIsScanningDeadlines] = useState(false);
 
   const { theme, setTheme, actualTheme, toggleTheme, sidebarTheme, setSidebarTheme, accentColor, setAccentColor } = useTheme();
+  const softSidebarTheme = getSoftSidebarThemeInfo(accentColor);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -692,7 +693,7 @@ export const SettingsView: React.FC = () => {
               onClick={() => setSidebarTheme('slate')}
               className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
                 sidebarTheme === 'slate'
-                  ? 'border-emerald-500 bg-slate-100/90 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  ? 'border-primary-500 bg-slate-100/90 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
                   : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
               }`}
             >
@@ -708,25 +709,27 @@ export const SettingsView: React.FC = () => {
               </p>
             </button>
 
-            {/* Soft Sage */}
+            {/* Soft Theme Tint (Dynamic to Accent Color) */}
             <button
               type="button"
               onClick={() => setSidebarTheme('sage')}
               className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
                 sidebarTheme === 'sage'
-                  ? 'border-emerald-500 bg-emerald-50 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  ? 'border-primary-500 bg-primary-50 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
                   : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
               }`}
             >
               <div className="flex items-center gap-2 mb-2">
-                <span className="w-4 h-4 rounded-full bg-[#82d6b3] border border-emerald-500 shadow-2xs" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">Soft Sage</span>
+                <span className="w-4 h-4 rounded-full bg-primary-300 border border-primary-500 shadow-2xs" />
+                <span className="text-xs font-bold text-slate-900 dark:text-white">
+                  {softSidebarTheme.name}
+                </span>
                 {sidebarTheme === 'sage' && (
                   <span className={`ml-auto text-[10px] font-bold ${getIdleThemeStyles(accentColor).icon}`}>Active</span>
                 )}
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
-                Fresh soothing sage green tone.
+                {softSidebarTheme.desc}
               </p>
             </button>
 
@@ -736,7 +739,7 @@ export const SettingsView: React.FC = () => {
               onClick={() => setSidebarTheme('dark')}
               className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
                 sidebarTheme === 'dark'
-                  ? 'border-emerald-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  ? 'border-primary-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
                   : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
               }`}
             >
@@ -758,7 +761,7 @@ export const SettingsView: React.FC = () => {
               onClick={() => setSidebarTheme('white')}
               className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer ${
                 sidebarTheme === 'white'
-                  ? 'border-emerald-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-emerald-500/30 shadow-xs'
+                  ? 'border-primary-500 bg-slate-50/80 dark:bg-slate-800/80 ring-2 ring-primary-500/30 shadow-xs'
                   : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
               }`}
             >

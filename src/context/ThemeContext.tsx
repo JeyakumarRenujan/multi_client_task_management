@@ -140,3 +140,46 @@ export const useTheme = () => {
   if (!context) throw new Error('useTheme must be used within a ThemeProvider');
   return context;
 };
+
+export interface SoftSidebarThemeInfo {
+  name: string;
+  desc: string;
+  tone: string;
+}
+
+export const getSoftSidebarThemeInfo = (accent: AccentColor): SoftSidebarThemeInfo => {
+  switch (accent) {
+    case 'blue':
+      return {
+        name: 'Soft Sky',
+        desc: 'Fresh soothing sky blue tone.',
+        tone: 'Sky blue tone',
+      };
+    case 'rose':
+      return {
+        name: 'Soft Rose',
+        desc: 'Fresh soothing rose pink tone.',
+        tone: 'Rose pink tone',
+      };
+    case 'purple':
+      return {
+        name: 'Soft Lavender',
+        desc: 'Fresh soothing lavender purple tone.',
+        tone: 'Lavender purple tone',
+      };
+    case 'amber':
+      return {
+        name: 'Soft Amber',
+        desc: 'Fresh soothing warm amber tone.',
+        tone: 'Warm amber tone',
+      };
+    case 'emerald':
+    default:
+      return {
+        name: 'Soft Sage',
+        desc: 'Fresh soothing sage green tone.',
+        tone: 'Sage green tone',
+      };
+  }
+};
+
