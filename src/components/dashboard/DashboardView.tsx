@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { StatCards } from './StatCards';
 import { DeadlineRadar } from './DeadlineRadar';
@@ -146,6 +146,12 @@ export const DashboardView: React.FC = () => {
   });
   const [displayedQuote, setDisplayedQuote] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const isHoveredRef = useRef(false);
+
+  useEffect(() => {
+    isHoveredRef.current = isHovered;
+  }, [isHovered]);
 
   useEffect(() => {
     const fullText = DAILY_SPARKS[sparkIndex].quote;
@@ -153,6 +159,9 @@ export const DashboardView: React.FC = () => {
     setIsTyping(true);
 
     let currentIdx = 0;
+    let holdTimer: NodeJS.Timeout | null = null;
+    let hoverPoll: NodeJS.Timeout | null = null;
+
     const interval = setInterval(() => {
       currentIdx++;
       if (currentIdx <= fullText.length) {
@@ -160,10 +169,28 @@ export const DashboardView: React.FC = () => {
       } else {
         setIsTyping(false);
         clearInterval(interval);
+
+        // Quote fully typed: hold for 6 seconds, then loop to next spark in sequence
+        holdTimer = setTimeout(() => {
+          if (isHoveredRef.current) {
+            hoverPoll = setInterval(() => {
+              if (!isHoveredRef.current) {
+                clearInterval(hoverPoll!);
+                setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
+              }
+            }, 800);
+          } else {
+            setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
+          }
+        }, 6000);
       }
     }, 24);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (holdTimer) clearTimeout(holdTimer);
+      if (hoverPoll) clearInterval(hoverPoll);
+    };
   }, [sparkIndex]);
 
   const handleNextSpark = () => {
@@ -232,8 +259,12 @@ export const DashboardView: React.FC = () => {
             </p>
           </div>
 
-          {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Fixed Size & Typewriter Effect) */}
-          <div className="relative group w-full md:w-[380px] h-[138px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-3.5 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0">
+          {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Fixed Size & Typewriter Effect in Time Loop) */}
+          <div
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="relative group w-full md:w-[410px] h-[152px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-3.5 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0"
+          >
             {/* Top Bar: Flame Streak Pill (matches reference image) & Next Quote Shuffle */}
             <div className="flex items-center justify-between gap-2 h-7 shrink-0">
               <button
@@ -257,21 +288,21 @@ export const DashboardView: React.FC = () => {
               </button>
             </div>
 
-            {/* Quote Content with Typewriter Animation & Fixed Height Container */}
-            <div className="h-[48px] flex items-center overflow-hidden my-auto">
-              <p className="text-xs sm:text-[13px] text-white/95 font-medium italic leading-snug tracking-wide line-clamp-2 select-text">
-                <span className="text-emerald-300 not-italic font-serif text-sm mr-0.5 select-none opacity-90">“</span>
+            {/* Quote Content with Typewriter Animation, Classic Monospace/Typewriter Font & Increased Size */}
+            <div className="h-[58px] flex items-center overflow-hidden my-auto">
+              <p className="text-sm sm:text-[15px] font-['Courier_Prime','JetBrains_Mono',monospace] font-bold text-emerald-100 tracking-tight leading-snug line-clamp-2 select-text">
+                <span className="text-emerald-400 not-italic font-serif text-base mr-0.5 select-none opacity-90">“</span>
                 {displayedQuote}
-                <span className="text-emerald-300 not-italic font-serif text-sm ml-0.5 select-none opacity-90">”</span>
+                <span className="text-emerald-400 not-italic font-serif text-base ml-0.5 select-none opacity-90">”</span>
                 {isTyping && (
-                  <span className="inline-block w-1.5 h-3.5 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
+                  <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
                 )}
               </p>
             </div>
 
             {/* Footer: Author & Category Badge */}
             <div className="flex items-center justify-between h-4 shrink-0 text-[10px] text-emerald-300/80 font-semibold border-t border-white/10 pt-1">
-              <span className="truncate max-w-[210px] tracking-wide">— {DAILY_SPARKS[sparkIndex].author}</span>
+              <span className="truncate max-w-[230px] tracking-wide font-medium">— {DAILY_SPARKS[sparkIndex].author}</span>
               <span className="text-[9px] text-emerald-300/60 uppercase tracking-widest shrink-0 font-bold">Daily Inspiration</span>
             </div>
           </div>
