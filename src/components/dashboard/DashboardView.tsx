@@ -155,9 +155,9 @@ export const DashboardView: React.FC = () => {
     setIsTyping(true);
 
     let currentIdx = 0;
-    let typeTimer: NodeJS.Timeout | null = null;
-    let restartTimer: NodeJS.Timeout | null = null;
-    let initialPauseTimer: NodeJS.Timeout | null = null;
+    let typeTimer: ReturnType<typeof setTimeout> | null = null;
+    let restartTimer: ReturnType<typeof setTimeout> | null = null;
+    let initialPauseTimer: ReturnType<typeof setTimeout> | null = null;
 
     initialPauseTimer = setTimeout(() => {
       if (isCancelled) return;
