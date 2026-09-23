@@ -53,7 +53,7 @@ export const RecentActivity: React.FC = () => {
   ].slice(0, 5);
 
   return (
-    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
+    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-black dark:border-slate-800 shadow-sm flex flex-col justify-between">
       <div>
         <div className="flex items-center gap-2 mb-4">
           <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
