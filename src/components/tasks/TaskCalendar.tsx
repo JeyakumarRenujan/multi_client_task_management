@@ -42,7 +42,16 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
   };
 
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+
+  // Helper: format a local Date to YYYY-MM-DD without UTC conversion
+  const toLocalDateStr = (d: Date): string => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const todayStr = toLocalDateStr(today);
 
   // Calendar cells
   const calendarCells: { day: number; isCurrentMonth: boolean; dateStr: string }[] = [];
@@ -50,13 +59,13 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
   // Previous month trailing days
   for (let i = firstDayIndex - 1; i >= 0; i--) {
     const day = prevMonthDays - i;
-    const dateStr = new Date(year, month - 1, day).toISOString().split('T')[0];
+    const dateStr = toLocalDateStr(new Date(year, month - 1, day));
     calendarCells.push({ day, isCurrentMonth: false, dateStr });
   }
 
   // Current month days
   for (let i = 1; i <= daysInMonth; i++) {
-    const dateStr = new Date(year, month, i).toISOString().split('T')[0];
+    const dateStr = toLocalDateStr(new Date(year, month, i));
     calendarCells.push({ day: i, isCurrentMonth: true, dateStr });
   }
 
@@ -64,7 +73,7 @@ export const TaskCalendar: React.FC<TaskCalendarProps> = ({
   const remainingCells = 35 - calendarCells.length;
   if (remainingCells > 0) {
     for (let i = 1; i <= remainingCells; i++) {
-      const dateStr = new Date(year, month + 1, i).toISOString().split('T')[0];
+      const dateStr = toLocalDateStr(new Date(year, month + 1, i));
       calendarCells.push({ day: i, isCurrentMonth: false, dateStr });
     }
   }
