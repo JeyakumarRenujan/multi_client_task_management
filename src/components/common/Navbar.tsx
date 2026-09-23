@@ -106,7 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink-0">
         <button
           onClick={onToggleMobileSidebar}
-          className="lg:hidden p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer shrink-0 transition-colors"
+          className="lg:hidden w-10 h-10 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer shrink-0 transition-colors"
           aria-label="Toggle menu"
         >
           <Menu className="w-5 h-5" />
@@ -117,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Global Search Omni Bar Trigger (Ctrl+K) */}
         <button
           onClick={() => setIsCommandPaletteOpen(true)}
-          className="hidden md:flex items-center justify-between w-56 lg:w-72 xl:w-80 px-3.5 py-2 ml-2 lg:ml-4 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/70 hover:border-emerald-500/40 transition-all group cursor-pointer shadow-2xs"
+          className="hidden md:flex items-center justify-between w-56 lg:w-72 xl:w-80 h-10 px-3.5 ml-2 lg:ml-4 text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100/90 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/70 hover:border-emerald-500/40 transition-all group cursor-pointer shadow-2xs"
         >
           <span className="truncate">Search or jump to...</span>
           <div className="flex items-center gap-1.5 ml-2 shrink-0">
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 shrink-0">
         {/* Track Time / Active Stopwatch Widget */}
         {activeTimer.elapsedSeconds > 0 || activeTimer.isRunning ? (
-          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 shadow-2xs animate-pulse-subtle">
+          <div className="flex items-center gap-1.5 sm:gap-2 h-10 px-2.5 sm:px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 shadow-2xs animate-pulse-subtle">
             <span className="relative flex h-2.5 w-2.5">
               {activeTimer.isRunning && (
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-whatsapp-light opacity-75" />
@@ -186,7 +186,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         ) : (
           <button
             onClick={() => setIsTimeLogModalOpen(true)}
-            className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all cursor-pointer shadow-2xs"
+            className="hidden sm:flex items-center gap-1.5 sm:gap-2 h-10 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all cursor-pointer shadow-2xs"
             title="Track Time / Open Time Logger"
           >
             <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -198,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="relative" ref={quickAddRef}>
           <button
             onClick={() => setIsQuickAddOpen(!isQuickAddOpen)}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-whatsapp-teal hover:from-emerald-700 hover:to-whatsapp-dark shadow-md shadow-emerald-700/20 active:scale-95 transition-all cursor-pointer"
             title="Quick Add"
           >
             <Plus className="w-4 h-4" />
@@ -258,7 +258,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           onClick={() => setIsAiModalOpen(true)}
           title="Me Plus App Guide & External AI"
-          className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shadow-2xs"
+          className="flex items-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer shadow-2xs"
         >
           <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
           <span className="hidden md:inline">App Guide &amp; AI</span>
@@ -269,10 +269,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setIsAccentMenuOpen(!isAccentMenuOpen)}
             title="Change Theme Accent Color"
-            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer relative"
+            className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer relative shadow-2xs"
           >
-            <Palette className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span className="absolute bottom-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 ring-1 ring-white dark:ring-slate-900" />
+            <Palette className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400" />
+            <span className="absolute bottom-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
           </button>
 
           {isAccentMenuOpen && (
@@ -318,9 +318,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           onClick={toggleTheme}
           title={`Switch to ${actualTheme === 'dark' ? 'Light' : 'Dark'} mode`}
-          className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 rounded-xl transition-all cursor-pointer shadow-2xs"
         >
-          {actualTheme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+          {actualTheme === 'dark' ? <Sun className="w-4.5 h-4.5 text-amber-400" /> : <Moon className="w-4.5 h-4.5 text-slate-600 dark:text-slate-300" />}
         </button>
 
         {/* Notification Bell with Badge */}
@@ -328,11 +328,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
             title="Notifications & Deadline Alerts"
-            className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors relative cursor-pointer"
+            className="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 rounded-xl transition-all relative cursor-pointer shadow-2xs"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4.5 h-4.5" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white font-black text-[10px] rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white font-black text-[10px] rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs">
                 {unreadNotificationsCount}
               </span>
             )}
@@ -349,12 +349,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="relative ml-0.5 sm:ml-1" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2 p-0.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title={user.name}
+              className="w-10 h-10 flex items-center justify-center p-0.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-700/80 border border-slate-200/70 dark:border-slate-700/70 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 transition-all cursor-pointer shadow-2xs group"
             >
               <img
                 src={user.avatar}
                 alt={user.name}
-                className="w-8 h-8 rounded-xl object-cover ring-2 ring-emerald-500/40"
+                className="w-full h-full rounded-[10px] object-cover ring-1 ring-emerald-500/40 group-hover:ring-emerald-500 transition-all"
               />
             </button>
 
@@ -399,7 +400,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         ) : (
           <button
             onClick={onOpenAuthModal}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 h-10 px-3 sm:px-3.5 rounded-xl text-xs sm:text-sm font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer shadow-2xs"
           >
             <User className="w-4 h-4" />
             <span>Sign In</span>
