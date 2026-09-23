@@ -31,6 +31,10 @@ import {
   markNotificationRead,
   deleteNotifications,
   resetDatabase,
+  saveOtp,
+  getOtp,
+  verifyOtp,
+  resetPasswordWithToken,
 } from './database.js';
 
 import {
@@ -189,9 +193,6 @@ app.post('/api/auth/register', async (req, res) => {
   res.status(201).json({ success: true, user: safeUser });
 });
 
-// OTP Store for email verification: email -> { otp: string, expiresAt: number, verified: boolean, attempts: number, createdAt: number, resetToken?: string }
-const otpStore = new Map();
-
 app.post('/api/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -207,17 +208,9 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     });
   }
 
-  // Generate a secure 6-digit numeric OTP
+  // Generate a secure 6-digit numeric OTP and save to MongoDB
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-  otpStore.set(normalizedEmail, {
-    otp,
-    expiresAt,
-    verified: false,
-    attempts: 0,
-    createdAt: Date.now(),
-  });
+  await saveOtp(normalizedEmail, otp, 10);
 
   try {
     const emailResult = await sendOtpEmail({
@@ -257,56 +250,24 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
-app.post('/api/auth/verify-otp', (req, res) => {
+app.post('/api/auth/verify-otp', async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp) {
     return res.status(400).json({ error: 'Email address and 6-digit verification code are required' });
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const record = otpStore.get(normalizedEmail);
+  const result = await verifyOtp(normalizedEmail, otp);
 
-  if (!record) {
-    return res.status(400).json({
-      error: 'No verification code was requested for this email, or it has expired. Please request a new code.',
-    });
+  if (!result.success) {
+    return res.status(result.status || 400).json({ error: result.error });
   }
-
-  if (Date.now() > record.expiresAt) {
-    otpStore.delete(normalizedEmail);
-    return res.status(400).json({
-      error: 'The verification code has expired. Please request a new code.',
-    });
-  }
-
-  if (record.attempts >= 5) {
-    otpStore.delete(normalizedEmail);
-    return res.status(429).json({
-      error: 'Too many incorrect attempts. For security reasons, please request a new verification code.',
-    });
-  }
-
-  const cleanedOtp = otp.toString().trim();
-  if (record.otp !== cleanedOtp) {
-    record.attempts += 1;
-    const remaining = 5 - record.attempts;
-    return res.status(400).json({
-      error: `Invalid verification code. Please check and try again (${remaining} attempts remaining).`,
-    });
-  }
-
-  // OTP verified successfully
-  const resetToken = `rst_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
-  record.verified = true;
-  record.resetToken = resetToken;
-  record.verifiedAt = Date.now();
-  otpStore.set(normalizedEmail, record);
 
   res.json({
     success: true,
-    message: 'OTP verification successful! You can now set your new password.',
+    message: result.message,
     email: normalizedEmail,
-    resetToken,
+    resetToken: result.resetToken,
   });
 });
 
@@ -323,24 +284,16 @@ app.post('/api/auth/resend-otp', async (req, res) => {
     return res.status(404).json({ error: 'No registered account found with this email address.' });
   }
 
-  const existing = otpStore.get(normalizedEmail);
-  if (existing && Date.now() - existing.createdAt < 30000) {
-    const waitSeconds = Math.ceil((30000 - (Date.now() - existing.createdAt)) / 1000);
+  const existing = await getOtp(normalizedEmail);
+  if (existing && existing.lastRequestedAt && Date.now() - existing.lastRequestedAt < 30000) {
+    const waitSeconds = Math.ceil((30000 - (Date.now() - existing.lastRequestedAt)) / 1000);
     return res.status(429).json({
       error: `Please wait ${waitSeconds} seconds before requesting a new code.`,
     });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + 10 * 60 * 1000;
-
-  otpStore.set(normalizedEmail, {
-    otp,
-    expiresAt,
-    verified: false,
-    attempts: 0,
-    createdAt: Date.now(),
-  });
+  await saveOtp(normalizedEmail, otp, 10);
 
   try {
     const emailResult = await sendOtpEmail({
@@ -401,33 +354,15 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const record = otpStore.get(normalizedEmail);
+  const result = await resetPasswordWithToken(normalizedEmail, resetToken, newPassword, otp);
 
-  // Strict verification check
-  const isVerified =
-    record &&
-    (record.verified === true ||
-      (resetToken && record.resetToken === resetToken) ||
-      (otp && record.otp === otp.toString().trim() && Date.now() <= record.expiresAt));
-
-  if (!isVerified) {
-    return res.status(403).json({
-      error:
-        'OTP verification required. Please verify the 6-digit code sent to your email before resetting your password.',
-    });
+  if (!result.success) {
+    return res.status(result.status || 400).json({ error: result.error });
   }
-
-  const user = await findUserByEmail(normalizedEmail);
-  if (!user) {
-    return res.status(404).json({ error: 'User account not found.' });
-  }
-
-  await updateUser(normalizedEmail, { password: newPassword });
-  otpStore.delete(normalizedEmail);
 
   res.json({
     success: true,
-    message: 'Your password has been successfully updated! You can now sign in.',
+    message: result.message,
   });
 });
 

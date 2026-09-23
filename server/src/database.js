@@ -21,6 +21,7 @@ import { TaskModel } from './models/Task.js';
 import { TimeEntryModel } from './models/TimeEntry.js';
 import { InvoiceModel } from './models/Invoice.js';
 import { NotificationModel } from './models/Notification.js';
+import { OtpModel } from './models/Otp.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,6 +57,29 @@ export async function initDatabase() {
         await seedMongoFromSeed(initialSeed);
         console.log(`✅ [MongoDB] Auto-seeding complete.`);
       }
+
+      // Auto-migrate any non-demo users from db.json into MongoDB if they don't exist yet
+      try {
+        const db = readDb();
+        const jsonUsers = db.users || [];
+        for (const u of jsonUsers) {
+          if (u.email && u.email !== 'alex.rivera@gmail.com' && u.email !== 'demo@meplus.io') {
+            const normalized = u.email.toLowerCase().trim();
+            const exists = await UserModel.findOne({ email: normalized });
+            if (!exists) {
+              console.log(`📥 [MongoDB] Migrating user from db.json to MongoDB: ${u.email}`);
+              await UserModel.create({
+                ...u,
+                id: u.id || getDeterministicUserId(normalized),
+                email: normalized,
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Notice while checking user migration from db.json:', e.message);
+      }
+
       return { mode: 'mongodb', host: mongoose.connection.host };
     } catch (err) {
       isMongoConnected = false;
@@ -141,7 +165,7 @@ export async function updateUser(targetIdOrEmail, updates) {
     const filter = targetIdOrEmail.includes('@')
       ? { email: targetIdOrEmail.trim().toLowerCase() }
       : { id: targetIdOrEmail };
-    const doc = await UserModel.findOneAndUpdate(filter, { $set: updates }, { new: true }).lean();
+    const doc = await UserModel.findOneAndUpdate(filter, { $set: updates }, { returnDocument: 'after' }).lean();
     return doc;
   }
   const db = readDb();
@@ -194,7 +218,7 @@ export async function createClient(clientData) {
 
 export async function updateClient(id, updates) {
   if (isMongoActive()) {
-    const updated = await ClientModel.findOneAndUpdate({ id }, { $set: updates }, { new: true }).lean();
+    const updated = await ClientModel.findOneAndUpdate({ id }, { $set: updates }, { returnDocument: 'after' }).lean();
     return updated;
   }
   const clients = getCollection('clients');
@@ -267,7 +291,7 @@ export async function createProject(projectData) {
 
 export async function updateProject(id, updates) {
   if (isMongoActive()) {
-    const updated = await ProjectModel.findOneAndUpdate({ id }, { $set: updates }, { new: true }).lean();
+    const updated = await ProjectModel.findOneAndUpdate({ id }, { $set: updates }, { returnDocument: 'after' }).lean();
     return updated;
   }
   const projects = getCollection('projects');
@@ -333,7 +357,7 @@ export async function createTask(taskData) {
 
 export async function updateTask(id, updates) {
   if (isMongoActive()) {
-    const updated = await TaskModel.findOneAndUpdate({ id }, { $set: updates }, { new: true }).lean();
+    const updated = await TaskModel.findOneAndUpdate({ id }, { $set: updates }, { returnDocument: 'after' }).lean();
     return updated;
   }
   const tasks = getCollection('tasks');
@@ -434,7 +458,7 @@ export async function createInvoice(invoiceData) {
 
 export async function updateInvoice(id, updates) {
   if (isMongoActive()) {
-    const updated = await InvoiceModel.findOneAndUpdate({ id }, { $set: updates }, { new: true }).lean();
+    const updated = await InvoiceModel.findOneAndUpdate({ id }, { $set: updates }, { returnDocument: 'after' }).lean();
     return updated;
   }
   const invoices = getCollection('invoices');
@@ -516,5 +540,201 @@ export async function resetDatabase() {
   }
   const data = resetDbToSeed();
   return { success: true, mode: 'json', data };
+}
+
+// -------------------------------------------------------------
+// OTP & PASSWORD RESET OPERATIONS (Persistent via MongoDB Atlas)
+// -------------------------------------------------------------
+const memoryOtpStore = new Map();
+
+export async function saveOtp(email, otp, expiresInMinutes = 10) {
+  const normalizedEmail = (email || '').trim().toLowerCase();
+  const expiresAt = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+
+  if (isMongoActive()) {
+    try {
+      await OtpModel.findOneAndUpdate(
+        { email: normalizedEmail },
+        {
+          otp: otp.trim(),
+          expiresAt,
+          attempts: 0,
+          verified: false,
+          resetToken: null,
+          lastRequestedAt: new Date(),
+        },
+        { upsert: true, returnDocument: 'after' }
+      );
+    } catch (e) {
+      console.warn('MongoDB OTP save warning:', e.message);
+    }
+  }
+
+  memoryOtpStore.set(normalizedEmail, {
+    otp: otp.trim(),
+    expiresAt: expiresAt.getTime(),
+    attempts: 0,
+    verified: false,
+    resetToken: null,
+    lastRequestedAt: Date.now(),
+  });
+}
+
+export async function getOtp(email) {
+  const normalizedEmail = (email || '').trim().toLowerCase();
+  if (isMongoActive()) {
+    try {
+      const doc = await OtpModel.findOne({ email: normalizedEmail }).lean();
+      if (doc) {
+        return {
+          ...doc,
+          expiresAt: new Date(doc.expiresAt).getTime(),
+          lastRequestedAt: doc.lastRequestedAt ? new Date(doc.lastRequestedAt).getTime() : Date.now(),
+        };
+      }
+    } catch (e) {
+      console.warn('MongoDB OTP read warning:', e.message);
+    }
+  }
+  return memoryOtpStore.get(normalizedEmail) || null;
+}
+
+export async function verifyOtp(email, inputOtp) {
+  const normalizedEmail = (email || '').trim().toLowerCase();
+  const cleanedOtp = (inputOtp || '').toString().trim();
+
+  let record = null;
+  if (isMongoActive()) {
+    try {
+      record = await OtpModel.findOne({ email: normalizedEmail });
+    } catch (e) {
+      console.warn('MongoDB OTP verify read warning:', e.message);
+    }
+  }
+
+  const memRecord = memoryOtpStore.get(normalizedEmail);
+
+  if (!record && !memRecord) {
+    return {
+      success: false,
+      error: 'No verification code was requested for this email, or it has expired. Please request a new code.',
+    };
+  }
+
+  const recordExpires = record
+    ? new Date(record.expiresAt).getTime()
+    : memRecord.expiresAt;
+
+  if (Date.now() > recordExpires) {
+    if (isMongoActive()) await OtpModel.deleteOne({ email: normalizedEmail }).catch(() => {});
+    memoryOtpStore.delete(normalizedEmail);
+    return {
+      success: false,
+      error: 'The verification code has expired. Please request a new code.',
+    };
+  }
+
+  const currentAttempts = record ? (record.attempts || 0) : (memRecord.attempts || 0);
+  if (currentAttempts >= 5) {
+    if (isMongoActive()) await OtpModel.deleteOne({ email: normalizedEmail }).catch(() => {});
+    memoryOtpStore.delete(normalizedEmail);
+    return {
+      success: false,
+      status: 429,
+      error: 'Too many incorrect attempts. For security reasons, please request a new verification code.',
+    };
+  }
+
+  const expectedOtp = record ? record.otp : memRecord.otp;
+  if (expectedOtp !== cleanedOtp) {
+    const newAttempts = currentAttempts + 1;
+    if (record) {
+      record.attempts = newAttempts;
+      await record.save().catch(() => {});
+    }
+    if (memRecord) {
+      memRecord.attempts = newAttempts;
+      memoryOtpStore.set(normalizedEmail, memRecord);
+    }
+    const remaining = 5 - newAttempts;
+    return {
+      success: false,
+      error: `Invalid verification code. Please check and try again (${remaining} attempts remaining).`,
+    };
+  }
+
+  // OTP verified successfully! Generate resetToken
+  const resetToken = `rst_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+  if (record) {
+    record.verified = true;
+    record.resetToken = resetToken;
+    await record.save().catch(() => {});
+  }
+  if (memRecord) {
+    memRecord.verified = true;
+    memRecord.resetToken = resetToken;
+    memoryOtpStore.set(normalizedEmail, memRecord);
+  }
+
+  return {
+    success: true,
+    resetToken,
+    message: 'OTP verification successful! You can now set your new password.',
+  };
+}
+
+export async function resetPasswordWithToken(email, resetToken, newPassword, otp) {
+  const normalizedEmail = (email || '').trim().toLowerCase();
+
+  let record = null;
+  if (isMongoActive()) {
+    try {
+      record = await OtpModel.findOne({ email: normalizedEmail });
+    } catch (e) {
+      console.warn('MongoDB reset password read warning:', e.message);
+    }
+  }
+  const memRecord = memoryOtpStore.get(normalizedEmail);
+
+  const isVerified =
+    (record &&
+      (record.verified === true ||
+        (resetToken && record.resetToken === resetToken) ||
+        (otp && record.otp === otp.toString().trim()))) ||
+    (memRecord &&
+      (memRecord.verified === true ||
+        (resetToken && memRecord.resetToken === resetToken) ||
+        (otp && memRecord.otp === otp.toString().trim())));
+
+  if (!isVerified) {
+    return {
+      success: false,
+      status: 403,
+      error: 'OTP verification required. Please verify the 6-digit code sent to your email before resetting your password.',
+    };
+  }
+
+  const user = await findUserByEmail(normalizedEmail);
+  if (!user) {
+    return {
+      success: false,
+      status: 404,
+      error: 'User account not found.',
+    };
+  }
+
+  // Update password in MongoDB (and JSON fallback)
+  await updateUser(normalizedEmail, { password: newPassword });
+
+  // Clean up OTP session
+  if (isMongoActive()) {
+    await OtpModel.deleteOne({ email: normalizedEmail }).catch(() => {});
+  }
+  memoryOtpStore.delete(normalizedEmail);
+
+  return {
+    success: true,
+    message: 'Your password has been successfully updated! You can now sign in.',
+  };
 }
 
