@@ -67,15 +67,6 @@ export const DashboardView: React.FC = () => {
   const [streakDays, setStreakDays] = useState<number>(2);
   const [streakHistory, setStreakHistory] = useState<string[]>([]);
   const [isStreakModalOpen, setIsStreakModalOpen] = useState(false);
-  const [sparkIndex, setSparkIndex] = useState<number>(() => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 0);
-    const diff = now.getTime() - start.getTime();
-    const oneDay = 1000 * 60 * 60 * 24;
-    const dayOfYear = Math.floor(diff / oneDay);
-    return Math.abs(dayOfYear) % DAILY_SPARKS.length;
-  });
-  const [isSparkAnimating, setIsSparkAnimating] = useState(false);
 
   useEffect(() => {
     try {
@@ -145,12 +136,38 @@ export const DashboardView: React.FC = () => {
     });
   };
 
+  const [sparkIndex, setSparkIndex] = useState<number>(() => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 0);
+    const diff = now.getTime() - start.getTime();
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+    return Math.abs(dayOfYear) % DAILY_SPARKS.length;
+  });
+  const [displayedQuote, setDisplayedQuote] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    const fullText = DAILY_SPARKS[sparkIndex].quote;
+    setDisplayedQuote('');
+    setIsTyping(true);
+
+    let currentIdx = 0;
+    const interval = setInterval(() => {
+      currentIdx++;
+      if (currentIdx <= fullText.length) {
+        setDisplayedQuote(fullText.slice(0, currentIdx));
+      } else {
+        setIsTyping(false);
+        clearInterval(interval);
+      }
+    }, 24);
+
+    return () => clearInterval(interval);
+  }, [sparkIndex]);
+
   const handleNextSpark = () => {
-    setIsSparkAnimating(true);
-    setTimeout(() => {
-      setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
-      setIsSparkAnimating(false);
-    }, 150);
+    setSparkIndex(prev => (prev + 1) % DAILY_SPARKS.length);
   };
 
   useEffect(() => {
@@ -215,10 +232,10 @@ export const DashboardView: React.FC = () => {
             </p>
           </div>
 
-          {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Delightful) */}
-          <div className="relative group w-full md:w-auto md:min-w-[310px] md:max-w-[380px] rounded-2xl bg-slate-950/30 hover:bg-slate-950/40 backdrop-blur-md border border-emerald-400/25 p-3 sm:p-3.5 transition-all shadow-lg shadow-black/15 shrink-0">
+          {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Fixed Size & Typewriter Effect) */}
+          <div className="relative group w-full md:w-[380px] h-[138px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-3.5 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0">
             {/* Top Bar: Flame Streak Pill (matches reference image) & Next Quote Shuffle */}
-            <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-white/10">
+            <div className="flex items-center justify-between gap-2 h-7 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsStreakModalOpen(true)}
@@ -233,22 +250,29 @@ export const DashboardView: React.FC = () => {
                 type="button"
                 onClick={handleNextSpark}
                 title="Discover Next Daily Spark"
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-emerald-200 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer group/spark active:scale-95"
               >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+                <Sparkles className="w-3.5 h-3.5 text-emerald-300 group-hover/spark:rotate-12 transition-transform" />
                 <span>New Spark</span>
               </button>
             </div>
 
-            {/* Quote Content */}
-            <div className={`transition-opacity duration-150 ${isSparkAnimating ? 'opacity-0' : 'opacity-100'}`}>
-              <p className="text-xs sm:text-[13px] text-emerald-50/95 font-medium italic leading-snug line-clamp-2">
-                “{DAILY_SPARKS[sparkIndex].quote}”
+            {/* Quote Content with Typewriter Animation & Fixed Height Container */}
+            <div className="h-[48px] flex items-center overflow-hidden my-auto">
+              <p className="text-xs sm:text-[13px] text-white/95 font-medium italic leading-snug tracking-wide line-clamp-2 select-text">
+                <span className="text-emerald-300 not-italic font-serif text-sm mr-0.5 select-none opacity-90">“</span>
+                {displayedQuote}
+                <span className="text-emerald-300 not-italic font-serif text-sm ml-0.5 select-none opacity-90">”</span>
+                {isTyping && (
+                  <span className="inline-block w-1.5 h-3.5 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
+                )}
               </p>
-              <div className="flex items-center justify-between mt-1 text-[10px] text-emerald-300/80 font-semibold">
-                <span>— {DAILY_SPARKS[sparkIndex].author}</span>
-                <span className="text-[9px] text-emerald-300/60 uppercase tracking-wider">Daily Inspiration</span>
-              </div>
+            </div>
+
+            {/* Footer: Author & Category Badge */}
+            <div className="flex items-center justify-between h-4 shrink-0 text-[10px] text-emerald-300/80 font-semibold border-t border-white/10 pt-1">
+              <span className="truncate max-w-[210px] tracking-wide">— {DAILY_SPARKS[sparkIndex].author}</span>
+              <span className="text-[9px] text-emerald-300/60 uppercase tracking-widest shrink-0 font-bold">Daily Inspiration</span>
             </div>
           </div>
         </div>
