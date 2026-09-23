@@ -98,7 +98,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onView, onEdi
       className={`p-4 sm:p-5 rounded-2xl border transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
         isArchived
           ? 'bg-slate-50/80 dark:bg-slate-900/60 border-dashed border-slate-300 dark:border-slate-700 shadow-xs opacity-90 hover:opacity-100 hover:border-slate-400 dark:hover:border-slate-600'
-          : 'bg-white dark:bg-slate-900 border-primary-400/70 dark:border-primary-500/35 shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-primary-400'
+          : 'bg-white dark:bg-slate-900 border-primary-400/70 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-emerald-600'
       }`}
     >
       <div>

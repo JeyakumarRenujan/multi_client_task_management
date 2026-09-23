@@ -50,7 +50,7 @@ export const DeadlineRadar: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-primary-500/35 shadow-sm flex flex-col transition-shadow">
+    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm flex flex-col transition-shadow">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

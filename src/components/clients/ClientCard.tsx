@@ -37,7 +37,7 @@ export const ClientCard: React.FC<ClientCardProps> = ({ client, onView, onEdit }
   return (
     <div
       onClick={() => onView(client)}
-      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-primary-500/35 shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-primary-400 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
+      className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border border-primary-400/70 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-primary-500 dark:hover:border-emerald-600 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
     >
       <div>
         {/* Top Header */}
