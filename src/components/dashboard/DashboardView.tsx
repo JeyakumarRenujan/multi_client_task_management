@@ -155,30 +155,43 @@ export const DashboardView: React.FC = () => {
     setIsTyping(true);
 
     let currentIdx = 0;
-    let typeInterval: NodeJS.Timeout | null = null;
+    let typeTimer: NodeJS.Timeout | null = null;
     let restartTimer: NodeJS.Timeout | null = null;
+    let initialPauseTimer: NodeJS.Timeout | null = null;
 
-    typeInterval = setInterval(() => {
+    initialPauseTimer = setTimeout(() => {
       if (isCancelled) return;
-      currentIdx++;
-      if (currentIdx <= fullText.length) {
-        setDisplayedQuote(fullText.slice(0, currentIdx));
-      } else {
-        setIsTyping(false);
-        if (typeInterval) clearInterval(typeInterval);
 
-        // Quote fully typed: hold for 2.5s, then re-trigger typewriter animation for the SAME spark
-        restartTimer = setTimeout(() => {
-          if (!isCancelled) {
-            setTypeLoopKey(prev => prev + 1);
-          }
-        }, 2500);
-      }
-    }, 24);
+      const typeNextChar = () => {
+        if (isCancelled) return;
+        currentIdx++;
+        if (currentIdx <= fullText.length) {
+          setDisplayedQuote(fullText.slice(0, currentIdx));
+          typeTimer = setTimeout(typeNextChar, 58); // Reduced typing speed: 58ms per char
+        } else {
+          setIsTyping(false);
+
+          // Quote fully typed: hold on screen for 2.5 seconds
+          restartTimer = setTimeout(() => {
+            if (isCancelled) return;
+            // Clear text with a visible pause so the user clearly sees the reset
+            setDisplayedQuote('');
+            setTimeout(() => {
+              if (!isCancelled) {
+                setTypeLoopKey(prev => prev + 1);
+              }
+            }, 250);
+          }, 2500);
+        }
+      };
+
+      typeNextChar();
+    }, 200);
 
     return () => {
       isCancelled = true;
-      if (typeInterval) clearInterval(typeInterval);
+      if (initialPauseTimer) clearTimeout(initialPauseTimer);
+      if (typeTimer) clearTimeout(typeTimer);
       if (restartTimer) clearTimeout(restartTimer);
     };
   }, [sparkIndex, typeLoopKey]);
@@ -250,7 +263,7 @@ export const DashboardView: React.FC = () => {
           </div>
 
           {/* Daily Streak & Daily Spark Quotes Widget (Clean, Glassmorphic, Fixed Size & Typewriter Effect in Time Loop) */}
-          <div className="relative group w-full md:w-[410px] h-[152px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-3.5 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0">
+          <div className="relative group w-full md:w-[430px] h-[164px] rounded-2xl bg-slate-950/35 hover:bg-slate-950/45 backdrop-blur-md border border-emerald-400/25 p-4 flex flex-col justify-between transition-colors shadow-lg shadow-black/15 shrink-0">
             {/* Top Bar: Flame Streak Pill (matches reference image) & Next Quote Shuffle */}
             <div className="flex items-center justify-between gap-2 h-7 shrink-0">
               <button
@@ -275,18 +288,21 @@ export const DashboardView: React.FC = () => {
             </div>
 
             {/* Quote Content with Typewriter Animation, Classic Monospace/Typewriter Font & Increased Size */}
-            <div className="h-[58px] flex items-center overflow-hidden my-auto">
-              <p className="text-sm sm:text-[15px] font-['Courier_Prime','JetBrains_Mono',monospace] font-bold text-emerald-100 tracking-tight leading-snug line-clamp-2 select-text">
-                <span className="text-emerald-400 not-italic font-serif text-base mr-0.5 select-none opacity-90">“</span>
+            <div className="h-[68px] flex items-center overflow-hidden my-auto">
+              <p
+                style={{ fontFamily: "'Courier Prime', 'JetBrains Mono', monospace" }}
+                className="text-base sm:text-[17px] md:text-lg font-typewriter font-bold text-emerald-100 tracking-tight leading-snug line-clamp-2 select-text"
+              >
+                <span className="text-emerald-400 not-italic font-serif text-lg mr-0.5 select-none opacity-90">“</span>
                 {displayedQuote}
-                <span className="text-emerald-400 not-italic font-serif text-base ml-0.5 select-none opacity-90">”</span>
-                <span className="inline-block w-2 h-4 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+                <span className="text-emerald-400 not-italic font-serif text-lg ml-0.5 select-none opacity-90">”</span>
+                <span className="inline-block w-2.5 h-4.5 ml-1 bg-emerald-400 rounded-2xs animate-pulse align-middle shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
               </p>
             </div>
 
             {/* Footer: Author & Category Badge */}
-            <div className="flex items-center justify-between h-4 shrink-0 text-[10px] text-emerald-300/80 font-semibold border-t border-white/10 pt-1">
-              <span className="truncate max-w-[230px] tracking-wide font-medium">— {DAILY_SPARKS[sparkIndex].author}</span>
+            <div className="flex items-center justify-between h-4 shrink-0 text-[11px] text-emerald-300/80 font-semibold border-t border-white/10 pt-1">
+              <span className="truncate max-w-[250px] tracking-wide font-medium">— {DAILY_SPARKS[sparkIndex].author}</span>
               <span className="text-[9px] text-emerald-300/60 uppercase tracking-widest shrink-0 font-bold">Daily Inspiration</span>
             </div>
           </div>

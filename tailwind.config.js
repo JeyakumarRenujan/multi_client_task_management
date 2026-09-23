@@ -79,6 +79,10 @@ export default {
           purple: '#7c3aed',
         }
       },
+      fontFamily: {
+        typewriter: ["'Courier Prime'", "'JetBrains Mono'", 'monospace'],
+        mono: ["'JetBrains Mono'", 'monospace'],
+      },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(var(--color-brand-main), 0.08)',
         'glass-dark': '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
