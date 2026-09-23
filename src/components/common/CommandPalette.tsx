@@ -6,11 +6,7 @@ import {
   FolderKanban,
   CheckSquare,
   FileText,
-  Clock,
-  Settings,
-  Plus,
   ArrowRight,
-  Sparkles,
   X,
 } from 'lucide-react';
 
@@ -27,12 +23,6 @@ export const CommandPalette: React.FC = () => {
     setHighlightedProjectId,
     setHighlightedTaskId,
     setHighlightedInvoiceId,
-    setIsClientModalOpen,
-    setIsProjectModalOpen,
-    setIsTaskModalOpen,
-    setIsInvoiceModalOpen,
-    setIsTimeLogModalOpen,
-    setIsAiModalOpen,
   } = useApp();
 
   const [query, setQuery] = useState('');
@@ -110,11 +100,6 @@ export const CommandPalette: React.FC = () => {
     setIsCommandPaletteOpen(false);
   };
 
-  const handleAction = (action: () => void) => {
-    action();
-    setIsCommandPaletteOpen(false);
-  };
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-20 px-2.5 sm:px-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in cursor-default"
@@ -160,80 +145,6 @@ export const CommandPalette: React.FC = () => {
 
         {/* Results Body */}
         <div className="flex-1 overflow-y-auto p-3.5 space-y-4">
-          {/* Quick Actions */}
-          {!query && (
-            <div>
-              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-2">
-                Quick Actions
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                <button
-                  onClick={() => handleAction(() => setIsTaskModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors text-left cursor-pointer"
-                >
-                  <Plus className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Create New Task</span>
-                </button>
-                <button
-                  onClick={() => handleAction(() => setIsProjectModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors text-left cursor-pointer"
-                >
-                  <FolderKanban className="w-4 h-4 text-teal-600 shrink-0" />
-                  <span>Add New Project</span>
-                </button>
-                <button
-                  onClick={() => handleAction(() => setIsClientModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors text-left cursor-pointer"
-                >
-                  <Users className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span>Add New Client</span>
-                </button>
-                <button
-                  onClick={() => handleAction(() => setIsAiModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/50 hover:text-purple-600 dark:hover:text-purple-400 rounded-xl transition-colors text-left cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
-                  <span>Open Me Plus AI Copilot</span>
-                </button>
-                <button
-                  onClick={() => handleAction(() => setIsInvoiceModalOpen(true))}
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-amber-50 dark:hover:bg-amber-950/50 hover:text-amber-600 dark:hover:text-amber-400 rounded-xl transition-colors text-left cursor-pointer"
-                >
-                  <FileText className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Generate Invoice</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Navigation Links */}
-          {!query && (
-            <div>
-              <div className="text-xs font-extrabold tracking-wider text-slate-400 dark:text-slate-500 uppercase px-2 mb-2">
-                Navigation
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                {[
-                  { tab: 'dashboard', label: 'Dashboard', icon: FolderKanban },
-                  { tab: 'clients', label: 'Clients', icon: Users },
-                  { tab: 'projects', label: 'Projects', icon: FolderKanban },
-                  { tab: 'tasks', label: 'Tasks (Kanban)', icon: CheckSquare },
-                  { tab: 'time', label: 'Time Logs', icon: Clock },
-                  { tab: 'invoices', label: 'Invoices', icon: FileText },
-                  { tab: 'settings', label: 'Settings', icon: Settings },
-                ].map(nav => (
-                  <button
-                    key={nav.tab}
-                    onClick={() => handleSelectTab(nav.tab)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-slate-800 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-xl transition-colors cursor-pointer"
-                  >
-                    <nav.icon className="w-4 h-4 text-slate-400" />
-                    <span>{nav.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Tasks Results */}
           {filteredTasks.length > 0 && (
